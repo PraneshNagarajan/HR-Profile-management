@@ -1,0 +1,38 @@
+.bg-hero {
+    position: absolute;
+    inset: 0 0 0 0;
+    background-image: linear-gradient(to top right, #0d6efd , white);
+  }
+  .bg-text {
+    position: absolute;
+      inset: 0% auto 0% auto;
+      width: 100%;
+      display:flex;
+      align-items: center;
+      justify-content:flex-start;
+  
+  }
+  
+  .bg-design {
+      position: absolute;
+      inset: 0% auto 0% -5%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content:flex-end;
+  }
+  
+  .logo-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 2rem;
+    border: 4px solid  #0d6efd;
+    color: #0d6efd;
+    background-color: white;
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translate(-50%);
+  }
