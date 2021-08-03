@@ -130,19 +130,27 @@ const LoginPage = () => {
     onSubmit: (value) => {
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
-        .then(async (res) => {
-          await checkDBStatus(value.username, attempts, true);
-          if (account_status === false) {
-            setAuthStatus(true);
-            setAuthMsg("Login Successfully !");
-            firestore.collection("Employee-Info").doc(value.username).update({
-              "Auth-Info.chances": 0,
-              "Auth-Info.attempts": 0,
-              "Auth-Info.locked": false,
-              "Auth-Info.login_status": "active",
-              "Auth-Info.invalid_attempt_timestamp": null,
+        .then((res) => {
+          firestore
+            .collection("Employee-Info")
+            .doc(value.username)
+            .get()
+            .then((documentSnapshot) => {
+              if (documentSnapshot.get("Auth-Info.locked") === false) {
+                setAuthStatus(true);
+                setAuthMsg("Login Successfully !");
+                firestore
+                  .collection("Employee-Info")
+                  .doc(value.username)
+                  .update({
+                    "Auth-Info.chances": 0,
+                    "Auth-Info.attempts": 0,
+                    "Auth-Info.locked": false,
+                    "Auth-Info.login_status": "active",
+                    "Auth-Info.invalid_attempt_timestamp": null,
+                  });
+              }
             });
-          }
         })
         .catch((err) => {
           setAuthStatus(false);
@@ -176,17 +184,19 @@ const LoginPage = () => {
     fireAuth
       .sendPasswordResetEmail(formik.values.username)
       .then((res) => {
-        authNotification();
+        setAuthMsg(
+          "We have sent a link to reset your password to your mail. Please check it.."
+        );
         setTimeout(() => {
           setAuthMsg("");
-        }, 1500);
+        }, 5000);
       })
       .catch((err) => {
         setAuthStatus(false);
         setAuthMsg(String(err));
         setTimeout(() => {
           setAuthMsg("");
-        }, 1500);
+        }, 5000);
       });
   };
 
