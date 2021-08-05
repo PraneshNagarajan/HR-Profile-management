@@ -221,7 +221,7 @@ const LoginPage = () => {
           <h1 className="mt-5  text-center text-primary">SignIn</h1>
           <Card.Body className="mb-3">
             <FormGroup className="mb-2">
-              <FormLabel>Enter your Username</FormLabel>
+              <FormLabel><b>Enter your Username</b></FormLabel>
               <FormControl
                 type="text"
                 name="username"
@@ -236,7 +236,7 @@ const LoginPage = () => {
               )}
             </FormGroup>
             <FormGroup className="mb-2">
-              <FormLabel>Enter your Password</FormLabel>
+              <FormLabel><b>Enter your Password</b></FormLabel>
               <FormControl
                 type="password"
                 name="password"
@@ -258,7 +258,7 @@ const LoginPage = () => {
                   !(formik.dirty && formik.isValid) || disable || account_status
                 }
               >
-                Submit
+                <b>Submit</b>
               </Button>
               <Button
                 className="w-100 my-2"
@@ -266,7 +266,7 @@ const LoginPage = () => {
                 onClick={onResetPasswordhandler}
                 disabled={!formik.values.username.length > 0}
               >
-                Forget Password
+                <b>Forget Password</b>
               </Button>
             </div>
 
