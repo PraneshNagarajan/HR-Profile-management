@@ -203,13 +203,15 @@ const LoginPage = () => {
   return (
     <div className="bg-hero">
       <div className="text-white bg-text ms-5">
-        <Col className="ms-5">
+        <Col >
           <FaReact
             style={{ width: "70px", height: "70px" }}
             className="text-center"
           ></FaReact>
+          <Col md="12" xs="4">
           <p className="display-3"> Enterprise Name</p>
           <p className="display-5"> slogan</p>
+          </Col>
         </Col>
       </div>
 
