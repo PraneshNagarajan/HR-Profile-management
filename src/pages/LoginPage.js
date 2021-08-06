@@ -178,11 +178,7 @@ const LoginPage = () => {
           } else {
             formik.setFieldValue("password", "");
           }
-          setAuthMsg(
-            String(err).includes("temporarily disabled")
-              ? String(err)
-              : "Error: Incorrect Password."
-          );
+          setAuthMsg(String(err));
           if (
             !String(err).includes("There is no user") ||
             !String(err).includes("badly formatted")
@@ -208,13 +204,12 @@ const LoginPage = () => {
     fireAuth
       .sendPasswordResetEmail(formik.values.username)
       .then((res) => {
-        setAuthStatus(true)
+        setAuthStatus(true);
         setAuthMsg(
           "We have sent a link to reset your password to your mail. Please check it.."
         );
         setTimeout(() => {
           setAuthMsg("");
-          setAccoutStatus(true)
         }, 5000);
       })
       .catch((err) => {
