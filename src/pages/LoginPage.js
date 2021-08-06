@@ -208,13 +208,12 @@ const LoginPage = () => {
     fireAuth
       .sendPasswordResetEmail(formik.values.username)
       .then((res) => {
-        setAuthStatus(true)
+        setAuthStatus(true);
         setAuthMsg(
           "We have sent a link to reset your password to your mail. Please check it.."
         );
         setTimeout(() => {
           setAuthMsg("");
-          setAccoutStatus(true)
         }, 5000);
       })
       .catch((err) => {
