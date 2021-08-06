@@ -2,6 +2,7 @@
     position: absolute;
     inset: 0 0 0 0;
     background-image: linear-gradient(to top right, #0d6efd , white);
+    background-size: cover;
   }
   .bg-text {
     position: absolute;

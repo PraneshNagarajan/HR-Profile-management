@@ -11,9 +11,12 @@ import {
   Alert,
 } from "react-bootstrap";
 import { FaKey, FaReact } from "react-icons/fa";
+import { BsShieldLockFill } from "react-icons/bs";
 import { fireAuth, firestore } from "../firebase";
 import { useFormik } from "formik";
 import Timer from "../Timer";
+import { useMediaQuery } from "react-responsive";
+import { useEffect } from "react";
 
 const formValidation = (field) => {
   const errors = {};
@@ -36,10 +39,20 @@ const LoginPage = () => {
   const [timer, SetTimer] = useState();
   const [account_status, setAccoutStatus] = useState(false);
 
+  const sm = useMediaQuery({ maxWidth: 768 });
+  const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
+
+  // useEffect(() => {
+  //   if (authMsg.length > 0 && sm) {
+  //     const timer = setTimeout(() => {
+  //       setAuthMsg("");
+  //     }, 3000);
+  //   }
+  // }, [authMsg, sm]);
   const authNotification = () => {
     setAccoutStatus(true);
     setAuthMsg(
-      "Your account has been locked due to multiple incorrect logins. Please contact admin.."
+      " Error: Your account has been locked due to multiple incorrect logins. Please contact your admin or reset your password."
     );
   };
 
@@ -83,7 +96,7 @@ const LoginPage = () => {
         const db_Chance = Number(documentSnapshot.get("Auth-Info.chances"));
         const db_Attempts = Number(documentSnapshot.get("Auth-Info.attempts"));
         if (!documentSnapshot.get("Auth-Info.locked")) {
-          if (attempt === -1) {
+          if (flag) {
             if (db_Chance + 1 <= 2) {
               setChances(db_Chance + 1);
               setAttempts(db_Attempts);
@@ -94,6 +107,10 @@ const LoginPage = () => {
               if (db_Attempts + 1 <= 2) {
                 updateAuthStatus(doc, false, db_Attempts + 1);
                 setAttempts(db_Attempts + 1);
+                calculatingDuration(
+                  documentSnapshot.get("Auth-Info.invalid_attempt_timestamp"),
+                  false
+                );
               } else {
                 updateAuthStatus(doc, true, 3);
                 authNotification();
@@ -104,10 +121,7 @@ const LoginPage = () => {
           } else {
             updateAuthStatus(doc, true, 3);
           }
-          if (
-            (attempt > 0 && attempt < 3) ||
-            (attempt === -1 && db_Chance === 2)
-          ) {
+          if (attempt > 0 && attempt < 3) {
             calculatingDuration(
               documentSnapshot.get("Auth-Info.invalid_attempt_timestamp"),
               flag
@@ -149,6 +163,8 @@ const LoginPage = () => {
                     "Auth-Info.login_status": "active",
                     "Auth-Info.invalid_attempt_timestamp": null,
                   });
+              } else {
+                authNotification();
               }
             });
         })
@@ -162,19 +178,27 @@ const LoginPage = () => {
           } else {
             formik.setFieldValue("password", "");
           }
-          if (attempts === -1) {
-            checkDBStatus(value.username, attempts, true);
-            setAuthMsg(String(err));
-          } else {
-            setChances(chances + 1);
-            updateAttemptStatus(value.username, chances + 1);
-            setAuthMsg(String(err));
-            if (chances + 1 > 2) {
-              setAuthMsg("");
-              setAttempts(attempts + 1);
-              setChances(0);
-              updateAttemptStatus(value.username, 0);
-              checkDBStatus(value.username, attempts + 1, false);
+          setAuthMsg(
+            String(err).includes("temporarily disabled")
+              ? String(err)
+              : "Error: Incorrect Password."
+          );
+          if (
+            !String(err).includes("There is no user") ||
+            !String(err).includes("badly formatted")
+          ) {
+            if (attempts === -1) {
+              checkDBStatus(value.username, attempts, true);
+            } else {
+              setChances(chances + 1);
+              updateAttemptStatus(value.username, chances + 1);
+              if (chances + 1 > 2) {
+                setAuthMsg("");
+                setAttempts(attempts + 1);
+                setChances(0);
+                updateAttemptStatus(value.username, 0);
+                checkDBStatus(value.username, attempts + 1, false);
+              }
             }
           }
         });
@@ -184,11 +208,13 @@ const LoginPage = () => {
     fireAuth
       .sendPasswordResetEmail(formik.values.username)
       .then((res) => {
+        setAuthStatus(true)
         setAuthMsg(
           "We have sent a link to reset your password to your mail. Please check it.."
         );
         setTimeout(() => {
           setAuthMsg("");
+          setAccoutStatus(true)
         }, 5000);
       })
       .catch((err) => {
@@ -201,29 +227,57 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-hero">
-      <div className="text-white bg-text ms-5">
-        <Col >
-          <FaReact
-            style={{ width: "70px", height: "70px" }}
-            className="text-center"
-          ></FaReact>
-          <Col md="12" xs="4">
-          <p className="display-3"> Enterprise Name</p>
-          <p className="display-5"> slogan</p>
+    <div
+      className="bg-hero"
+      style={{
+        backgroundImage: sm
+          ? "linear-gradient(to bottom right, #0d6efd , #0d6efd)"
+          : "",
+      }}
+    >
+      <div className={`text-white  p-3 ${sm ? `` : `bg-text`}`}>
+        <Col>
+          <div className={sm ? "d-flex" : "column"}>
+            <FaReact
+              style={{
+                width: sm ? "50px" : "70px",
+                height: sm ? "50px" : "70px",
+              }}
+              className="text-center"
+            ></FaReact>
+            {sm && <p className="display-5 ms-2 mt-1"> Enterprise Name</p>}
+          </div>
+          <Col>
+            {!sm && <p className="display-3"> Enterprise Name</p>}
+            <p className={sm ? "ps-5 ms-2" : "display-5"}>
+              {" "}
+              slogan ! slogan ! slogan!
+            </p>
           </Col>
         </Col>
+        <hr className="mt-5" />
       </div>
 
-      <Form className="bg-design" onSubmit={formik.handleSubmit}>
-        <Card style={{ width: "30%" }}>
+      <Form
+        className={sm ? "d-flex justify-content-center" : "bg-design"}
+        onSubmit={formik.handleSubmit}
+      >
+        <Card
+          style={{ width: sm ? "90%" : md ? "40%" : "30%" }}
+          className="mt-5"
+        >
           <div className="logo-circle">
-            <FaKey className="mt-4" />
+            <BsShieldLockFill
+              className="mt-3"
+              style={{ width: "60px", height: "60px" }}
+            />
           </div>
           <h1 className="mt-5  text-center text-primary">SignIn</h1>
-          <Card.Body className="mb-3">
+          <Card.Body className="">
             <FormGroup className="mb-2">
-              <FormLabel><b>Enter your Username</b></FormLabel>
+              <FormLabel>
+                <b>Enter your Username</b>
+              </FormLabel>
               <FormControl
                 type="text"
                 name="username"
@@ -234,11 +288,16 @@ const LoginPage = () => {
                 isInvalid={formik.touched.username && formik.errors.username}
               />
               {formik.touched.username && formik.errors.username && (
-                <p className="text-danger"> {formik.errors.username} </p>
+                <p className="text-danger">
+                  {" "}
+                  {authMsg.length > 0 ? "" : formik.errors.username}{" "}
+                </p>
               )}
             </FormGroup>
             <FormGroup className="mb-2">
-              <FormLabel><b>Enter your Password</b></FormLabel>
+              <FormLabel>
+                <b>Enter your Password</b>
+              </FormLabel>
               <FormControl
                 type="password"
                 name="password"
@@ -249,7 +308,10 @@ const LoginPage = () => {
                 isInvalid={formik.touched.password && formik.errors.password}
               />
               {formik.touched.password && formik.errors.password && (
-                <p className="text-danger"> {formik.errors.password} </p>
+                <p className="text-danger">
+                  {" "}
+                  {authMsg.length > 0 ? "" : formik.errors.password}{" "}
+                </p>
               )}
             </FormGroup>
             <div>
@@ -271,17 +333,21 @@ const LoginPage = () => {
                 <b>Forget Password</b>
               </Button>
             </div>
-
             {authMsg.length > 0 && (
               <Fragment>
-                <hr className="mb-3" />{" "}
-                <Alert variant={authStatus ? "success" : "danger"}>
+                <Alert
+                  variant={authStatus ? "success" : "danger"}
+                  className="mt-2"
+                >
                   <b>{authMsg}</b>
                 </Alert>
               </Fragment>
             )}
-
-            {disable && <Timer expiryTimestamp={timer}></Timer>}
+            {disable && (
+              <Fragment>
+                <Timer expiryTimestamp={timer} className="mt-2"></Timer>
+              </Fragment>
+            )}
           </Card.Body>
         </Card>
       </Form>
