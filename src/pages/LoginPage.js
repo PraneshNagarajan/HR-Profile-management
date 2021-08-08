@@ -16,6 +16,23 @@ import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
 import { AuthMsgActions } from "../Redux/AuthMsgSlice";
 import { useDispatch } from "react-redux";
+var CryptoJS = require("crypto-js");
+
+// Encrypt
+var ciphertext = CryptoJS.AES.encrypt(
+  JSON.stringify("280996sp"),
+  "my-secret-key@123"
+).toString();
+console.log(ciphertext);
+
+// Decrypt
+try {
+  var bytes = CryptoJS.AES.decrypt(ciphertext, "my-secret-key@123t");
+  var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+  console.log(decryptedData);
+} catch (err) {
+  console.log(err);
+}
 
 const formValidation = (field) => {
   const errors = {};
@@ -37,15 +54,15 @@ const LoginPage = () => {
   const [disable, setDisable] = useState(false);
   const [timer, SetTimer] = useState();
   const [account_status, setAccoutStatus] = useState(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const sm = useMediaQuery({ maxWidth: 768 });
   const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
 
   useEffect(() => {
-    const flag = authMsg.length > 0
-    dispatch(AuthMsgActions.getMsg(flag))
-  },[authMsg])
+    const flag = authMsg.length > 0;
+    dispatch(AuthMsgActions.getMsg(flag));
+  }, [authMsg]);
 
   const authNotification = () => {
     setAccoutStatus(true);
@@ -143,6 +160,7 @@ const LoginPage = () => {
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
         .then((res) => {
+          console.log(fireAuth.currentUser.emailVerified);
           firestore
             .collection("Employee-Info")
             .doc(value.username)
@@ -198,26 +216,6 @@ const LoginPage = () => {
         });
     },
   });
-  const onResetPasswordhandler = () => {
-    fireAuth
-      .sendPasswordResetEmail(formik.values.username)
-      .then((res) => {
-        setAuthStatus(true);
-        setAuthMsg(
-          "We have sent a link to reset your password to your mail. Please check it.."
-        );
-        setTimeout(() => {
-          setAuthMsg("");
-        }, 5000);
-      })
-      .catch((err) => {
-        setAuthStatus(false);
-        setAuthMsg(String(err));
-        setTimeout(() => {
-          setAuthMsg("");
-        }, 5000);
-      });
-  };
 
   return (
     <Fragment>
@@ -283,8 +281,6 @@ const LoginPage = () => {
             <Button
               className="w-100 my-2"
               variant="danger"
-              onClick={onResetPasswordhandler}
-              disabled={!formik.values.username.length > 0}
             >
               <b>Forget Password</b>
             </Button>
