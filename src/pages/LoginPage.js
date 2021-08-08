@@ -16,18 +16,19 @@ import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
 import { AuthMsgActions } from "../Redux/AuthMsgSlice";
 import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 var CryptoJS = require("crypto-js");
 
 // Encrypt
 var ciphertext = CryptoJS.AES.encrypt(
-  JSON.stringify("280996sp"),
-  "my-secret-key@123"
+  JSON.stringify("2014"),
+  "2014"
 ).toString();
 console.log(ciphertext);
 
 // Decrypt
 try {
-  var bytes = CryptoJS.AES.decrypt(ciphertext, "my-secret-key@123t");
+  var bytes = CryptoJS.AES.decrypt(ciphertext, "2014");
   var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
   console.log(decryptedData);
 } catch (err) {
@@ -281,6 +282,8 @@ const LoginPage = () => {
             <Button
               className="w-100 my-2"
               variant="danger"
+              as={Link}
+              to="/resetPassword"
             >
               <b>Forget Password</b>
             </Button>

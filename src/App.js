@@ -2,9 +2,8 @@ import './App.css';
 import {BrowserRouter, Redirect, Route, Switch} from 'react-router-dom'
 import "bootstrap/dist/css/bootstrap.min.css";
 import LoginPage from './pages/LoginPage';
-import { useEffect } from 'react';
-import { firestore } from './firebase';
 import AuthLayout from './UI/Auth-Layout';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
 
@@ -19,6 +18,9 @@ function App() {
     <AuthLayout>
     <Route path="/loginPage">
     <LoginPage />
+    </Route>
+    <Route path="/resetPassword">
+      <ResetPasswordPage />
     </Route>
     </AuthLayout>
     </Switch>
