@@ -15,6 +15,7 @@
     "react-bootstrap": "^1.6.1",
     "react-countdown": "^2.3.2",
     "react-dom": "^17.0.2",
+    "react-encrypt": "^1.0.1",
     "react-icons": "^4.2.0",
     "react-redux": "^7.2.4",
     "react-responsive": "^9.0.0-beta.3",
