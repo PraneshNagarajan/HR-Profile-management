@@ -180,7 +180,7 @@ const LoginPage = () => {
           }
           setAuthMsg(String(err));
           if (
-            !String(err).includes("There is no user") ||
+            !String(err).includes("There is no user") &&
             !String(err).includes("badly formatted")
           ) {
             if (attempts === -1) {
@@ -230,122 +230,135 @@ const LoginPage = () => {
           : "",
       }}
     >
-      <div className={`text-white  p-3 ${sm ? `` : `bg-text`}`}>
+      <div className={sm ?  authMsg ? 'shadow  position-sticky top-0': ' shadow my-4' : 'bg-text p-5' }>
+      <div className="text-white">
         <Col>
-          <div className={sm ? "d-flex" : "column"}>
+          <div className={sm ? "d-flex ms-3" : "column  "}>
             <FaReact
               style={{
-                width: sm ? "50px" : "70px",
-                height: sm ? "50px" : "70px",
+                width:  "80px",
+                height: "80px",
               }}
-              className="text-center"
             ></FaReact>
-            {sm && <p className="display-5 ms-2 mt-1"> Enterprise Name</p>}
+            {sm && <div className="ms-2">
+              <p className="display-5 mt-3" style={{lineHeight: '0.5'}}> Enterprise Name</p>
+            <p className="ms-1">
+            slogan ! slogan ! slogan!
+          </p>
+              </div>}
           </div>
           <Col>
-            {!sm && <p className="display-3"> Enterprise Name</p>}
-            <p className={sm ? "ps-5 ms-2" : "display-5"}>
-              {" "}
+            {!sm && 
+            <Fragment>
+              <p className="display-3"> Enterprise Name</p>  
+              <p className="display-5">
               slogan ! slogan ! slogan!
             </p>
+              </Fragment>}
+           
           </Col>
         </Col>
-        <hr className="mt-5" />
       </div>
-
-      <Form
-        className={sm ? "d-flex justify-content-center" : "bg-design"}
+      <hr className= "text-white"/>
+      </div>
+      
+      <div
+        className={ sm ? "d-flex justify-content-center mt-5" : "bg-design"}
         onSubmit={formik.handleSubmit}
+        style={{backgroundColor: sm ? '#0d6efd' : ''}}
       >
-        <Card
-          style={{ width: sm ? "90%" : md ? "40%" : "30%" }}
-          className="mt-5"
+        <Card style={{ width: sm ? "90%" : md ? "40%" : "30%" }}
+        className="mt-5"
         >
-          <div className="logo-circle">
+          <div className="logo-circle shadow">
             <BsShieldLockFill
               className="mt-3"
               style={{ width: "60px", height: "60px" }}
             />
           </div>
           <h1 className="mt-5  text-center text-primary">SignIn</h1>
-          <Card.Body className="">
-            <FormGroup className="mb-2">
-              <FormLabel>
-                <b>Enter your Username</b>
-              </FormLabel>
-              <FormControl
-                type="text"
-                name="username"
-                value={formik.values.username}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                isValid={formik.touched.username && !formik.errors.username}
-                isInvalid={formik.touched.username && formik.errors.username}
-              />
-              {formik.touched.username && formik.errors.username && (
-                <p className="text-danger">
-                  {" "}
-                  {authMsg.length > 0 ? "" : formik.errors.username}{" "}
-                </p>
-              )}
-            </FormGroup>
-            <FormGroup className="mb-2">
-              <FormLabel>
-                <b>Enter your Password</b>
-              </FormLabel>
-              <FormControl
-                type="password"
-                name="password"
-                value={formik.values.password}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                isValid={formik.touched.password && !formik.errors.password}
-                isInvalid={formik.touched.password && formik.errors.password}
-              />
-              {formik.touched.password && formik.errors.password && (
-                <p className="text-danger">
-                  {" "}
-                  {authMsg.length > 0 ? "" : formik.errors.password}{" "}
-                </p>
-              )}
-            </FormGroup>
-            <div>
-              <Button
-                type="submit"
-                className="w-100 my-2"
-                disabled={
-                  !(formik.dirty && formik.isValid) || disable || account_status
-                }
-              >
-                <b>Submit</b>
-              </Button>
-              <Button
-                className="w-100 my-2"
-                variant="danger"
-                onClick={onResetPasswordhandler}
-                disabled={!formik.values.username.length > 0}
-              >
-                <b>Forget Password</b>
-              </Button>
-            </div>
-            {authMsg.length > 0 && (
-              <Fragment>
-                <Alert
-                  variant={authStatus ? "success" : "danger"}
-                  className="mt-2"
+          <Card.Body>
+            <Form>
+              <FormGroup>
+                <FormLabel>
+                  <b>Enter your Username</b>
+                </FormLabel>
+                <FormControl
+                  type="text"
+                  name="username"
+                  value={formik.values.username}
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  isValid={formik.touched.username && !formik.errors.username}
+                  isInvalid={formik.touched.username && formik.errors.username}
+                />
+                {formik.touched.username && formik.errors.username && (
+                  <p className="text-danger">
+                    {" "}
+                    {authMsg.length > 0 ? "" : formik.errors.username}{" "}
+                  </p>
+                )}
+              </FormGroup>
+              <FormGroup className="my-3">
+                <FormLabel>
+                  <b>Enter your Password</b>
+                </FormLabel>
+                <FormControl
+                  type="password"
+                  name="password"
+                  value={formik.values.password}
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  isValid={formik.touched.password && !formik.errors.password}
+                  isInvalid={formik.touched.password && formik.errors.password}
+                />
+                {formik.touched.password && formik.errors.password && (
+                  <p className="text-danger">
+                    {" "}
+                    {authMsg.length > 0 ? "" : formik.errors.password}{" "}
+                  </p>
+                )}
+              </FormGroup>
+              <div>
+                <Button
+                  type="submit"
+                  className={`w-100 ${sm ? '': 'my-1'}`}
+                  // disabled={
+                  //   !(formik.dirty && formik.isValid) ||
+                  //   disable ||
+                  //   account_status
+                  // }
                 >
-                  <b>{authMsg}</b>
-                </Alert>
-              </Fragment>
-            )}
-            {disable && (
-              <Fragment>
-                <Timer expiryTimestamp={timer} className="mt-2"></Timer>
-              </Fragment>
-            )}
+                  <b>Submit</b>
+                </Button>
+                <Button
+                  className="w-100 my-2"
+                  variant="danger"
+                  onClick={onResetPasswordhandler}
+                  // disabled={!formik.values.username.length > 0}
+                >
+                  <b>Forget Password</b>
+                </Button>
+              </div>
+              {authMsg.length > 0 && (
+                <Fragment>
+                  <Alert
+                    variant={authStatus ? "success" : "danger"}
+                    className="mt-2"
+                  >
+                    <b>{authMsg}</b>
+                  </Alert>
+                </Fragment>
+              )}
+              {disable && (
+                <Fragment>
+                  <Timer expiryTimestamp={timer} className="mt-2"></Timer>
+                </Fragment>
+              )}
+            </Form>
           </Card.Body>
         </Card>
-      </Form>
+      </div>
     </div>
   );
 };
