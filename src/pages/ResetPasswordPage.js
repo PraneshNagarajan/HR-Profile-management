@@ -14,7 +14,7 @@ import { fireAuth, firestore } from "../firebase";
 import { useFormik } from "formik";
 import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
-import { AuthMsgActions } from "../Redux/AuthMsgSlice";
+import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
 var CryptoJS = require("crypto-js");
 
@@ -40,7 +40,6 @@ const ResetPasswordPage = () => {
   const [db_question1, setDB_Question1] = useState("");
   const [db_question2, setDB_Question2] = useState("");
   const sm = useMediaQuery({ maxWidth: 768 });
-  const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
 
   const onResetPasswordhandler = () => {
     fireAuth
@@ -152,7 +151,7 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     const flag = authMsg.length > 0;
-    dispatch(AuthMsgActions.getMsg(flag));
+    dispatch(AuthActions.getMsg(flag));
   }, [authMsg]);
 
   return (

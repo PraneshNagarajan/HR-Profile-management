@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 const AuthLayout = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
-  const msgFlag = useSelector(state => state.AuthMsg.flag) 
+  const msgFlag = useSelector(state => state.auth.msg) 
   return (
     <div
       className="bg-hero"

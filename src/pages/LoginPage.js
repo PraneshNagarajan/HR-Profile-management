@@ -6,6 +6,7 @@ import {
   FormControl,
   Card,
   Alert,
+  Spinner,
 } from "react-bootstrap";
 import { Fragment, useState } from "react";
 import { BsShieldLockFill } from "react-icons/bs";
@@ -14,26 +15,9 @@ import { useFormik } from "formik";
 import Timer from "../Timer";
 import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
-import { AuthMsgActions } from "../Redux/AuthMsgSlice";
+import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-var CryptoJS = require("crypto-js");
-
-// Encrypt
-var ciphertext = CryptoJS.AES.encrypt(
-  JSON.stringify("2014"),
-  "2014"
-).toString();
-console.log(ciphertext);
-
-// Decrypt
-try {
-  var bytes = CryptoJS.AES.decrypt(ciphertext, "2014");
-  var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-  console.log(decryptedData);
-} catch (err) {
-  console.log(err);
-}
 
 const formValidation = (field) => {
   const errors = {};
@@ -48,21 +32,20 @@ const formValidation = (field) => {
 };
 
 const LoginPage = () => {
-  const [authStatus, setAuthStatus] = useState(false);
+  const dispatch = useDispatch();
+  const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
   const [chances, setChances] = useState(0);
   const [attempts, setAttempts] = useState(-1);
   const [disable, setDisable] = useState(false);
-  const [timer, SetTimer] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [authStatus, setAuthStatus] = useState(false);
   const [account_status, setAccoutStatus] = useState(false);
-  const dispatch = useDispatch();
-
   const sm = useMediaQuery({ maxWidth: 768 });
-  const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
 
   useEffect(() => {
     const flag = authMsg.length > 0;
-    dispatch(AuthMsgActions.getMsg(flag));
+    dispatch(AuthActions.getMsg(flag));
   }, [authMsg]);
 
   const authNotification = () => {
@@ -158,6 +141,7 @@ const LoginPage = () => {
     },
     validate: formValidation,
     onSubmit: (value) => {
+      setIsLoading(true);
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
         .then((res) => {
@@ -167,7 +151,11 @@ const LoginPage = () => {
             .doc(value.username)
             .get()
             .then((documentSnapshot) => {
-              if (documentSnapshot.get("Auth-Info.locked") === false) {
+              const auth_info = documentSnapshot.get("Auth-Info");
+              if (
+                auth_info.locked === false &&
+                auth_info.account_status === "active"
+              ) {
                 setAuthStatus(true);
                 setAuthMsg("Login Successfully !");
                 firestore
@@ -215,6 +203,7 @@ const LoginPage = () => {
             }
           }
         });
+      setIsLoading(false);
     },
   });
 
@@ -270,15 +259,29 @@ const LoginPage = () => {
             )}
           </FormGroup>
           <div>
-            <Button
-              type="submit"
-              className={`w-100 ${sm ? "" : "my-1"}`}
-              disabled={
-                !(formik.dirty && formik.isValid) || disable || account_status
-              }
-            >
-              <b>Submit</b>
-            </Button>
+            {!isLoading && (
+              <Button
+                type="submit"
+                className={`w-100 ${sm ? "" : "my-1"}`}
+                disabled={
+                  !(formik.dirty && formik.isValid) || disable || account_status
+                }
+              >
+                <b>Submit</b>
+              </Button>
+            )}
+            {isLoading && (
+              <Button variant="primary" className="w-100 mt-2" disabled>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+                <span className="visually-hidden">Loading...</span>
+              </Button>
+            )}
             <Button
               className="w-100 my-2"
               variant="danger"
@@ -294,7 +297,7 @@ const LoginPage = () => {
                 variant={authStatus ? "success" : "danger"}
                 className="mt-2"
               >
-                <b>{authMsg}</b>
+                <b className="text-center">{authMsg}</b>
               </Alert>
             </Fragment>
           )}
