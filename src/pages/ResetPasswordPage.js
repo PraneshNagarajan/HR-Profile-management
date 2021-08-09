@@ -259,7 +259,7 @@ const ResetPasswordPage = () => {
             <Fragment>
               <Alert
                 variant={authStatus ? "success" : "danger"}
-                className="mt-2"
+                className="mt-3"
               >
                 <b>{authMsg}</b>
               </Alert>
