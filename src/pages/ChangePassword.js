@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { Fragment, useState } from "react";
-import { FaKey } from "react-icons/fa";
+import { FaKey, FaRegEyeSlash, FaRegEye } from "react-icons/fa";
 import { fireAuth, firestore } from "../firebase";
 import { useFormik } from "formik";
 import { useEffect } from "react";
@@ -61,6 +61,16 @@ const ChangePasswordPage = () => {
   const [authStatus, setAuthStatus] = useState(false);
   const [authMsg, setAuthMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVisibleField1, setIsVisibleField1] = useState(false);
+  const [isVisibleField2, setIsVisibleField2] = useState(false);
+
+  const onVisibleHandler = (field) => {
+    if (field === "field1") {
+      setIsVisibleField1(!isVisibleField1);
+    } else {
+      setIsVisibleField2(!isVisibleField2);
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -79,17 +89,15 @@ const ChangePasswordPage = () => {
               .collection("Employee-Info")
               .doc(fireAuth.currentUser.email)
               .update({ "login-info.last_logout": new Date().toString() });
-            fireAuth
-              .signOut()
-              .then(
-                dispatch(
-                  AuthActions.getAuthStatus({
-                    flag: false,
-                    role: "",
-                    admin: "",
-                  })
-                )
-              );
+            fireAuth.signOut().then(
+              dispatch(
+                AuthActions.getAuthStatus({
+                  flag: false,
+                  role: "",
+                  admin: "",
+                })
+              )
+            );
           }, 1000);
         })
         .catch((err) => {
@@ -99,6 +107,8 @@ const ChangePasswordPage = () => {
     },
   });
 
+  const new_password_error =
+    formik.touched.confirm_password && formik.errors.confirm_password;
   useEffect(() => {
     if (formik.values.confirm_password.length > 1) {
       setIsLoading(true);
@@ -138,8 +148,9 @@ const ChangePasswordPage = () => {
             <FormLabel>
               <b>New Password</b>
             </FormLabel>
+
             <FormControl
-              type="password"
+              type={isVisibleField1 ? "text" : "password"}
               name="new_password"
               value={formik.values.new_password}
               onBlur={formik.handleBlur}
@@ -151,6 +162,25 @@ const ChangePasswordPage = () => {
                 formik.touched.new_password && formik.errors.new_password
               }
             />
+            <span
+              className="float-end me-2"
+              style={{ position: "relative", marginTop: "-33px", zIndex: "2" }}
+            >
+              {isVisibleField1 && (
+                <FaRegEye
+                  role="button"
+                  onClick={(e) => onVisibleHandler("field1")}
+                  style={{ color: "green" }}
+                />
+              )}
+              {!isVisibleField1 && (
+                <FaRegEyeSlash
+                  role="button"
+                  onClick={(e) => onVisibleHandler("field1")}
+                  style={{ color: "red" }}
+                />
+              )}
+            </span>
             {formik.touched.new_password && formik.errors.new_password && (
               <p className="text-danger">
                 {" "}
@@ -163,7 +193,7 @@ const ChangePasswordPage = () => {
               <b>Confirm Password</b>
             </FormLabel>
             <FormControl
-              type="password"
+              type={isVisibleField2 ? "text" : "password"}
               name="confirm_password"
               value={formik.values.confirm_password}
               onBlur={formik.handleBlur}
@@ -177,6 +207,25 @@ const ChangePasswordPage = () => {
                 formik.errors.confirm_password
               }
             />
+            <span
+              className="float-end me-2"
+              style={{ position: "relative", marginTop: "-33px", zIndex: "2" }}
+            >
+              {isVisibleField2 && (
+                <FaRegEye
+                  role="button"
+                  onClick={(e) => onVisibleHandler("field2")}
+                  style={{ color: "green" }}
+                />
+              )}
+              {!isVisibleField2 && (
+                <FaRegEyeSlash
+                  role="button"
+                  onClick={(e) => onVisibleHandler("field2")}
+                  style={{ color: "red" }}
+                />
+              )}
+            </span>
             {formik.touched.confirm_password &&
               formik.errors.confirm_password && (
                 <p className="text-danger">
