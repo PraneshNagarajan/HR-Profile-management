@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Fragment, useState } from "react";
 import { BsShieldLockFill } from "react-icons/bs";
+import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
 import { fireAuth, firestore } from "../firebase";
 import { useFormik } from "formik";
 import Timer from "../Timer";
@@ -42,7 +43,12 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [authStatus, setAuthStatus] = useState(false);
   const [account_status, setAccoutStatus] = useState(false);
+  const [isVisibleField, setIsVisibleField] = useState(false);
   const sm = useMediaQuery({ maxWidth: 768 });
+
+  const onVisibleHandler = () => {
+    setIsVisibleField(!isVisibleField);
+  };
 
   useEffect(() => {
     const flag = authMsg.length > 0;
@@ -264,7 +270,7 @@ const LoginPage = () => {
               <b>Enter your Password</b>
             </FormLabel>
             <FormControl
-              type="password"
+              type={isVisibleField ? "text" : "password"}
               name="password"
               value={formik.values.password}
               onBlur={formik.handleBlur}
@@ -272,6 +278,25 @@ const LoginPage = () => {
               isValid={formik.touched.password && !formik.errors.password}
               isInvalid={formik.touched.password && formik.errors.password}
             />
+            <span
+              className="float-end me-2"
+              style={{ position: "relative", marginTop: "-33px", zIndex: "2" }}
+            >
+              {isVisibleField && (
+                <FaRegEye
+                  role="button"
+                  onClick={onVisibleHandler}
+                  style={{ color: "green" }}
+                />
+              )}
+              {!isVisibleField && (
+                <FaRegEyeSlash
+                  role="button"
+                  onClick={onVisibleHandler}
+                  style={{ color: "red" }}
+                />
+              )}
+            </span>
             {formik.touched.password && formik.errors.password && (
               <p className="text-danger">
                 {" "}
