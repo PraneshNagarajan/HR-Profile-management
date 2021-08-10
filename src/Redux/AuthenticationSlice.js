@@ -4,14 +4,18 @@ const AuthenticationSlice = createSlice({
     name: 'Auth',
     initialState: {
         msg : false,
-        flag: false
+        flag: false,
+        role: '',
+        admin: ''
     },
     reducers: {
         getMsg(state, action) {
             state.msg = action.payload;
         },
         getAuthStatus(state, action) {
-            state.flag = action.payload;
+            state.flag = action.payload.flag;
+            state.role = action.payload.role;
+            state.admin = action.payload.admin;
         }
     }
 })

@@ -54,20 +54,28 @@ const LoginPage = () => {
       " Error: Your account has been locked permenantly due to multiple incorrect logins. Please contact your admin or reset your password."
     );
   };
+  
 
-  const updateAuthStatus = (doc, flag = false, attempt) => {
+  const updateLoginStatus = (doc) => {
     firestore.collection("Employee-Info").doc(doc).update({
-      "Auth-Info.attempts": attempt,
-      "Auth-Info.invalid_attempt_timestamp": new Date().toString(),
-      "Auth-Info.locked": flag,
+      "login-info.state": "active",
+      "login-info.last_login": new Date().toString(),
     });
   };
 
-  const updateAttemptStatus = (doc, chance) => {
+  const updateAttemptStatus = (doc, flag = false, attempt) => {
+    firestore.collection("Employee-Info").doc(doc).update({
+      "auth-info.attempts": attempt,
+      "auth-info.invalid_attempt_timestamp": new Date().toString(),
+      "auth-info.locked": flag,
+    });
+  };
+
+  const updateChanceStatus = (doc, chance) => {
     firestore
       .collection("Employee-Info")
       .doc(doc)
-      .update({ "Auth-Info.chances": chance });
+      .update({ "auth-info.chances": chance });
   };
 
   const calculatingDuration = (Atmp_time, flag) => {
@@ -92,37 +100,37 @@ const LoginPage = () => {
       .doc(doc)
       .get()
       .then((documentSnapshot) => {
-        const db_Chance = Number(documentSnapshot.get("Auth-Info.chances"));
-        const db_Attempts = Number(documentSnapshot.get("Auth-Info.attempts"));
-        if (!documentSnapshot.get("Auth-Info.locked")) {
+        const db_Chance = Number(documentSnapshot.get("auth-info.chances"));
+        const db_Attempts = Number(documentSnapshot.get("auth-info.attempts"));
+        if (!documentSnapshot.get("auth-info.locked")) {
           if (flag) {
             if (db_Chance + 1 <= 2) {
               setChances(db_Chance + 1);
               setAttempts(db_Attempts);
-              updateAttemptStatus(doc, db_Chance + 1);
+              updateChanceStatus(doc, db_Chance + 1);
             } else {
               setChances(0);
-              updateAttemptStatus(doc, 0);
+              updateChanceStatus(doc, 0);
               if (db_Attempts + 1 <= 2) {
-                updateAuthStatus(doc, false, db_Attempts + 1);
+                updateAttemptStatus(doc, false, db_Attempts + 1);
                 setAttempts(db_Attempts + 1);
                 calculatingDuration(
-                  documentSnapshot.get("Auth-Info.invalid_attempt_timestamp"),
+                  documentSnapshot.get("auth-info.invalid_attempt_timestamp"),
                   false
                 );
               } else {
-                updateAuthStatus(doc, true, 3);
+                updateAttemptStatus(doc, true, 3);
                 authNotification();
               }
             }
           } else if (attempt >= 0 && attempt < 3) {
-            updateAuthStatus(doc, false, attempt);
+            updateAttemptStatus(doc, false, attempt);
           } else {
-            updateAuthStatus(doc, true, 3);
+            updateAttemptStatus(doc, true, 3);
           }
           if (attempt > 0 && attempt < 3) {
             calculatingDuration(
-              documentSnapshot.get("Auth-Info.invalid_attempt_timestamp"),
+              documentSnapshot.get("auth-info.invalid_attempt_timestamp"),
               flag
             );
           } else if (attempt > 1) {
@@ -151,22 +159,25 @@ const LoginPage = () => {
             .doc(value.username)
             .get()
             .then((documentSnapshot) => {
-              const auth_info = documentSnapshot.get("Auth-Info");
+              const auth_info = documentSnapshot.get("auth-info");
+              const role_info = documentSnapshot.get("role-management");
               if (
                 auth_info.locked === false &&
                 auth_info.account_status === "active"
               ) {
+                
+                dispatch(AuthActions.getAuthStatus({flag: true, role: role_info.role, admin: role_info.admin_permission}))
+                updateLoginStatus(value.username);
                 setAuthStatus(true);
                 setAuthMsg("Login Successfully !");
                 firestore
                   .collection("Employee-Info")
                   .doc(value.username)
                   .update({
-                    "Auth-Info.chances": 0,
-                    "Auth-Info.attempts": 0,
-                    "Auth-Info.locked": false,
-                    "Auth-Info.login_status": "active",
-                    "Auth-Info.invalid_attempt_timestamp": null,
+                    "auth-info.chances": 0,
+                    "auth-info.attempts": 0,
+                    "auth-info.locked": false,
+                    "auth-info.invalid_attempt_timestamp": null,
                   });
               } else {
                 authNotification();
@@ -192,12 +203,12 @@ const LoginPage = () => {
               checkDBStatus(value.username, attempts, true);
             } else {
               setChances(chances + 1);
-              updateAttemptStatus(value.username, chances + 1);
+              updateChanceStatus(value.username, chances + 1);
               if (chances + 1 > 2) {
                 setAuthMsg("");
                 setAttempts(attempts + 1);
                 setChances(0);
-                updateAttemptStatus(value.username, 0);
+                updateChanceStatus(value.username, 0);
                 checkDBStatus(value.username, attempts + 1, false);
               }
             }
@@ -295,9 +306,9 @@ const LoginPage = () => {
             <Fragment>
               <Alert
                 variant={authStatus ? "success" : "danger"}
-                className="mt-2"
+                className="mt-2 text-center"
               >
-                <b className="text-center">{authMsg}</b>
+                <b>{authMsg}</b>
               </Alert>
             </Fragment>
           )}
