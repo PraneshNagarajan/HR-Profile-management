@@ -85,10 +85,12 @@ const ChangePasswordPage = () => {
           setAuthStatus(true);
           setAuthMsg("Your password has been changed sucessfully.");
           setTimeout(() => {
-            firestore
+            alert(fireAuth.currentUser.email)
+            const store = firestore
               .collection("Employee-Info")
               .doc(fireAuth.currentUser.email)
-              .update({ "login-info.last_logout": new Date().toString() });
+              store.update({ "login-info.last_logout": new Date().toString() });
+              store.update({ "password-management.last_changed": new Date().toString() });
             fireAuth.signOut().then(
               dispatch(
                 AuthActions.getAuthStatus({

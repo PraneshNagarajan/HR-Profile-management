@@ -17,7 +17,7 @@ import Timer from "../Timer";
 import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
 
 const formValidation = (field) => {
@@ -34,6 +34,7 @@ const formValidation = (field) => {
 
 const LoginPage = () => {
   const dispatch = useDispatch();
+  const msgFlag = useSelector(state => state.auth.msg)
   const history = useHistory();
   const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
@@ -92,9 +93,11 @@ const LoginPage = () => {
           new Date().getSeconds() + (30000 - (flag ? duration : 0)) / 1000
         )
       );
+      dispatch(AuthActions.getMsg(true))
       setAuthMsg("");
       setDisable(true);
       setTimeout(() => {
+        dispatch(AuthActions.getMsg(false))
         setDisable(false);
       }, 30000 - (flag ? duration : 0));
     }
@@ -258,7 +261,7 @@ const LoginPage = () => {
               isValid={formik.touched.username && !formik.errors.username}
               isInvalid={formik.touched.username && formik.errors.username}
             />
-            {formik.touched.username && formik.errors.username && (
+            {!msgFlag && formik.touched.username && formik.errors.username && (
               <p className="text-danger">
                 {" "}
                 {authMsg.length > 0 ? "" : formik.errors.username}{" "}
@@ -297,7 +300,7 @@ const LoginPage = () => {
                 />
               )}
             </span>
-            {formik.touched.password && formik.errors.password && (
+            { !msgFlag && formik.touched.password && formik.errors.password && (
               <p className="text-danger">
                 {" "}
                 {authMsg.length > 0 ? "" : formik.errors.password}{" "}
