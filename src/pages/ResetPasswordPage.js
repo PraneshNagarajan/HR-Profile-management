@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { Fragment, useState } from "react";
-import { FaUnlockAlt } from "react-icons/fa";
+import { FaUnlockAlt, FaRegEyeSlash, FaRegEye } from "react-icons/fa";
 import { fireAuth, firestore } from "../firebase";
 import { useFormik } from "formik";
 import { useMediaQuery } from "react-responsive";
@@ -39,7 +39,17 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [db_question1, setDB_Question1] = useState("");
   const [db_question2, setDB_Question2] = useState("");
+  const [isVisibleField1, setIsVisibleField1] = useState(false);
+  const [isVisibleField2, setIsVisibleField2] = useState(false);
   const sm = useMediaQuery({ maxWidth: 768 });
+
+  const onVisibleHandler = (field) => {
+    if (field === "field1") {
+      setIsVisibleField1(!isVisibleField1);
+    } else {
+      setIsVisibleField2(!isVisibleField2);
+    }
+  };
 
   const onResetPasswordhandler = () => {
     fireAuth
@@ -136,11 +146,13 @@ const ResetPasswordPage = () => {
               } else {
                 setIsLoading(false);
                 setAuthStatus(false);
+                setDB_Question1("");
+                setDB_Question2("");
                 setAuthMsg("Invalid user name or User name doesn't exists");
               }
             });
           });
-      }, 3000);
+      }, 2000);
       return () => {
         clearTimeout(timer);
       };
@@ -191,7 +203,7 @@ const ResetPasswordPage = () => {
                   <b>{sm ? "Q" : "Security Question"}1: </b>({db_question1})
                 </FormLabel>
                 <FormControl
-                  type="password"
+                  type={isVisibleField1 ? "text" : "password"}
                   name="answer1"
                   value={formik.values.answer1}
                   onBlur={formik.handleBlur}
@@ -199,6 +211,29 @@ const ResetPasswordPage = () => {
                   isValid={formik.touched.answer1 && !formik.errors.answer1}
                   isInvalid={formik.touched.answer1 && formik.errors.answer1}
                 />
+                <span
+                  className="float-end me-2"
+                  style={{
+                    position: "relative",
+                    marginTop: "-33px",
+                    zIndex: "2",
+                  }}
+                >
+                  {isVisibleField1 && (
+                    <FaRegEye
+                      role="button"
+                      onClick={(e) => onVisibleHandler("field1")}
+                      style={{ color: "green" }}
+                    />
+                  )}
+                  {!isVisibleField1 && (
+                    <FaRegEyeSlash
+                      role="button"
+                      onClick={(e) => onVisibleHandler("field1")}
+                      style={{ color: "red" }}
+                    />
+                  )}
+                </span>
                 {formik.touched.answer1 && formik.errors.answer1 && (
                   <p className="text-danger">
                     {" "}
@@ -211,7 +246,7 @@ const ResetPasswordPage = () => {
                   <b>{sm ? "Q" : "Security Question"}2: </b>({db_question2})
                 </FormLabel>
                 <FormControl
-                  type="password"
+                  type={isVisibleField2 ? "text" : "password"}
                   name="answer2"
                   value={formik.values.answer2}
                   onBlur={formik.handleBlur}
@@ -219,6 +254,29 @@ const ResetPasswordPage = () => {
                   isValid={formik.touched.answer2 && !formik.errors.answer2}
                   isInvalid={formik.touched.answer2 && formik.errors.answer2}
                 />
+                <span
+                  className="float-end me-2"
+                  style={{
+                    position: "relative",
+                    marginTop: "-33px",
+                    zIndex: "2",
+                  }}
+                >
+                  {isVisibleField2 && (
+                    <FaRegEye
+                      role="button"
+                      onClick={(e) => onVisibleHandler("field2")}
+                      style={{ color: "green" }}
+                    />
+                  )}
+                  {!isVisibleField2 && (
+                    <FaRegEyeSlash
+                      role="button"
+                      onClick={(e) => onVisibleHandler("field2")}
+                      style={{ color: "red" }}
+                    />
+                  )}
+                </span>
                 {formik.touched.answer2 && formik.errors.answer2 && (
                   <p className="text-danger">
                     {" "}
