@@ -51,6 +51,9 @@ const ResetPasswordPage = () => {
         );
         setTimeout(() => {
           setAuthMsg("");
+          dispatch(
+            AuthActions.getAuthStatus({ flag: false, role: "", admin: "" })
+          );
         }, 5000);
       })
       .catch((err) => {

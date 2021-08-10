@@ -15,7 +15,6 @@ import { useFormik } from "formik";
 import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
 
 const formValidation = (field) => {
   const errors = {};
@@ -76,7 +75,21 @@ const ChangePasswordPage = () => {
           setAuthStatus(true);
           setAuthMsg("Your password has been changed sucessfully.");
           setTimeout(() => {
-            fireAuth.signOut().then(dispatch(AuthActions.getAuthStatus(false)));
+            firestore
+              .collection("Employee-Info")
+              .doc(fireAuth.currentUser.email)
+              .update({ "login-info.last_logout": new Date().toString() });
+            fireAuth
+              .signOut()
+              .then(
+                dispatch(
+                  AuthActions.getAuthStatus({
+                    flag: false,
+                    role: "",
+                    admin: "",
+                  })
+                )
+              );
           }, 1000);
         })
         .catch((err) => {

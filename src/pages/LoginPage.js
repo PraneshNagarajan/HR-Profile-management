@@ -17,7 +17,7 @@ import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 const formValidation = (field) => {
   const errors = {};
@@ -33,6 +33,7 @@ const formValidation = (field) => {
 
 const LoginPage = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
   const [chances, setChances] = useState(0);
@@ -54,7 +55,6 @@ const LoginPage = () => {
       " Error: Your account has been locked permenantly due to multiple incorrect logins. Please contact your admin or reset your password."
     );
   };
-  
 
   const updateLoginStatus = (doc) => {
     firestore.collection("Employee-Info").doc(doc).update({
@@ -153,34 +153,44 @@ const LoginPage = () => {
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
         .then((res) => {
-          console.log(fireAuth.currentUser.emailVerified);
           firestore
             .collection("Employee-Info")
             .doc(value.username)
             .get()
             .then((documentSnapshot) => {
+              const password_info = documentSnapshot.get("password-management");
               const auth_info = documentSnapshot.get("auth-info");
               const role_info = documentSnapshot.get("role-management");
-              if (
-                auth_info.locked === false &&
-                auth_info.account_status === "active"
-              ) {
-                
-                dispatch(AuthActions.getAuthStatus({flag: true, role: role_info.role, admin: role_info.admin_permission}))
-                updateLoginStatus(value.username);
-                setAuthStatus(true);
-                setAuthMsg("Login Successfully !");
-                firestore
-                  .collection("Employee-Info")
-                  .doc(value.username)
-                  .update({
-                    "auth-info.chances": 0,
-                    "auth-info.attempts": 0,
-                    "auth-info.locked": false,
-                    "auth-info.invalid_attempt_timestamp": null,
-                  });
+              const dateDiff =
+                (new Date().getTime() -
+                  new Date(password_info.last_changed).getTime()) /
+                (1000 * 3600 * 24);
+              dispatch(
+                AuthActions.getAuthStatus({
+                  flag: true,
+                  role: role_info.role,
+                  admin: role_info.admin_permission,
+                })
+              );
+              if (Math.round(dateDiff) <= 90) {
+                if (auth_info.locked === false) {
+                  updateLoginStatus(value.username);
+                  setAuthStatus(true);
+                  setAuthMsg("Login Successfully !");
+                  firestore
+                    .collection("Employee-Info")
+                    .doc(value.username)
+                    .update({
+                      "auth-info.chances": 0,
+                      "auth-info.attempts": 0,
+                      "auth-info.locked": false,
+                      "auth-info.invalid_attempt_timestamp": null,
+                    });
+                } else {
+                  authNotification();
+                }
               } else {
-                authNotification();
+                history.push("/changePassword");
               }
             });
         })
