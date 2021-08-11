@@ -223,7 +223,7 @@ const ResetPasswordPage = () => {
                     <FaRegEye
                       role="button"
                       onClick={(e) => onVisibleHandler("field1")}
-                      style={{ color: "green" }}
+                      style={{ color: "#0d6efd" }}
                     />
                   )}
                   {!isVisibleField1 && (
@@ -259,14 +259,13 @@ const ResetPasswordPage = () => {
                   style={{
                     position: "relative",
                     marginTop: "-33px",
-                    zIndex: "2",
                   }}
                 >
                   {isVisibleField2 && (
                     <FaRegEye
                       role="button"
                       onClick={(e) => onVisibleHandler("field2")}
-                      style={{ color: "green" }}
+                      style={{ color: "#0d6efd" }}
                     />
                   )}
                   {!isVisibleField2 && (

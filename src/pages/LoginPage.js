@@ -34,7 +34,7 @@ const formValidation = (field) => {
 
 const LoginPage = () => {
   const dispatch = useDispatch();
-  const msgFlag = useSelector(state => state.auth.msg)
+  const msgFlag = useSelector((state) => state.auth.msg);
   const history = useHistory();
   const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
@@ -93,11 +93,11 @@ const LoginPage = () => {
           new Date().getSeconds() + (30000 - (flag ? duration : 0)) / 1000
         )
       );
-      dispatch(AuthActions.getMsg(true))
+      dispatch(AuthActions.getMsg(true));
       setAuthMsg("");
       setDisable(true);
       setTimeout(() => {
-        dispatch(AuthActions.getMsg(false))
+        dispatch(AuthActions.getMsg(false));
         setDisable(false);
       }, 30000 - (flag ? duration : 0));
     }
@@ -283,24 +283,25 @@ const LoginPage = () => {
             />
             <span
               className="float-end me-2"
-              style={{ position: "relative", marginTop: "-33px", zIndex: "2" }}
+              style={{ position: "relative", marginTop: "-33px" }}
             >
               {isVisibleField && (
                 <FaRegEye
                   role="button"
                   onClick={onVisibleHandler}
-                  style={{ color: "green" }}
+                  style={{ color: "#0d6efd" }}
                 />
               )}
               {!isVisibleField && (
                 <FaRegEyeSlash
+                  style={{ width: "5rem", height: "5rem" }}
                   role="button"
                   onClick={onVisibleHandler}
                   style={{ color: "red" }}
                 />
               )}
             </span>
-            { !msgFlag && formik.touched.password && formik.errors.password && (
+            {!msgFlag && formik.touched.password && formik.errors.password && (
               <p className="text-danger">
                 {" "}
                 {authMsg.length > 0 ? "" : formik.errors.password}{" "}

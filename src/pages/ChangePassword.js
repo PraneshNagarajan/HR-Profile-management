@@ -85,12 +85,14 @@ const ChangePasswordPage = () => {
           setAuthStatus(true);
           setAuthMsg("Your password has been changed sucessfully.");
           setTimeout(() => {
-            alert(fireAuth.currentUser.email)
+            alert(fireAuth.currentUser.email);
             const store = firestore
               .collection("Employee-Info")
-              .doc(fireAuth.currentUser.email)
-              store.update({ "login-info.last_logout": new Date().toString() });
-              store.update({ "password-management.last_changed": new Date().toString() });
+              .doc(fireAuth.currentUser.email);
+            store.update({ "login-info.last_logout": new Date().toString() });
+            store.update({
+              "password-management.last_changed": new Date().toString(),
+            });
             fireAuth.signOut().then(
               dispatch(
                 AuthActions.getAuthStatus({
@@ -172,7 +174,7 @@ const ChangePasswordPage = () => {
                 <FaRegEye
                   role="button"
                   onClick={(e) => onVisibleHandler("field1")}
-                  style={{ color: "green" }}
+                  style={{ color: "#0d6efd" }}
                 />
               )}
               {!isVisibleField1 && (
@@ -211,13 +213,13 @@ const ChangePasswordPage = () => {
             />
             <span
               className="float-end me-2"
-              style={{ position: "relative", marginTop: "-33px", zIndex: "2" }}
+              style={{ position: "relative", marginTop: "-33px" }}
             >
               {isVisibleField2 && (
                 <FaRegEye
                   role="button"
                   onClick={(e) => onVisibleHandler("field2")}
-                  style={{ color: "green" }}
+                  style={{ color: "#0d6efd" }}
                 />
               )}
               {!isVisibleField2 && (
