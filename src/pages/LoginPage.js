@@ -194,13 +194,12 @@ const LoginPage = () => {
                       "auth-info.attempts": 0,
                       "auth-info.locked": false,
                       "auth-info.invalid_attempt_timestamp": null,
-                    })
-                    history.push("/homePage")
+                    });
+                  history.push("/homePage");
                 } else {
                   authNotification();
                 }
               } else {
-<<<<<<< HEAD
                 dispatch(
                   AuthActions.getAuthStatus({
                     flag: false,
@@ -208,9 +207,7 @@ const LoginPage = () => {
                     admin: "",
                   })
                 );
-=======
                 dispatch(AuthActions.getAuthStatus({flag: false, role: '', admin: ''}))
->>>>>>> 2663082e9d86e5cd26d2f0457a8f25de478eda4d
                 history.push("/changePassword");
               }
             });

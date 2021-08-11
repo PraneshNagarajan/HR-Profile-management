@@ -14,10 +14,7 @@ import {
   FaPlusCircle,
   FaEdit,
   FaIdCard,
-<<<<<<< HEAD
   FaKey
-=======
->>>>>>> 2663082e9d86e5cd26d2f0457a8f25de478eda4d
 } from "react-icons/fa";
 import { useMediaQuery } from "react-responsive";
 
@@ -143,13 +140,8 @@ const NavBar = () => {
                 <NavDropdown.Divider />
                 <NavDropdown.Item className="text-warning fw-bold">
                 {" "}
-                <FaEdit style={{ width: "20px", height: "20px" }} /> Edit Profile
-                <NavDropdown.Item href="#action/3.1">
-                  Password Management
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action/3.2">
-                  Edit Profile
+                <FaEdit style={{ width: "20px", height: "20px" }} />
+Edit Profile
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav.Item>
