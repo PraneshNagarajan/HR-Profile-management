@@ -1,0 +1,12 @@
+.active .nav-link {
+    color: white !important
+}
+
+.dropdown-toggle::after {
+    border-right: 0 ; 
+     border-left: 0 ;
+}
+
+.line-break {
+    margin: 0rem;
+}

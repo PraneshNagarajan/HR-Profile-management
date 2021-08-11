@@ -1,32 +1,38 @@
 import "./App.css";
-import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { Redirect, Route, Switch } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import LoginPage from "./pages/LoginPage";
 import AuthLayout from "./UI/Auth-Layout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
+import NavBar from "./components/NavBar";
 
 function App() {
-  const auth = useSelector(state => state.auth.flag)
+  const auth = useSelector((state) => state.auth.flag);
+  const user = useSelector((state) => state.auth.role);
   return (
     <Switch>
       <Route path="/" exact>
-        <Redirect to="/loginPage">
-        </Redirect>
+        <Redirect to="/loginPage"></Redirect>
       </Route>
-      <AuthLayout>
-        <Route path="/loginPage">
+
+      <Route path="/loginPage">
+        <AuthLayout>
           <LoginPage />
-        </Route>
-        <Route path="/resetPassword">
+        </AuthLayout>
+      </Route>
+      <Route path="/resetPassword">
+        <AuthLayout>
           <ResetPasswordPage />
-        </Route>
-        <Route path="/changePassword">
+        </AuthLayout>
+      </Route>
+      <Route path="/changePassword">
+        <AuthLayout>
           {auth && <ChangePasswordPage />}
           {!auth && <Redirect to="/"></Redirect>}
-        </Route>
-      </AuthLayout>
+        </AuthLayout>
+      </Route>
     </Switch>
   );
 }

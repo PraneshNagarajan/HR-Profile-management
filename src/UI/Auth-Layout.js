@@ -3,7 +3,6 @@ import { Col, Card } from "react-bootstrap";
 import { FaReact } from "react-icons/fa";
 import { Fragment } from "react";
 import { useMediaQuery } from "react-responsive";
-import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const AuthLayout = (props) => {
