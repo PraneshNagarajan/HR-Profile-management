@@ -194,11 +194,13 @@ const LoginPage = () => {
                       "auth-info.attempts": 0,
                       "auth-info.locked": false,
                       "auth-info.invalid_attempt_timestamp": null,
-                    });
+                    })
+                    history.push("/homePage")
                 } else {
                   authNotification();
                 }
               } else {
+                dispatch(AuthActions.getAuthStatus({flag: false, role: '', admin: ''}))
                 history.push("/changePassword");
               }
             });
