@@ -7,6 +7,9 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
 import NavBar from "./components/NavBar";
+import { fireStorage } from "./firebase";
+import { useEffect } from "react";
+
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -15,6 +18,7 @@ function App() {
     <Switch>
       <Route path="/" exact>
         <Redirect to="/loginPage"></Redirect>
+        {}
       </Route>
 
       <Route path="/loginPage">

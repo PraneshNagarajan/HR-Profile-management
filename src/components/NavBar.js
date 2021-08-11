@@ -14,12 +14,14 @@ import {
   FaPlusCircle,
   FaEdit,
   FaIdCard,
-  FaKey
+  FaKey,
 } from "react-icons/fa";
 import { useMediaQuery } from "react-responsive";
+import { useSelector } from "react-redux";
 
 const NavBar = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
+  const user = useSelector((state) => state.auth);
   const location = useLocation();
   return (
     <Fragment>
@@ -100,7 +102,7 @@ const NavBar = () => {
             <NavDropdown
               title={
                 <span>
-                  <FaRegIdBadge className="mb-" /> Profiles
+                  <FaRegIdBadge className="mb-1" /> Profiles
                 </span>
               }
               id="collasible-nav-dropdown"
@@ -123,25 +125,32 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
-            <Nav.Item className="">
+            <Nav.Item>
               <NavDropdown
                 title={
                   <span>
-                    <FaRegUserCircle className="mb-1" /> UserName
+                    <img
+                      src={user.photoUrl}
+                      height="35px"
+                      width="35px"
+                      style={{ borderRadius: "50%", border: "1px solid white" }}
+                    />{" "}
+                    {user.name}
                   </span>
                 }
                 id="collasible-nav-dropdown"
                 className={`active ${sm ? "h6 mx-2 " : "h5 me-3"}`}
               >
                 <NavDropdown.Item className="text-primary fw-bold">
-                {" "}
-                <FaKey style={{ width: "20px", height: "20px" }} /> Password Management
+                  {" "}
+                  <FaKey style={{ width: "20px", height: "20px" }} /> Password
+                  Management
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item className="text-warning fw-bold">
-                {" "}
-                <FaEdit style={{ width: "20px", height: "20px" }} />
-Edit Profile
+                  {" "}
+                  <FaEdit style={{ width: "20px", height: "20px" }} />
+                  Edit Profile
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav.Item>

@@ -11,7 +11,7 @@ import {
 import { Fragment, useState } from "react";
 import { BsShieldLockFill } from "react-icons/bs";
 import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
-import { fireAuth, firestore } from "../firebase";
+import { fireAuth, fireStorage, firestore } from "../firebase";
 import { useFormik } from "formik";
 import Timer from "../Timer";
 import { useMediaQuery } from "react-responsive";
@@ -174,13 +174,24 @@ const LoginPage = () => {
                 (new Date().getTime() -
                   new Date(password_info.last_changed).getTime()) /
                 (1000 * 3600 * 24);
-              dispatch(
-                AuthActions.getAuthStatus({
-                  flag: true,
-                  role: role_info.role,
-                  admin: role_info.admin_permission,
-                })
-              );
+                
+              // get img url from firebase-Storage
+              fireStorage
+                .ref()
+                .child("employee-img/"+value.username+".jpg")
+                .getDownloadURL()
+                .then((url) => {
+                  dispatch(
+                    AuthActions.getAuthStatus({
+                      flag: true,
+                      role: role_info.role,
+                      admin: role_info.admin_permission,
+                      name: fireAuth.currentUser.displayName,
+                      photoUrl: url,
+                    })
+                  );
+                });
+
               if (Math.round(dateDiff) <= 90) {
                 if (auth_info.locked === false) {
                   updateLoginStatus(value.username);
@@ -205,9 +216,10 @@ const LoginPage = () => {
                     flag: false,
                     role: "",
                     admin: "",
+                    name: "",
+                    photoUrl: "",
                   })
                 );
-                dispatch(AuthActions.getAuthStatus({flag: false, role: '', admin: ''}))
                 history.push("/changePassword");
               }
             });
