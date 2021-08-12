@@ -10,3 +10,8 @@
 .line-break {
     margin: 0rem;
 }
+
+.line-break1 {
+    margin-top: 1rem !important;
+    margin-bottom: 0rem !important;
+}

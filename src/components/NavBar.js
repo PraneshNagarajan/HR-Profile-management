@@ -1,5 +1,13 @@
 import React from "react";
-import { Navbar, Nav, NavDropdown, Button, FormGroup } from "react-bootstrap";
+import {
+  Navbar,
+  Nav,
+  NavDropdown,
+  Button,
+  FormGroup,
+  NavbarBrand,
+  Badge,
+} from "react-bootstrap";
 import "./NavBar.css";
 import { Fragment } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -15,6 +23,7 @@ import {
   FaEdit,
   FaIdCard,
   FaKey,
+  FaBell,
 } from "react-icons/fa";
 import { useMediaQuery } from "react-responsive";
 import { useSelector } from "react-redux";
@@ -25,7 +34,16 @@ const NavBar = () => {
   const location = useLocation();
   return (
     <Fragment>
-      <Navbar collapseOnSelect expand="lg" bg="primary" variant="dark">
+      <Navbar
+        collapseOnSelect
+        expand="lg"
+        bg="primary"
+        variant="dark"
+        style={{
+          paddingTop: sm ? ".5rem" : "0rem",
+          paddingBottom: sm ? ".5rem" : "0rem",
+        }}
+      >
         <Navbar.Brand>
           <img
             alt=""
@@ -125,6 +143,17 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
+            {sm && String(user.role).includes('Recruiter') && <Nav.Item>
+              <span
+                className={`d-flex text-white mx-2 fw-bold mt-1`}
+                style={{ marginTop: sm ? "" : "0.75rem" }}
+              >
+                <FaBell className="me-1 mt-1" />
+                Notifications 
+                <span className="badge rounded-circle bg-warning ms-1">5</span>
+              </span>
+              <hr className="text-white line-break1" />
+            </Nav.Item>}
             <Nav.Item>
               <NavDropdown
                 title={
@@ -139,7 +168,7 @@ const NavBar = () => {
                   </span>
                 }
                 id="collasible-nav-dropdown"
-                className={`active ${sm ? "h6 mx-2 " : "h5 me-3"}`}
+                className={`active ${sm ? "h6 mx-2 " : "h5 me-2"}`}
               >
                 <NavDropdown.Item className="text-primary fw-bold">
                   {" "}
@@ -155,12 +184,24 @@ const NavBar = () => {
               </NavDropdown>
             </Nav.Item>
             {sm && <hr className="text-white line-break" />}
+           { !sm &&  String(user.role).includes('Recruiter') &&
+            <Nav.Item>
+            <Button  variant="outline-light" className="position-relative mt-2 me-4" >
+            <b><FaBell className="me-1" />
+              Notifications</b>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                1000 <span class="visually-hidden">unread messages</span>
+              </span>
+            </Button>
+          </Nav.Item>
+          
+           }
             <Nav.Item>
               <FormGroup>
                 <Button
                   variant="outline-light"
                   size=""
-                  className={`text-center mt-1 ${sm ? `ms-2 mt-2` : ``}`}
+                  className={`text-center mt-2 ${sm ? `ms-2` : ``}`}
                   style={{ width: sm ? "97%" : "" }}
                 >
                   {" "}
