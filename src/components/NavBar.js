@@ -150,7 +150,7 @@ const NavBar = () => {
               >
                 <FaBell className="me-1 mt-1" />
                 Notifications 
-                <span className="badge rounded-circle bg-warning ms-1">5</span>
+                <span className="badge rounded-circle bg-warning ms-1 mt-1">5</span>
               </span>
               <hr className="text-white line-break1" />
             </Nav.Item>}
