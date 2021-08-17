@@ -47,14 +47,18 @@ const LoginPage = () => {
   const [isVisibleField, setIsVisibleField] = useState(false);
   const sm = useMediaQuery({ maxWidth: 768 });
 
-  const onVisibleHandler = () => {
-    setIsVisibleField(!isVisibleField);
-  };
-
   useEffect(() => {
     const flag = authMsg.length > 0;
     dispatch(AuthActions.getMsg(flag));
   }, [authMsg]);
+
+  const onVisibleHandler = () => {
+    setIsVisibleField(!isVisibleField);
+  };
+  
+  const onLoadinghandler = () =>{
+    setIsLoading(true);
+  }
 
   const authNotification = () => {
     setAccoutStatus(true);
@@ -158,10 +162,10 @@ const LoginPage = () => {
     },
     validate: formValidation,
     onSubmit: (value) => {
-      setIsLoading(true);
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
         .then((res) => {
+          onLoadinghandler()
           firestore
             .collection("Employee-Info")
             .doc(value.username)
