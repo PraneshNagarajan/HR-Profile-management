@@ -17,8 +17,9 @@ const Cards = (props) => {
   const items = [];
   for (let i = 1; i <= 12; i++) {
     items.push(
-      <Fragment>
+      <Fragment key={i}>
         <DropdownItem
+        
           className="text-center"
           onClick={(e) => {
             onChangeLevelHandler("Selected L" + i);
@@ -32,6 +33,7 @@ const Cards = (props) => {
   }
   return (
     <Card
+      key={props.keys}
       style={{ width: props.width, height: "5rem" }}
       className="mx-1 my-2 text-center"
     >

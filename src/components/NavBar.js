@@ -189,8 +189,8 @@ const NavBar = () => {
             <Button  variant="outline-light" className="position-relative mt-2 me-4" >
             <b><FaBell className="me-1" />
               Notifications</b>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                1000 <span class="visually-hidden">unread messages</span>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                1000 <span className="visually-hidden">unread messages</span>
               </span>
             </Button>
           </Nav.Item>
