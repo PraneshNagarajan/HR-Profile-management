@@ -11,19 +11,32 @@ const FocalHomePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const [datas, setDatas] = useState([]);
   const [breakups, setBreakups] = useState([]);
+
   useEffect(() => {
     firestore
       .collection("Dashboard-Focal")
       .doc("Info")
       .get()
       .then((documentSnapshot) => {
-        setDatas(Object.values(documentSnapshot.get("statics")));
+        const combinedDatas = [];
+        Object.values(documentSnapshot.get("statics")).map((data, index) => {
+          const collectData = {
+            color: data.color,
+            width: sm ? "10.5rem" : "11.5rem",
+            title: sm ? (data.title1 ? data.title1 : data.title) : data.title,
+            count: data.count,
+            levelData: data.levels ? data.levels : [],
+          };
+          combinedDatas.push(collectData);
+        });
+        setDatas(combinedDatas);
         setBreakups(Object.values(documentSnapshot.get("breakups")));
       });
   }, []);
+
   return (
     <div>
-      { !breakups.length > 0 && <Spinners/>}
+      {!breakups.length > 0 && <Spinners />}
       {breakups.length > 0 && (
         <div>
           <div
@@ -31,19 +44,7 @@ const FocalHomePage = () => {
               sm ? `justify-content-center ` : `ms-1`
             }`}
           >
-            {datas.map((data,index) => {
-              return (
-                <Cards
-                  key={index}
-                  color={data.color}
-                  width={sm ? "10.5rem" : "11.5rem"}
-                  title={
-                    sm ? (data.title1 ? data.title1 : data.title) : data.title
-                  }
-                  data={data.count}
-                />
-              );
-            })}
+            {datas.length > 0 && <Cards data={datas} />}
           </div>
           <Row className="d-flex flex-wrap justify-content-between">
             <Col md="6">
