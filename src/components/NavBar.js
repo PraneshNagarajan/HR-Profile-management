@@ -60,8 +60,8 @@ const NavBar = () => {
             {sm && <hr className="text-white my-1 line-break" />}
             <Nav.Link
               as={Link}
-              to="/homePage"
-              active={location.pathname.includes("home") ? `active` : ``}
+              to="/focalHomePage"
+              active={location.pathname.includes("Home") ? `active` : ``}
             >
               <span className={sm ? "h6 ms-2" : "h5 me-2"}>
                 <FaHome className="mb-1" /> Home

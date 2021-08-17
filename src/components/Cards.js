@@ -36,7 +36,7 @@ const Cards = (props) => {
               <DropdownButton
                 variant={data.color}
                 size="md"
-                className="position-absolute top-0 w-100"
+                className="statics position-absolute top-0 w-100"
                 title={<b>{level}</b>}
               >
                 {Object.values(data.levelData).map((item, index) => {
