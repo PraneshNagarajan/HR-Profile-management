@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import Cards from "../components/Cards";
 import { Card, Col, Row } from "react-bootstrap";
-import Chart from "../components/Chart";
+import Chart from "../components/Charts";
 import { fireAuth, fireStorage, firestore } from "../firebase";
 import { useEffect } from "react";
 

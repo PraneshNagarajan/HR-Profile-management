@@ -6,9 +6,8 @@ import AuthLayout from "./UI/Auth-Layout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
-import NavBar from "./components/NavBar";
-import { fireStorage } from "./firebase";
-import { useEffect } from "react";
+import MainLayout from "./UI/Main-Layout";
+import FocalHomePage from "./pages/FocalHomePage";
 
 
 function App() {
@@ -36,6 +35,13 @@ function App() {
           {auth && <ChangePasswordPage />}
           {!auth && <Redirect to="/"></Redirect>}
         </AuthLayout>
+        {auth && 
+        <MainLayout>
+          <Route path="/focalHomePage">
+          <FocalHomePage />
+          </Route>
+        </MainLayout>
+        }
       </Route>
     </Switch>
   );
