@@ -8,7 +8,6 @@ import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
 import MainLayout from "./UI/Main-Layout";
 import FocalHomePage from "./pages/FocalHomePage";
-import { Fragment } from "react";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
