@@ -205,7 +205,7 @@ const NavBar = () => {
                   style={{ width: sm ? "97%" : "" }}
                 >
                   {" "}
-                  Logout
+                  <b>Logout</b>
                 </Button>
               </FormGroup>
             </Nav.Item>
