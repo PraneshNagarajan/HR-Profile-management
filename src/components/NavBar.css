@@ -2,7 +2,7 @@
     color: white !important
 }
 
-.dropdown-toggle::after {
+.nav-item .dropdown-toggle::after {
     border-right: 0 ; 
      border-left: 0 ;
 }
