@@ -9,10 +9,10 @@ import { useEffect } from "react";
 const Cards = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const [datas, setDatas] = useState([]);
-  const [level, setLevel] = useState("Selected Total");
+  const [level, setLevel] = useState("Selected");
 
   const onChangeLevelHandler = (title, value) => {
-    setLevel(title);
+    setLevel(title.includes('Total') ? "Selected": title);
     setDatas((prevItems) => {
       const res = prevItems.filter((item) => item.title === "Selected");
       res[0].count = value;
