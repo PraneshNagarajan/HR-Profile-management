@@ -31,9 +31,10 @@ const FocalHomePage = () => {
               sm ? `justify-content-center ` : `ms-1`
             }`}
           >
-            {datas.map((data) => {
+            {datas.map((data,index) => {
               return (
                 <Cards
+                  key={index}
                   color={data.color}
                   width={sm ? "10.5rem" : "11.5rem"}
                   title={
