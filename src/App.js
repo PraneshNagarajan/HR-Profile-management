@@ -8,7 +8,7 @@ import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
 import MainLayout from "./UI/Main-Layout";
 import FocalHomePage from "./pages/FocalHomePage";
-
+import { Fragment } from "react";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -30,18 +30,23 @@ function App() {
           <ResetPasswordPage />
         </AuthLayout>
       </Route>
-      <Route path="/changePassword">
-        <AuthLayout>
-          {auth && <ChangePasswordPage />}
-          {!auth && <Redirect to="/"></Redirect>}
-        </AuthLayout>
-        {auth && 
-        <MainLayout>
-          <Route path="/focalHomePage">
-          <FocalHomePage />
+
+      {auth && (
+        <Fragment>
+          <Route path="/changePassword">
+            <AuthLayout>
+              <ChangePasswordPage />
+            </AuthLayout>
           </Route>
-        </MainLayout>
-        }
+          <Route path="/focalHomePage">
+            <MainLayout>
+              <FocalHomePage />
+            </MainLayout>
+          </Route>
+        </Fragment>
+      )}
+      <Route path="*">
+      <Redirect to="/"></Redirect>
       </Route>
     </Switch>
   );
