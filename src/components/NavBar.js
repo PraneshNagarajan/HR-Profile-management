@@ -143,7 +143,7 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
-            {sm && String(user.role).includes('Recruiter') && <Nav.Item>
+            {sm  && <Nav.Item>
               <span
                 className={`d-flex text-white mx-2 fw-bold mt-1`}
                 style={{ marginTop: sm ? "" : "0.75rem" }}
@@ -184,7 +184,7 @@ const NavBar = () => {
               </NavDropdown>
             </Nav.Item>
             {sm && <hr className="text-white line-break" />}
-           { !sm &&  String(user.role).includes('Recruiter') &&
+           { !sm  &&
             <Nav.Item>
             <Button  variant="outline-light" className="position-relative mt-2 me-4" >
             <b><FaBell className="me-1" />
