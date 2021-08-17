@@ -1,0 +1,15 @@
+.spinner-border{
+    width: 5.5rem;
+    height: 5.5rem;
+}
+.spinner {
+    position:absolute;
+    inset: 0 auto 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    background-color: rgba(143, 79, 79, 0.1
+    );
+}
