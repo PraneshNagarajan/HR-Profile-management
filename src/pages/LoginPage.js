@@ -174,11 +174,11 @@ const LoginPage = () => {
                 (new Date().getTime() -
                   new Date(password_info.last_changed).getTime()) /
                 (1000 * 3600 * 24);
-                
+
               // get img url from firebase-Storage
               fireStorage
                 .ref()
-                .child("employee-img/"+value.username+".jpg")
+                .child("employee-img/" + value.username + ".jpg")
                 .getDownloadURL()
                 .then((url) => {
                   dispatch(
@@ -190,38 +190,37 @@ const LoginPage = () => {
                       photoUrl: url,
                     })
                   );
+                  if (Math.round(dateDiff) <= 90) {
+                    if (auth_info.locked === false) {
+                      updateLoginStatus(value.username);
+                      setAuthStatus(true);
+                      setAuthMsg("Login Successfully !");
+                      firestore
+                        .collection("Employee-Info")
+                        .doc(value.username)
+                        .update({
+                          "auth-info.chances": 0,
+                          "auth-info.attempts": 0,
+                          "auth-info.locked": false,
+                          "auth-info.invalid_attempt_timestamp": null,
+                        });
+                      history.push("/focalHomePage");
+                    } else {
+                      authNotification();
+                    }
+                  } else {
+                    dispatch(
+                      AuthActions.getAuthStatus({
+                        flag: false,
+                        role: "",
+                        admin: "",
+                        name: "",
+                        photoUrl: "",
+                      })
+                    );
+                    history.push("/changePassword");
+                  }
                 });
-
-              if (Math.round(dateDiff) <= 90) {
-                if (auth_info.locked === false) {
-                  updateLoginStatus(value.username);
-                  setAuthStatus(true);
-                  setAuthMsg("Login Successfully !");
-                  firestore
-                    .collection("Employee-Info")
-                    .doc(value.username)
-                    .update({
-                      "auth-info.chances": 0,
-                      "auth-info.attempts": 0,
-                      "auth-info.locked": false,
-                      "auth-info.invalid_attempt_timestamp": null,
-                    });
-                  history.push("/homePage");
-                } else {
-                  authNotification();
-                }
-              } else {
-                dispatch(
-                  AuthActions.getAuthStatus({
-                    flag: false,
-                    role: "",
-                    admin: "",
-                    name: "",
-                    photoUrl: "",
-                  })
-                );
-                history.push("/changePassword");
-              }
             });
         })
         .catch((err) => {
