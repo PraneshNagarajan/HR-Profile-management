@@ -187,7 +187,7 @@ const Charts = (props) => {
 
   return (
     <Card
-      className={`mx-1 my-2 ${sm ? `ms-3` : `px-1`}`}
+      className={`mx-1 my-2 ${sm ? `mx-1` : ``}`}
       style={{ width: props.width, height: props.height }}
     >
       {props.type === "Vbar" && <Bar data={barData} options={options} />}
