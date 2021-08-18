@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import Cards from "../components/Cards";
-import { Col, Row } from "react-bootstrap";
+import { Col, Form, Row } from "react-bootstrap";
 import Chart from "../components/Charts";
 import { firestore } from "../firebase";
 import { useEffect } from "react";
 import Spinners from "../components/Spinners";
+import DateSearchForm from "../components/DateSearchForm";
 
 const FocalHomePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const [datas, setDatas] = useState([]);
   const [breakups, setBreakups] = useState([]);
+  const [isSearched, setIsSearched] = useState(false);
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
 
   useEffect(() => {
     firestore
@@ -34,6 +38,13 @@ const FocalHomePage = () => {
       });
   }, []);
 
+  const onSubmitHandler = (e) => {
+    e.preventDefault();
+    setIsSearched(true);
+    setFromDate(e.target[0].value);
+    setToDate(e.target[1].value);
+  };
+
   return (
     <div>
       {!breakups.length > 0 && <Spinners />}
@@ -46,12 +57,29 @@ const FocalHomePage = () => {
           >
             {datas.length > 0 && <Cards data={datas} />}
           </div>
+          <Form className="mx-5 my-1" onSubmit={(e) => onSubmitHandler(e)}>
+            <DateSearchForm />
+          </Form>
           <Row className="d-flex flex-wrap justify-content-between">
             <Col md="6">
-              <Chart title="Skills Breakup" type="Vbar" datas={breakups[0]} />
+              <Chart
+                title="Skills Breakup"
+                type="Vbar"
+                datas={breakups[0]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
+              />
             </Col>
             <Col md={{ span: "6", offset: "" }}>
-              <Chart title="Days Worked" type="Vbar" datas={breakups[0]} />
+              <Chart
+                title="Days Worked"
+                type="Vbar"
+                datas={breakups[0]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
+              />
             </Col>
             <Col md="6">
               <Chart title="Overall status" type="line" datas={breakups[4]} />
@@ -68,6 +96,9 @@ const FocalHomePage = () => {
                 height={sm ? "" : "45%"}
                 width={sm ? "" : "48%"}
                 datas={breakups[1]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
               />
               <Chart
                 title="Interview breakup"
@@ -75,6 +106,9 @@ const FocalHomePage = () => {
                 height={sm ? "" : "45%"}
                 width={sm ? "" : "48%"}
                 datas={breakups[2]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
               />
               <Chart
                 title="Offer breakup"
@@ -82,6 +116,9 @@ const FocalHomePage = () => {
                 height={sm ? "" : "45%"}
                 width={sm ? "" : "48%"}
                 datas={breakups[3]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
               />
               <Chart
                 title="Level breakup"
@@ -89,6 +126,9 @@ const FocalHomePage = () => {
                 height={sm ? "" : "45%"}
                 width={sm ? "" : "48%"}
                 datas={breakups[1]}
+                flag={isSearched}
+                fromDate={fromDate}
+                toDate={toDate}
               />
             </Col>
           </Row>
