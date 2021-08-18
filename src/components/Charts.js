@@ -19,6 +19,20 @@ const Charts = (props) => {
   const supplyDatas = [];
   const demandDatas = [];
   const labels = [];
+  const monthKeys = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   if (props.type === "Hbar") {
     chartDatas.slice(0, -1).map((item) => {
@@ -48,23 +62,73 @@ const Charts = (props) => {
       borderWidth: 1,
     });
   } else {
-    chartDatas.map((item) => {
-      labels.push(item.name);
-      supplyDatas.push(
-        props.title.includes("Days")
-          ? item.supply.days_worked
-          : item.supply.count
-      );
-      demandDatas.push(
-        props.title.includes("Days")
-          ? item.demand.days_worked
-          : item.demand.count
-      );
-      supply_bg_color.push(item.supply.bg_color);
-      demand_bg_color.push(item.demand.bg_color);
-      supply_border_color.push(item.supply.border_color);
-      demand_border_color.push(item.demand.border_color);
-    });
+    try {
+      chartDatas.map((item) => {
+        labels.push(item.name);
+        supply_bg_color.push(item.supply.bg_color);
+        demand_bg_color.push(item.demand.bg_color);
+        supply_border_color.push(item.supply.border_color);
+        demand_border_color.push(item.demand.border_color);
+        if (props.flag) {
+          const dateFlag = props.fromDate === props.toDate;
+          let fromFormat = new Date(props.fromDate).toLocaleDateString(
+            "deafault",
+            { month: "short" }
+          );
+          let toFormat = new Date(props.toDate).toLocaleDateString("deafault", {
+            month: "short",
+          });
+          const from = monthKeys.findIndex((months) => months === fromFormat);
+          const to = monthKeys.findIndex((months) => months === toFormat);
+          const bwt = dateFlag
+            ? monthKeys[from] + "-" + new Date(props.fromDate).getFullYear()
+            : monthKeys
+                .slice(from, to)
+                .map((month) => month + "-" + props.fromDate.getFullYear());
+          Object.entries(item.supply.dates).map((date, index) => {
+            if (date[0] === (dateFlag ? bwt : bwt[index])) {
+              if (dateFlag) {
+                Object.entries(date[1]).map((day) => {
+                  if (day[0] === props.fromDate) {
+                    supplyDatas.push(
+                      props.title.includes("Days")
+                        ? day[1].days_worked
+                        : day[1].count
+                    );
+                  }
+                });
+              }
+            }
+          });
+          Object.entries(item.demand.dates).map((date, index) => {
+            if (date[0] === (dateFlag ? bwt : bwt[index])) {
+              if (dateFlag) {
+                Object.entries(date[1]).map((day) => {
+                  if (day[0] === props.fromDate) {
+                    demandDatas.push(
+                      props.title.includes("Days")
+                        ? day[1].days_worked
+                        : day[1].count
+                    );
+                  }
+                });
+              }
+            }
+          });
+        } else {
+          supplyDatas.push(
+            props.title.includes("Days")
+              ? item.supply.days_worked
+              : item.supply.count
+          );
+          demandDatas.push(
+            props.title.includes("Days")
+              ? item.demand.days_worked
+              : item.demand.count
+          );
+        }
+      });
+    } catch (e) {}
     datasets.push(
       {
         label: "Supply",
@@ -106,7 +170,7 @@ const Charts = (props) => {
     legend: {
       labels: {
         filter: function (label) {
-          if (label.text != "Supply") return true; //only show when the label is cash
+          if (label.text != "Supply") return true; //only show when the label is not supply
         },
       },
     },
@@ -190,10 +254,15 @@ const Charts = (props) => {
       className={`mx-1 my-2 ${sm ? `mx-1` : ``}`}
       style={{ width: props.width, height: props.height }}
     >
-      {props.type === "Vbar" && <Bar data={barData} options={options} />}
+      {props.type === "Vbar" && datasets[0].data.length > 0 && (
+        <Bar data={barData} options={options} />
+      )}
       {props.type === "line" && <Line data={lineData} options={options} />}
       {props.type === "Hbar" && (
         <HorizontalBar data={Hbardata} options={options1} />
+      )}
+      {!datasets[0].data.length > 0 && (
+        <b className="text-center text-danger m-5">No Data Found.</b>
       )}
     </Card>
   );
