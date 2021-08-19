@@ -16,6 +16,7 @@ import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 var CryptoJS = require("crypto-js");
 
 const formValidation = (field) => {
@@ -34,6 +35,7 @@ const formValidation = (field) => {
 
 const ResetPasswordPage = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
   const [authStatus, setAuthStatus] = useState(false);
   const [authMsg, setAuthMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +73,8 @@ const ResetPasswordPage = () => {
           dispatch(
             AuthActions.getAuthStatus({ flag: false, role: "", admin: "" })
           );
-        }, 5000);
+          history.push("/")
+        }, 3000);
       })
       .catch((err) => {
         setAuthStatus(false);
