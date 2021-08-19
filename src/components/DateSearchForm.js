@@ -1,3 +1,4 @@
+import { useFormik } from "formik";
 import {
   Col,
   FormLabel,
@@ -10,6 +11,22 @@ import { useMediaQuery } from "react-responsive";
 
 const DateSearchForm = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
+  const formik = useFormik({
+    initialValues: {
+      date1: "",
+      date2: "",
+    },
+    validate: (value) => {
+      let errors = {};
+      if (!value.date1) {
+        errors.date1 = "*Required";
+      }
+      if (!value.date2) {
+        errors.date2 = "*Required";
+      }
+      return errors;
+    },
+  });
   return (
     <Form className="mx-5 my-1" onSubmit={(e) => props.submit(e)}>
       <Row>
@@ -23,7 +40,12 @@ const DateSearchForm = (props) => {
             </FormLabel>
           </Col>
           <Col md="10">
-            <FormControl type="date" />
+            <FormControl
+              name="date1"
+              type="date"
+              required
+              onChange={formik.handleChange}
+            />
           </Col>
         </Col>
         <Col
@@ -40,11 +62,20 @@ const DateSearchForm = (props) => {
             </FormLabel>
           </Col>
           <Col md="10">
-            <FormControl type="date" />
+            <FormControl
+              name="date2"
+              type="date"
+              required
+              onChange={formik.handleChange}
+            />
           </Col>
         </Col>
         <Col md="2" className="d-flex justify-content-center my-1">
-          <Button className="w-100" type="submit">
+          <Button
+            className="w-100"
+            type="submit"
+            disabled={!(formik.dirty && formik.isValid)}
+          >
             Search
           </Button>
         </Col>

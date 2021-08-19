@@ -36,6 +36,22 @@ const Charts = (props) => {
     "Dec",
   ];
 
+  const dateFlag = props.fromDate === props.toDate;
+  let fromFormat = new Date(props.fromDate).toLocaleDateString("deafault", {
+    month: "short",
+  });
+  let toFormat = new Date(props.toDate).toLocaleDateString("deafault", {
+    month: "short",
+  });
+  const from = monthKeys.findIndex((months) => months === fromFormat);
+  const to = monthKeys.findIndex((months) => months === toFormat);
+  const bwt =
+    dateFlag || from == to
+      ? monthKeys[from] + "-" + new Date(props.fromDate).getFullYear()
+      : monthKeys
+          .slice(from, to)
+          .map((month) => month + "-" + props.fromDate.getFullYear());
+
   if (props.type === "Hbar") {
     chartDatas.slice(0, -1).map((item) => {
       const data = {
@@ -74,22 +90,6 @@ const Charts = (props) => {
         supply_border_color.push(item.supply.border_color);
         demand_border_color.push(item.demand.border_color);
         if (props.flag) {
-          const dateFlag = props.fromDate === props.toDate;
-          let fromFormat = new Date(props.fromDate).toLocaleDateString(
-            "deafault",
-            { month: "short" }
-          );
-          let toFormat = new Date(props.toDate).toLocaleDateString("deafault", {
-            month: "short",
-          });
-          const from = monthKeys.findIndex((months) => months === fromFormat);
-          const to = monthKeys.findIndex((months) => months === toFormat);
-          const bwt =
-            dateFlag || from == to
-              ? monthKeys[from] + "-" + new Date(props.fromDate).getFullYear()
-              : monthKeys
-                  .slice(from, to)
-                  .map((month) => month + "-" + props.fromDate.getFullYear());
           if (item.supply.dates) {
             Object.entries(item.supply.dates).map((date, index) => {
               if (date[0] === (dateFlag || from == to ? bwt : bwt[index])) {
@@ -286,9 +286,10 @@ const Charts = (props) => {
       {props.type === "Hbar" && (
         <HorizontalBar data={Hbardata} options={options1} />
       )}
-      {!datasets[0].data.length > 0 || datasetFlag && (
+      {!datasets[0].data.length > 0 ||
+        (datasetFlag && (
           <b className="text-center text-danger m-5">No Data Found.</b>
-        )}
+        ))}
     </Card>
   );
 };
