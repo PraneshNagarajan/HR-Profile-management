@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import Cards from "../components/Cards";
-import { Col, Form, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import Chart from "../components/Charts";
 import { firestore } from "../firebase";
 import { useEffect } from "react";
@@ -57,9 +57,7 @@ const FocalHomePage = () => {
           >
             {datas.length > 0 && <Cards data={datas} />}
           </div>
-          <Form className="mx-5 my-1" onSubmit={(e) => onSubmitHandler(e)}>
-            <DateSearchForm />
-          </Form>
+          <DateSearchForm submit={onSubmitHandler} />
           <Row className="d-flex flex-wrap justify-content-between">
             <Col md="6">
               <Chart
