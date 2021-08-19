@@ -9,7 +9,6 @@ const Charts = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   Chart.plugins.register(ChartDataLabels);
   const chartDatas = Object.values(props.datas);
-  //console.log(chartDatas)
   const data = [];
   const bg_color = [];
   const border_color = [];
