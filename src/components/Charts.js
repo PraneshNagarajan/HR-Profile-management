@@ -14,7 +14,11 @@ const Charts = (props) => {
   const bg_color = [];
   const border_color = [];
   const datasets = [];
+<<<<<<< HEAD
   let datasetFlag = false;
+=======
+  let datasetFlag = false
+>>>>>>> 7ccc9bfc2e0ae046c631e98a846f9708dd97e443
   const supply_bg_color = [];
   const supply_border_color = [];
   const demand_bg_color = [];
@@ -155,7 +159,6 @@ const Charts = (props) => {
     const flag1 = supplyDatas.reduce((a, b) => a + b);
     const flag2 = demandDatas.reduce((a, b) => a + b);
     datasetFlag = flag1 > 0 && flag2 > 0 ? false : true;
-    console.log(flag1, flag2);
     datasets.push(
       {
         label: "Supply",
@@ -288,10 +291,9 @@ const Charts = (props) => {
       {props.type === "Hbar" && (
         <HorizontalBar data={Hbardata} options={options1} />
       )}
-      {!datasets[0].data.length > 0 ||
-        (datasetFlag && (
+      {!datasets[0].data.length > 0 || datasetFlag && (
           <b className="text-center text-danger m-5">No Data Found.</b>
-        ))}
+        )}
     </Card>
   );
 };
