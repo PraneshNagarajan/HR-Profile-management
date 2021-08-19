@@ -13,11 +13,7 @@ const Charts = (props) => {
   const bg_color = [];
   const border_color = [];
   const datasets = [];
-<<<<<<< HEAD
   let datasetFlag = false;
-=======
-  let datasetFlag = false
->>>>>>> 7ccc9bfc2e0ae046c631e98a846f9708dd97e443
   const supply_bg_color = [];
   const supply_border_color = [];
   const demand_bg_color = [];
