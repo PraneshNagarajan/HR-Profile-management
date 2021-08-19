@@ -52,6 +52,13 @@ const ResetPasswordPage = () => {
   };
 
   const onResetPasswordhandler = () => {
+    firestore.collection("Employee-Info").doc(formik.values.username).update({
+      "auth-info.chances": 0,
+      "auth-info.attempts": 0,
+      "auth-info.locked": false,
+      "auth-info.invalid_attempt_timestamp": null,
+    });
+
     fireAuth
       .sendPasswordResetEmail(formik.values.username)
       .then((res) => {
