@@ -155,7 +155,6 @@ const Charts = (props) => {
     const flag1 = supplyDatas.reduce((a, b) => a + b);
     const flag2 = demandDatas.reduce((a, b) => a + b);
     datasetFlag = flag1 > 0 && flag2 > 0 ? false : true;
-    console.log(flag1, flag2);
     datasets.push(
       {
         label: "Supply",
@@ -288,10 +287,9 @@ const Charts = (props) => {
       {props.type === "Hbar" && (
         <HorizontalBar data={Hbardata} options={options1} />
       )}
-      {!datasets[0].data.length > 0 ||
-        (datasetFlag && (
+      {!datasets[0].data.length > 0 || datasetFlag && (
           <b className="text-center text-danger m-5">No Data Found.</b>
-        ))}
+        )}
     </Card>
   );
 };
