@@ -3,6 +3,7 @@ import {
   Nav,
 } from "react-bootstrap";
 import { useMediaQuery } from "react-responsive";
+import PersonalTabContent from "../components/PersonalTabContent";
 
 const AddEmployeePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
@@ -19,6 +20,7 @@ const AddEmployeePage = () => {
           <Nav.Link eventKey="employee-info">employee-info</Nav.Link>
         </Nav.Item>
       </Nav>
+      <PersonalTabContent eventKey="personal-info" />
     </Container>
   );
 };
