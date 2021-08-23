@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap";
 import { useMediaQuery } from "react-responsive";
 
+const date = new Date();
 const DateSearchForm = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const formik = useFormik({
@@ -44,6 +45,25 @@ const DateSearchForm = (props) => {
               name="date1"
               type="date"
               required
+              min={
+                date.getFullYear() -
+                1 +
+                "-" +
+                (date.getMonth() > 9
+                  ? date.getMonth() + 1
+                  : "0" + (date.getMonth() + 1)) +
+                "-" +
+                date.getDate()
+              }
+              max={
+                date.getFullYear() +
+                "-" +
+                (date.getMonth() > 9
+                  ? date.getMonth() + 1
+                  : "0" + (date.getMonth() + 1)) +
+                "-" +
+                date.getDate()
+              }
               onChange={formik.handleChange}
             />
           </Col>
@@ -65,6 +85,25 @@ const DateSearchForm = (props) => {
             <FormControl
               name="date2"
               type="date"
+              min={
+                date.getFullYear() -
+                1 +
+                "-" +
+                (date.getMonth() > 9
+                  ? date.getMonth() + 1
+                  : "0" + (date.getMonth() + 1)) +
+                "-" +
+                date.getDate()
+              }
+              max={
+                date.getFullYear() +
+                "-" +
+                (date.getMonth() > 9
+                  ? date.getMonth() + 1
+                  : "0" + (date.getMonth() + 1)) +
+                "-" +
+                date.getDate()
+              }
               required
               onChange={formik.handleChange}
             />
