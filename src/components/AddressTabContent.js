@@ -4,7 +4,8 @@ import {
   Col,
   FormGroup,
   FormCheck,
-  TabContent
+  TabContent,
+  Form
 } from "react-bootstrap";
 
 const AddressTabContent = () => {
@@ -13,7 +14,7 @@ const AddressTabContent = () => {
       <Card>
         <Card.Body className="mb-3">
           <h4>Present Address</h4>
-          <form>
+          <Form>
             <Row>
               <Col md="6">
                 <div className="form-group my-2">
@@ -124,8 +125,7 @@ const AddressTabContent = () => {
                 </div>
               </Col>
             </Row>
-                        {/* Permenant adrees form */}
-          </form>
+          </Form>
           <hr className="my-5" />
           <h4>Permenant Address</h4>
           <FormGroup>
@@ -134,7 +134,8 @@ const AddressTabContent = () => {
               label="Same as Present address"
             ></FormCheck>
           </FormGroup>
-          <form>
+          {/* Permenant adrees form */}
+          <Form>
             <Row>
               <Col md="6">
                 <div className="form-group my-2">
@@ -244,7 +245,7 @@ const AddressTabContent = () => {
                 </div>
               </Col>
             </Row>
-          </form>
+          </Form>
         </Card.Body>
       </Card>
     </TabContent>
