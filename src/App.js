@@ -10,7 +10,6 @@ import MainLayout from "./UI/Main-Layout";
 import FocalHomePage from "./pages/FocalHomePage";
 import { Fragment } from "react";
 
-
 function App() {
   const auth = useSelector((state) => state.auth.flag);
   const user = useSelector((state) => state.auth.role);
@@ -47,7 +46,7 @@ function App() {
         </Fragment>
       )}
       <Route path="*">
-      <Redirect to="/"></Redirect>
+        <Redirect to="/"></Redirect>
       </Route>
     </Switch>
   );

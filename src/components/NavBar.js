@@ -69,6 +69,7 @@ const NavBar = () => {
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
             <NavDropdown
+              active={location.pathname.includes("addEmployee") ? `active` : ``}
               title={
                 <span>
                   <FaUsersCog className="mb-1" /> Employees
@@ -79,7 +80,11 @@ const NavBar = () => {
                 location.pathname.includes("employee") ? "active" : ""
               } ${sm ? "h6 mx-2 mt-2" : "h5 me-2"}`}
             >
-              <NavDropdown.Item className="text-primary fw-bold">
+              <NavDropdown.Item
+                as={Link}
+                to="/addEmployees"
+                className="text-primary fw-bold"
+              >
                 {" "}
                 <FaUserPlus style={{ width: "20px", height: "20px" }} /> Add
                 Employee
@@ -143,17 +148,21 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
-            {sm  && <Nav.Item>
-              <span
-                className={`d-flex text-white mx-2 fw-bold mt-1`}
-                style={{ marginTop: sm ? "" : "0.75rem" }}
-              >
-                <FaBell className="me-1 mt-1" />
-                Notifications 
-                <span className="badge rounded-circle bg-warning ms-1 mt-1">5</span>
-              </span>
-              <hr className="text-white line-break1" />
-            </Nav.Item>}
+            {sm && (
+              <Nav.Item>
+                <span
+                  className={`d-flex text-white mx-2 fw-bold mt-1`}
+                  style={{ marginTop: sm ? "" : "0.75rem" }}
+                >
+                  <FaBell className="me-1 mt-1" />
+                  Notifications
+                  <span className="badge rounded-circle bg-warning ms-1 mt-1">
+                    5
+                  </span>
+                </span>
+                <hr className="text-white line-break1" />
+              </Nav.Item>
+            )}
             <Nav.Item>
               <NavDropdown
                 title={
@@ -184,18 +193,23 @@ const NavBar = () => {
               </NavDropdown>
             </Nav.Item>
             {sm && <hr className="text-white line-break" />}
-           { !sm  &&
-            <Nav.Item>
-            <Button  variant="outline-light" className="position-relative mt-2 me-4" >
-            <b><FaBell className="me-1" />
-              Notifications</b>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                1000 <span className="visually-hidden">unread messages</span>
-              </span>
-            </Button>
-          </Nav.Item>
-          
-           }
+            {!sm && (
+              <Nav.Item>
+                <Button
+                  variant="outline-light"
+                  className="position-relative mt-2 me-4"
+                >
+                  <b>
+                    <FaBell className="me-1" />
+                    Notifications
+                  </b>
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                    1000{" "}
+                    <span className="visually-hidden">unread messages</span>
+                  </span>
+                </Button>
+              </Nav.Item>
+            )}
             <Nav.Item>
               <FormGroup>
                 <Button
