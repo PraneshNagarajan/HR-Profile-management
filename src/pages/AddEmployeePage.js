@@ -5,6 +5,7 @@ import {
 } from "react-bootstrap";
 import { useMediaQuery } from "react-responsive";
 import AddressTabContent from "../components/AddressTabContent";
+import EmployeeTabContent from "../components/EmployeeTabContent";
 import PersonalTabContent from "../components/PersonalTabContent";
 
 const AddEmployeePage = () => {
@@ -17,14 +18,15 @@ const AddEmployeePage = () => {
           <Nav.Link eventKey="personal-info" onClick={e => setActiveTab('personal')}>personal-info</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey="address-info" onClick={ e => setActiveTab('address')}>address-info</Nav.Link>
+          <Nav.Link eventKey="address-info" onClick={e => setActiveTab('address')}>address-info</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey="employee-info">employee-info</Nav.Link>
+          <Nav.Link eventKey="employee-info" onClick={e => setActiveTab('employee')}>employee-info</Nav.Link>
         </Nav.Item>
       </Nav>
       {activeTab == 'personal' && <PersonalTabContent />}
       {activeTab == 'address' &&<AddressTabContent /> }
+      {activeTab == 'employee' &&<EmployeeTabContent /> }
     </Container>
   );
 };
