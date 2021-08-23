@@ -35,7 +35,6 @@ const Charts = (props) => {
     "Nov",
     "Dec",
   ];
-
   const dateFlag = props.fromDate === props.toDate;
   let fromFormat = new Date(props.fromDate).toLocaleDateString("deafault", {
     month: "short",
@@ -43,15 +42,25 @@ const Charts = (props) => {
   let toFormat = new Date(props.toDate).toLocaleDateString("deafault", {
     month: "short",
   });
+  const fromYear = new Date(props.fromDate).getFullYear();
+  const toYear = new Date(props.toDate).getFullYear();
   const from = monthKeys.findIndex((months) => months === fromFormat);
   const to = monthKeys.findIndex((months) => months === toFormat);
-  const bwt =
-    dateFlag || from == to
-      ? monthKeys[from] + "-" + new Date(props.fromDate).getFullYear()
-      : monthKeys
-          .slice(from, to)
-          .map((month) => month + "-" + props.fromDate.getFullYear());
-
+  let bwtMonths = [];
+  if (dateFlag || (from == to && fromYear == toYear)) {
+    bwtMonths = monthKeys[from] + "-" + fromYear;
+  } else {
+    if (fromYear == toYear) {
+      bwtMonths = monthKeys
+        .slice(from, to + 1)
+        .map((month) => month + "-" + fromYear);
+    } else {
+      bwtMonths = monthKeys.slice(from).map((month) => month + "-" + fromYear);
+      monthKeys
+        .slice(0, to + 1)
+        .map((month) => bwtMonths.push(month + "-" + toYear));
+    }
+  }
   if (props.type === "Hbar") {
     chartDatas.slice(0, -1).map((item) => {
       const data = {
@@ -80,77 +89,74 @@ const Charts = (props) => {
       borderWidth: 1,
     });
   } else {
-    try {
-      chartDatas.map((item) => {
-        let tempDatas = [];
-        let temp;
-        labels.push(item.name);
-        supply_bg_color.push(item.supply.bg_color);
-        demand_bg_color.push(item.demand.bg_color);
-        supply_border_color.push(item.supply.border_color);
-        demand_border_color.push(item.demand.border_color);
-        if (props.flag) {
-          if (item.supply.dates) {
-            Object.entries(item.supply.dates).map((date, index) => {
-              if (date[0] === (dateFlag || from == to ? bwt : bwt[index])) {
-                Object.entries(date[1]).map((day) => {
-                  if (
-                    new Date(day[0]) >= new Date(props.fromDate) &&
-                    new Date(day[0]) <= new Date(props.toDate)
-                  ) {
-                    tempDatas.push(
-                      props.title.includes("Days")
-                        ? day[1].days_worked
-                        : day[1].count
-                    );
-                  }
-                });
-              }
-            });
-            temp = tempDatas.reduce((a, b) => a + b, 0);
-            supplyDatas.push(temp);
-          } else {
-            supplyDatas.push(0);
-          }
-          if (item.demand.dates) {
-            tempDatas = [];
-            Object.entries(item.demand.dates).map((date, index) => {
-              if (date[0] === (dateFlag || from == to ? bwt : bwt[index])) {
-                Object.entries(date[1]).map((day) => {
-                  if (
-                    new Date(day[0]) >= new Date(props.fromDate) &&
-                    new Date(day[0]) <= new Date(props.toDate)
-                  ) {
-                    tempDatas.push(
-                      props.title.includes("Days")
-                        ? day[1].days_worked
-                        : day[1].count
-                    );
-                  }
-                });
-              }
-            });
-            temp = tempDatas.reduce((a, b) => a + b, 0);
-            demandDatas.push(temp);
-          } else {
-            demandDatas.push(0);
-          }
+    chartDatas.map((item) => {
+      let tempDatas = [];
+      let temp;
+      labels.push(item.name);
+      supply_bg_color.push(item.supply.bg_color);
+      demand_bg_color.push(item.demand.bg_color);
+      supply_border_color.push(item.supply.border_color);
+      demand_border_color.push(item.demand.border_color);
+      if (props.flag) {
+        if (item.supply.dates) {
+          Object.entries(item.supply.dates).map((date, index) => {
+            if (bwtMonths.includes(date[0])) {
+              Object.entries(date[1]).map((day) => {
+                if (
+                  new Date(day[0]) >= new Date(props.fromDate) &&
+                  new Date(day[0]) <= new Date(props.toDate)
+                ) {
+                  tempDatas.push(
+                    props.title.includes("Days")
+                      ? day[1].days_worked
+                      : day[1].count
+                  );
+                }
+              });
+            }
+          });
+          temp = tempDatas.reduce((a, b) => a + b, 0);
+          supplyDatas.push(temp);
         } else {
-          supplyDatas.push(
-            props.title.includes("Days")
-              ? item.supply.days_worked
-              : item.supply.count
-          );
-          demandDatas.push(
-            props.title.includes("Days")
-              ? item.demand.days_worked
-              : item.demand.count
-          );
+          supplyDatas.push(0);
         }
-      });
-    } catch (e) {
-      console.log(e);
-    }
+        if (item.demand.dates) {
+          tempDatas = [];
+          Object.entries(item.demand.dates).map((date, index) => {
+            if (bwtMonths.includes(date[0])) {
+              Object.entries(date[1]).map((day) => {
+                if (
+                  new Date(day[0]) >= new Date(props.fromDate) &&
+                  new Date(day[0]) <= new Date(props.toDate)
+                ) {
+                  tempDatas.push(
+                    props.title.includes("Days")
+                      ? day[1].days_worked
+                      : day[1].count
+                  );
+                }
+              });
+            }
+          });
+          temp = tempDatas.reduce((a, b) => a + b, 0);
+          demandDatas.push(temp);
+        } else {
+          demandDatas.push(0);
+        }
+      } else {
+        supplyDatas.push(
+          props.title.includes("Days")
+            ? item.supply.days_worked
+            : item.supply.count
+        );
+        demandDatas.push(
+          props.title.includes("Days")
+            ? item.demand.days_worked
+            : item.demand.count
+        );
+      }
+    });
+
     const flag1 = supplyDatas.reduce((a, b) => a + b);
     const flag2 = demandDatas.reduce((a, b) => a + b);
     datasetFlag = flag1 > 0 && flag2 > 0 ? false : true;
