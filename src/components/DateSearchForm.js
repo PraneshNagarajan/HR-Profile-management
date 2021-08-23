@@ -8,14 +8,6 @@ import {
   Form,
 } from "react-bootstrap";
 import { useMediaQuery } from "react-responsive";
-const date = new Date();
-console.log(
-  date.getFullYear() +
-    "-" +
-    (date.getMonth() > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1)) +
-    "-" +
-    date.getDate()
-);
 
 const date = new Date();
 const DateSearchForm = (props) => {
