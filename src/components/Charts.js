@@ -285,16 +285,19 @@ const Charts = (props) => {
       className={`mx-1 my-2 ${sm ? `mx-1` : ``}`}
       style={{ width: props.width, height: props.height }}
     >
-      {props.type === "Vbar" && datasets[0].data.length > 0 && !datasetFlag && (
-        <Bar data={barData} options={options} />
-      )}
+      {props.type === "Vbar" && <Bar data={barData} options={options} />}
       {props.type === "line" && <Line data={lineData} options={options} />}
       {props.type === "Hbar" && (
         <HorizontalBar data={Hbardata} options={options1} />
       )}
       {!datasets[0].data.length > 0 ||
         (datasetFlag && (
-          <b className="text-center text-danger m-5">No Data Found.</b>
+          <b
+            className="w-100 position-absolute d-flex  justify-content-center align-items-center text-danger"
+            style={{ inset: "0 auto 0 auto" }}
+          >
+            No Data Found.
+          </b>
         ))}
     </Card>
   );
