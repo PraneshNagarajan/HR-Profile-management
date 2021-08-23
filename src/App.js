@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import MainLayout from "./UI/Main-Layout";
 import FocalHomePage from "./pages/FocalHomePage";
 import { Fragment } from "react";
+import AddEmployeePage from "./pages/AddEmployeePage";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -41,6 +42,11 @@ function App() {
           <Route path="/focalHomePage">
             <MainLayout>
               <FocalHomePage />
+            </MainLayout>
+          </Route>
+          <Route path="/addEmployees">
+            <MainLayout>
+            <AddEmployeePage />
             </MainLayout>
           </Route>
         </Fragment>
