@@ -41,11 +41,11 @@
     transform: translate(-50%);
   }
 
-  .form-control.is-valid, .was-validated .form-control:valid {
+  .noShow .form-control.is-valid, .was-validated .form-control:valid {
     background-image: url() !important;
 }
 
-.form-control.is-invalid, .was-validated .form-control:invalid {
+.noShow .form-control.is-invalid, .was-validated .form-control:invalid {
   background-image: url() !important;
 }
   

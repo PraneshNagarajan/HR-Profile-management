@@ -8,6 +8,7 @@ import {
   FormLabel,
   TabContent,
   Form,
+  FormGroup,
 } from "react-bootstrap";
 
 const EmployeeTabContent = () => {
@@ -16,11 +17,11 @@ const EmployeeTabContent = () => {
   return (
     <TabContent>
       <Card>
-        <Card.Body className="p-5 mb-5">
+        <Card.Body className="mb-5">
           <Form className="mb-5">
-            <Row>
-              <Col md="4">
-                <div className="form-group my-2">
+            <Row className="my-2">
+              <Col md={{ span: "5", offset: "1" }}>
+                <FormGroup>
                   <FormLabel htmlFor="employee id">Employee Id</FormLabel>
                   <FormControl
                     type="text"
@@ -28,16 +29,12 @@ const EmployeeTabContent = () => {
                     name="employee-id"
                     required
                   />
-                </div>
+                </FormGroup>
               </Col>
-              <Col md="4">
+              <Col md="5">
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
-                  <Dropdown.Toggle
-                    variant="primary"
-                    id="dropdown-basic"
-                    className="w-100"
-                  >
+                  <Dropdown.Toggle variant="outline-primary" className="w-100">
                     {role}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
@@ -66,32 +63,38 @@ const EmployeeTabContent = () => {
                   </Dropdown.Menu>
                 </Dropdown>
               </Col>
-              <Col md="4">
+            </Row>
+            <Row className="my-5">
+              <Col md={{ span: "5", offset: "1" }}>
+                <FormGroup>
+                  <FormLabel htmlFor="employee id">Employee email Id</FormLabel>
+                  <FormControl type="text" name="employee-email" required />
+                </FormGroup>
+              </Col>
+              <Col md="5">
                 <FormLabel>Permissions</FormLabel>
-
                 <Dropdown>
                   <Dropdown.Toggle
                     disabled={!role.includes("Focal")}
-                    variant="secondary"
+                    variant="outline-secondary"
                     id="dropdown-basic"
                     className="w-100"
                   >
                     {permission}
                   </Dropdown.Toggle>
-
                   <Dropdown.Menu className="w-100 text-center">
                     <Dropdown.Item
                       onClick={(e) => setPermission("Read & Write")}
                       active={permission.includes("Write")}
                     >
-                      Read & Write
+                      View & Edit
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
                       onClick={(e) => setPermission("Read Only")}
                       active={permission.includes("Only")}
                     >
-                      Read Only
+                      View Only
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>

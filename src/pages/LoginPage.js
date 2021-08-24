@@ -285,14 +285,13 @@ const LoginPage = () => {
               isValid={formik.touched.username && !formik.errors.username}
               isInvalid={formik.touched.username && formik.errors.username}
             />
-            {!msgFlag && formik.touched.username && formik.errors.username && (
-              <p className="text-danger">
+            {/* invalid-feedback class display when isInvalid prop is true */}
+            <p className="invalid-feedback">
                 {" "}
                 {authMsg.length > 0 ? "" : formik.errors.username}{" "}
               </p>
-            )}
           </FormGroup>
-          <FormGroup className="my-3">
+          <FormGroup className="noShow my-3">
             <FormLabel>
               <b>Enter your Password</b>
             </FormLabel>
@@ -325,12 +324,10 @@ const LoginPage = () => {
                 />
               )}
             </span>
-            {!msgFlag && formik.touched.password && formik.errors.password && (
-              <p className="text-danger">
+            <p className="invalid-feedback">
                 {" "}
                 {authMsg.length > 0 ? "" : formik.errors.password}{" "}
               </p>
-            )}
           </FormGroup>
           <div>
             {!isLoading && (

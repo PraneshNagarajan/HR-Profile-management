@@ -35,7 +35,7 @@ const formValidation = (field) => {
 
 const ResetPasswordPage = () => {
   const dispatch = useDispatch();
-  const history = useHistory()
+  const history = useHistory();
   const [authStatus, setAuthStatus] = useState(false);
   const [authMsg, setAuthMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +73,7 @@ const ResetPasswordPage = () => {
           dispatch(
             AuthActions.getAuthStatus({ flag: false, role: "", admin: "" })
           );
-          history.push("/")
+          history.push("/");
         }, 3000);
       })
       .catch((err) => {
@@ -185,7 +185,7 @@ const ResetPasswordPage = () => {
       <h1 className="mt-5  text-center text-primary">Reset Password</h1>
       <Card.Body>
         <Form onSubmit={formik.handleSubmit}>
-          <FormGroup className={sm ? "mb-2" : ""}>
+          <FormGroup className={`noShow ${sm ? `mb-2` : ``}`}>
             <FormLabel>
               <b>Enter your Username</b>
             </FormLabel>
@@ -198,17 +198,15 @@ const ResetPasswordPage = () => {
               isValid={formik.touched.username && !formik.errors.username}
               isInvalid={formik.touched.username && formik.errors.username}
             />
-            {formik.touched.username && formik.errors.username && (
-              <p className="text-danger">
-                {" "}
-                {authMsg.length > 0 ? "" : formik.errors.username}{" "}
-              </p>
-            )}
+            <p className="invalid-feedback">
+              {" "}
+              {authMsg.length > 0 ? "" : formik.errors.username}{" "}
+            </p>
           </FormGroup>
 
           {db_question1.length > 0 && (
             <Fragment>
-              <FormGroup className="my-3">
+              <FormGroup className="noShow my-3">
                 <FormLabel>
                   <b>{sm ? "Q" : "Security Question"}1: </b>({db_question1})
                 </FormLabel>
@@ -244,14 +242,12 @@ const ResetPasswordPage = () => {
                     />
                   )}
                 </span>
-                {formik.touched.answer1 && formik.errors.answer1 && (
-                  <p className="text-danger">
-                    {" "}
-                    {authMsg.length > 0 ? "" : formik.errors.answer1}{" "}
-                  </p>
-                )}
+                <p className="invalid-feedback">
+                  {" "}
+                  {authMsg.length > 0 ? "" : formik.errors.answer1}{" "}
+                </p>
               </FormGroup>
-              <FormGroup className="my-2">
+              <FormGroup className="noShow my-2">
                 <FormLabel>
                   <b>{sm ? "Q" : "Security Question"}2: </b>({db_question2})
                 </FormLabel>
@@ -286,12 +282,10 @@ const ResetPasswordPage = () => {
                     />
                   )}
                 </span>
-                {formik.touched.answer2 && formik.errors.answer2 && (
-                  <p className="text-danger">
-                    {" "}
-                    {authMsg.length > 0 ? "" : formik.errors.answer2}{" "}
-                  </p>
-                )}
+                <p className="invalid-feedback">
+                  {" "}
+                  {authMsg.length > 0 ? "" : formik.errors.answer2}{" "}
+                </p>
               </FormGroup>
             </Fragment>
           )}

@@ -148,7 +148,7 @@ const ChangePasswordPage = () => {
       <h1 className="mt-5  text-center text-primary">Change Password</h1>
       <Card.Body>
         <Form onSubmit={formik.handleSubmit}>
-          <FormGroup className="my-3">
+          <FormGroup className="noShow my-3">
             <FormLabel>
               <b>New Password</b>
             </FormLabel>
@@ -185,14 +185,12 @@ const ChangePasswordPage = () => {
                 />
               )}
             </span>
-            {formik.touched.new_password && formik.errors.new_password && (
-              <p className="text-danger">
-                {" "}
-                {authMsg.length > 0 ? "" : formik.errors.new_password}{" "}
-              </p>
-            )}
+            <p className="invalid-feedback">
+              {" "}
+              {authMsg.length > 0 ? "" : formik.errors.new_password}{" "}
+            </p>
           </FormGroup>
-          <FormGroup className="my-2">
+          <FormGroup className="noShow my-2">
             <FormLabel>
               <b>Confirm Password</b>
             </FormLabel>
@@ -230,15 +228,10 @@ const ChangePasswordPage = () => {
                 />
               )}
             </span>
-            {formik.touched.confirm_password &&
-              formik.errors.confirm_password && (
-                <p className="text-danger">
-                  {" "}
-                  {authMsg.length > 0
-                    ? ""
-                    : formik.errors.confirm_password}{" "}
-                </p>
-              )}
+            <p className="invalid-feedback">
+              {" "}
+              {authMsg.length > 0 ? "" : formik.errors.confirm_password}{" "}
+            </p>
           </FormGroup>
           <div>
             {!isLoading && (
