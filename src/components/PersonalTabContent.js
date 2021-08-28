@@ -109,6 +109,7 @@ const validate = (value) => {
   return errors;
 };
 const PersonalTabContent = (props) => {
+  const date = new Date();
   const sm = useMediaQuery({ maxWidth: 768 });
   const formik = useFormik({
     initialValues,
@@ -135,10 +136,14 @@ const PersonalTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.firstname && formik.touched.firstname
+                      formik.errors.firstname &&
+                      (formik.touched.firstname ||
+                        formik.values.firstname.length > 0)
                     }
                     isValid={
-                      !formik.errors.firstname && formik.touched.firstname
+                      !formik.errors.firstname &&
+                      (formik.touched.firstname ||
+                        formik.values.firstname.length > 0)
                     }
                   />
                   <div className="invalid-feedback">
@@ -155,9 +160,15 @@ const PersonalTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.lastname && formik.touched.lastname
+                      formik.errors.lastname &&
+                      (formik.touched.lastname ||
+                        formik.values.lastname.length > 0)
                     }
-                    isValid={!formik.errors.lastname && formik.touched.lastname}
+                    isValid={
+                      !formik.errors.lastname &&
+                      (formik.touched.lastname ||
+                        formik.values.lastname.length > 0)
+                    }
                   />
                   <div className="invalid-feedback">
                     {formik.errors.lastname}
@@ -175,10 +186,14 @@ const PersonalTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.fathername && formik.touched.fathername
+                      formik.errors.fathername &&
+                      (formik.touched.fathername ||
+                        formik.values.fathername.length > 0)
                     }
                     isValid={
-                      !formik.errors.fathername && formik.touched.fathername
+                      !formik.errors.fathername &&
+                      (formik.touched.fathername ||
+                        formik.values.fathername.length > 0)
                     }
                   />
                   <div className="invalid-feedback">
@@ -195,10 +210,14 @@ const PersonalTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.mothername && formik.touched.mothername
+                      formik.errors.mothername &&
+                      (formik.touched.mothername ||
+                        formik.values.mothername.length > 0)
                     }
                     isValid={
-                      !formik.errors.mothername && formik.touched.mothername
+                      !formik.errors.mothername &&
+                      (formik.touched.mothername ||
+                        formik.values.mothername.length > 0)
                     }
                   />
                   <div className="invalid-feedback">
@@ -214,6 +233,16 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="date"
                     name="dob"
+                    max={
+                      date.getFullYear() -
+                      21 +
+                      "-" +
+                      (date.getMonth() > 9
+                        ? date.getMonth() + 1
+                        : "0" + (date.getMonth() + 1)) +
+                      "-" +
+                      date.getDate()
+                    }
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={formik.errors.dob && formik.touched.dob}
@@ -267,12 +296,18 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     name="age"
                     type="number"
-                    min="0"
+                    min="21"
                     max="120"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    isInvalid={formik.errors.age && formik.touched.age}
-                    isValid={!formik.errors.age && formik.touched.age}
+                    isInvalid={
+                      formik.errors.age &&
+                      (formik.touched.age || formik.values.age >= 21)
+                    }
+                    isValid={
+                      !formik.errors.age &&
+                      (formik.touched.age || formik.values.age >= 21)
+                    }
                   />
                   <div className="invalid-feedback">{formik.errors.age}</div>
                 </FormGroup>
@@ -289,8 +324,14 @@ const PersonalTabContent = (props) => {
                     name="phone1"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    isInvalid={formik.errors.phone1 && formik.touched.phone1}
-                    isValid={!formik.errors.phone1 && formik.touched.phone1}
+                    isInvalid={
+                      formik.errors.phone1 &&
+                      (formik.touched.email1 || formik.values.email1.length > 0)
+                    }
+                    isValid={
+                      !formik.errors.phone1 &&
+                      (formik.touched.phone1 || formik.values.phone1.length > 0)
+                    }
                   />
                   <div className="invalid-feedback">{formik.errors.phone1}</div>
                 </FormGroup>
@@ -305,8 +346,14 @@ const PersonalTabContent = (props) => {
                     name="phone2"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    isInvalid={formik.errors.phone2 && formik.touched.phone2}
-                    isValid={!formik.errors.phone2 && formik.touched.phone2}
+                    isInvalid={
+                      formik.errors.phone2 &&
+                      (formik.touched.email1 || formik.values.email1.length > 0)
+                    }
+                    isValid={
+                      !formik.errors.phone2 &&
+                      (formik.touched.phone2 || formik.values.phone2.length > 0)
+                    }
                   />
                   {!formik.touched.phone2 && (
                     <div className="text-muted">optional</div>
@@ -324,8 +371,14 @@ const PersonalTabContent = (props) => {
                     name="email1"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    isInvalid={formik.errors.email1 && formik.touched.email1}
-                    isValid={!formik.errors.email1 && formik.touched.email1}
+                    isInvalid={
+                      formik.errors.email1 &&
+                      (formik.touched.email1 || formik.values.email1.length > 0)
+                    }
+                    isValid={
+                      !formik.errors.email1 &&
+                      (formik.touched.email1 || formik.values.email1.length > 0)
+                    }
                   />
                   <div className="invalid-feedback">{formik.errors.email1}</div>
                 </FormGroup>
@@ -338,8 +391,14 @@ const PersonalTabContent = (props) => {
                     name="email2"
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    isInvalid={formik.errors.email2 && formik.touched.email2}
-                    isValid={!formik.errors.email2 && formik.touched.email2}
+                    isInvalid={
+                      formik.errors.email2 &&
+                      (formik.touched.email2 || formik.values.email2.length > 0)
+                    }
+                    isValid={
+                      !formik.errors.email2 &&
+                      (formik.touched.email2 || formik.values.email2.length > 0)
+                    }
                   />
                   {!formik.touched.email2 && (
                     <div className="text-muted">optional</div>
