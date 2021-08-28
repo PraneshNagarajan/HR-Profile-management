@@ -5,19 +5,24 @@ const EmployeeInfoSlice = createSlice({
     initialState: {
         personal: [],
         address: [],
-        employee:[]
+        employee:[],
+        activeTab: 'personal-info'
     },
     reducers: {
         getPersonalInfo(state, action) {
-            console.log(action.payload)
             state.personal = [action.payload]
+            state.activeTab = 'address-info'
         },
         getAddressInfo(state, action) {
             state.address = [action.payload]
+            state.activeTab = 'employee-info'
         },
         getEmployeeInfo(state, action) {
             state.employee = [action.payload]
-        }
+        },
+        getActiveTab(state, action) {
+            state.activeTab = action.payload
+        },
     }
 })
 export const InfoActions = EmployeeInfoSlice.actions;

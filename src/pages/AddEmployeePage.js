@@ -1,24 +1,27 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { Container, Nav } from "react-bootstrap";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import AddressTabContent from "../components/AddressTabContent";
 import EmployeeTabContent from "../components/EmployeeTabContent";
 import PersonalTabContent from "../components/PersonalTabContent";
+import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const AddEmployeePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
-  const [activeTab, setActiveTab] = useState("personal");
+  // const [activeTab, setActiveTab] = useState("personal");
+  const dispatch = useDispatch()
   const infos = useSelector((state) => state.info);
-
+console.log(infos.activeTab)
   return (
     <Container fluid className={sm ? "my-3" : "p-5"}>
-      <Nav variant="tabs" defaultActiveKey="personal-info">
+      <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
         <Nav.Item>
           <Nav.Link
             eventKey="personal-info"
-            onClick={(e) => setActiveTab("personal")}
+            active={infos.activeTab.includes("personal")}
+            onClick={(e) => dispatch(InfoActions.getActiveTab("personal-info"))}
           >
             <span
               className={
@@ -32,7 +35,8 @@ const AddEmployeePage = () => {
         <Nav.Item>
           <Nav.Link
             eventKey="address-info"
-            onClick={(e) => setActiveTab("address")}
+            active={infos.activeTab.includes("address")}
+            onClick={(e) => dispatch(InfoActions.getActiveTab("address-info"))}
           >
             <span
               className={
@@ -46,7 +50,8 @@ const AddEmployeePage = () => {
         <Nav.Item>
           <Nav.Link
             eventKey="employee-info"
-            onClick={(e) => setActiveTab("employee")}
+            active={infos.activeTab.includes("employee")}
+            onClick={(e) => dispatch(InfoActions.getActiveTab("employee-info"))}
           >
             <span
               className={
@@ -58,13 +63,13 @@ const AddEmployeePage = () => {
           </Nav.Link>
         </Nav.Item>
       </Nav>
-      <div className={activeTab == "personal" ? "d-block" : "d-none"}>
+      <div className={infos.activeTab.includes("personal") ? "d-block" : "d-none"}>
         <PersonalTabContent />
       </div>
-      <div className={activeTab == "address" ? "d-block" : "d-none"}>
+      <div className={infos.activeTab.includes("address") ? "d-block" : "d-none"}>
         <AddressTabContent />
       </div>
-      <div className={activeTab == "employee" ? "d-block" : "d-none"}>
+      <div className={infos.activeTab.includes("employee") ? "d-block" : "d-none"}>
         <EmployeeTabContent />
       </div>
     </Container>
