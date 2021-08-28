@@ -12,7 +12,9 @@ import {
   Form,
   Button,
 } from "react-bootstrap";
+import { useDispatch } from "react-redux";
 import { useMediaQuery } from "react-responsive";
+import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const initialValues = {
   firstname: "",
@@ -111,6 +113,7 @@ const validate = (value) => {
 const PersonalTabContent = (props) => {
   const date = new Date();
   const sm = useMediaQuery({ maxWidth: 768 });
+  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues,
     validate,
@@ -411,6 +414,9 @@ const PersonalTabContent = (props) => {
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={!(formik.dirty && formik.isValid)}
+                onClick={(e) =>
+                  dispatch(InfoActions.getPersonalInfo(formik.values))
+                }
               >
                 Save
               </Button>

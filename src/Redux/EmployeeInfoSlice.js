@@ -8,14 +8,15 @@ const EmployeeInfoSlice = createSlice({
         employee:[]
     },
     reducers: {
-        getPersonalInfo(state, payload) {
-            state.personal = [payload]
+        getPersonalInfo(state, action) {
+            console.log(action.payload)
+            state.personal = [action.payload]
         },
-        getAddressInfo(state, payload) {
-            state.address = [payload]
+        getAddressInfo(state, action) {
+            state.address = [action.payload]
         },
-        getEmployeeInfo(state, payload) {
-            state.employee = [payload]
+        getEmployeeInfo(state, action) {
+            state.employee = [action.payload]
         }
     }
 })
