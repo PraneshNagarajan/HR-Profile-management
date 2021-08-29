@@ -14,7 +14,7 @@ const EmployeeInfoSlice = createSlice({
             state.activeTab = 'address-info'
         },
         getAddressInfo(state, action) {
-            state.address = [action.payload]
+            state.address = action.payload
             state.activeTab = 'employee-info'
         },
         getEmployeeInfo(state, action) {

@@ -351,7 +351,7 @@ const PersonalTabContent = (props) => {
                     onBlur={formik.handleBlur}
                     isInvalid={
                       formik.errors.phone2 &&
-                      (formik.touched.email1 || formik.values.email1.length > 0)
+                      (formik.touched.phone2 || formik.values.phone2.length > 0)
                     }
                     isValid={
                       !formik.errors.phone2 &&
@@ -418,7 +418,7 @@ const PersonalTabContent = (props) => {
                   dispatch(InfoActions.getPersonalInfo(formik.values))
                 }
               >
-                Save
+                Save && Next
               </Button>
             </div>
           </Form>

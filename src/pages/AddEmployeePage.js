@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useState } from "react";
 import { Container, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
@@ -10,10 +8,8 @@ import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const AddEmployeePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
-  // const [activeTab, setActiveTab] = useState("personal");
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
-console.log(infos.activeTab)
   return (
     <Container fluid className={sm ? "my-3" : "p-5"}>
       <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
@@ -63,13 +59,19 @@ console.log(infos.activeTab)
           </Nav.Link>
         </Nav.Item>
       </Nav>
-      <div className={infos.activeTab.includes("personal") ? "d-block" : "d-none"}>
+      <div
+        className={infos.activeTab.includes("personal") ? "d-block" : "d-none"}
+      >
         <PersonalTabContent />
       </div>
-      <div className={infos.activeTab.includes("address") ? "d-block" : "d-none"}>
+      <div
+        className={infos.activeTab.includes("address") ? "d-block" : "d-none"}
+      >
         <AddressTabContent />
       </div>
-      <div className={infos.activeTab.includes("employee") ? "d-block" : "d-none"}>
+      <div
+        className={infos.activeTab.includes("employee") ? "d-block" : "d-none"}
+      >
         <EmployeeTabContent />
       </div>
     </Container>
