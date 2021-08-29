@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   Row,
@@ -10,9 +10,9 @@ import {
   TabContent,
   Form,
   FormLabel,
-  Button
+  Button,
 } from "react-bootstrap";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { useMediaQuery } from "react-responsive";
 
@@ -79,15 +79,16 @@ const validate = (value) => {
 
 const AddressTabContent = () => {
   const [addressFlag, setAddressFlag] = useState(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
+  const infos = useSelector((state) => state.info);
   useEffect(() => {
-    if(addressFlag) {
-      formik_permanentAdd.setValues(formik_presentAdd.values)
+    if (addressFlag) {
+      formik_permanentAdd.setValues(formik_presentAdd.values);
     } else {
-      formik_permanentAdd.setValues(initialValues)
+      formik_permanentAdd.setValues(initialValues);
     }
-  },[addressFlag])
+  }, [addressFlag]);
 
   const formik_presentAdd = useFormik({
     initialValues,
@@ -107,6 +108,15 @@ const AddressTabContent = () => {
     },
     validate,
   });
+
+  useEffect(() => {
+    if (infos.submitted) {
+      formik_permanentAdd.resetForm();
+      formik_presentAdd.resetForm();
+      setAddressFlag(false);
+    }
+  }, [infos.submitted]);
+
   return (
     <TabContent>
       <Card>
@@ -120,6 +130,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="flatno"
+                    value={formik_presentAdd.values.flatno}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -144,6 +155,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="street"
+                    value={formik_presentAdd.values.street}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -170,6 +182,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="landmark"
+                    value={formik_presentAdd.values.landmark}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -194,6 +207,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="city"
+                    value={formik_presentAdd.values.city}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -220,6 +234,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="district"
+                    value={formik_presentAdd.values.district}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -244,6 +259,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="state"
+                    value={formik_presentAdd.values.state}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -270,6 +286,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="country"
+                    value={formik_presentAdd.values.country}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -294,6 +311,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="number"
                     name="pincode"
+                    value={formik_presentAdd.values.pincode}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -332,8 +350,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="flatno"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.flatno : formik_permanentAdd.values.flatno}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.flatno
+                        : formik_permanentAdd.values.flatno
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -358,8 +380,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="street"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.street : formik_permanentAdd.values.street}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.street
+                        : formik_permanentAdd.values.street
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -386,8 +412,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="landmark"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.landmark : formik_permanentAdd.values.landmark}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.landmark
+                        : formik_permanentAdd.values.landmark
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -412,8 +442,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="city"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.city : formik_permanentAdd.values.city}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.city
+                        : formik_permanentAdd.values.city
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -440,8 +474,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="district"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.district : formik_permanentAdd.values.district}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.district
+                        : formik_permanentAdd.values.district
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -466,8 +504,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="state"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.state : formik_permanentAdd.values.state}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.state
+                        : formik_permanentAdd.values.state
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -494,8 +536,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="country"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.country : formik_permanentAdd.values.country}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.country
+                        : formik_permanentAdd.values.country
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -520,8 +566,12 @@ const AddressTabContent = () => {
                   <FormControl
                     type="number"
                     name="pincode"
-                    readOnly={addressFlag ? "true" : ""}
-                    value={addressFlag ? formik_presentAdd.values.pincode : formik_permanentAdd.values.pincode}
+                    readOnly={addressFlag}
+                    value={
+                      addressFlag
+                        ? formik_presentAdd.values.pincode
+                        : formik_permanentAdd.values.pincode
+                    }
                     onChange={formik_permanentAdd.handleChange}
                     onBlur={formik_permanentAdd.handleBlur}
                     isInvalid={
@@ -544,9 +594,17 @@ const AddressTabContent = () => {
             <div className={sm ? "" : "float-end"}>
               <Button
                 className={sm ? "w-100" : ""}
-                disabled={((!(formik_presentAdd.dirty && formik_presentAdd.isValid)) || (!(formik_permanentAdd.dirty && formik_permanentAdd.isValid)))}
+                disabled={
+                  !(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
+                  !(formik_permanentAdd.dirty && formik_permanentAdd.isValid)
+                }
                 onClick={(e) =>
-                  dispatch(InfoActions.getAddressInfo([{present: formik_presentAdd.values}, {permanent: formik_permanentAdd.values}]))
+                  dispatch(
+                    InfoActions.getAddressInfo([
+                      { present: formik_presentAdd.values },
+                      { permanent: formik_permanentAdd.values },
+                    ])
+                  )
                 }
               >
                 Save && Next

@@ -1,4 +1,5 @@
 import { useFormik } from "formik";
+import { useEffect } from "react";
 import { useState } from "react";
 import {
   Card,
@@ -12,7 +13,7 @@ import {
   Form,
   Button,
 } from "react-bootstrap";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
@@ -73,7 +74,7 @@ const validate = (value) => {
   } else if (String(value.phone1).length > 14) {
     errors.phone1 =
       "*Phone number must be with in 15 charcaters with country code.";
-  } else if (!new RegExp("^[0-9]{1,3}[-]{1}").test(value.phone1)) {
+  } else if (!new RegExp("^[+][0-9]{1,3}[-]{1}").test(value.phone1)) {
     errors.phone1 = "*Please enter hypen after country code.";
   } else if (!new RegExp("[0-9]{7,10}$").test(value.phone1)) {
     errors.phone1 = "*Invalid Format (Numbers Only).";
@@ -83,7 +84,7 @@ const validate = (value) => {
     if (String(value.phone2).length > 14) {
       errors.phone2 =
         "*Phone number must be with in 15 charcaters with country code.";
-    } else if (!new RegExp("^[0-9]{1,3}[-]{1}").test(value.phone2)) {
+    } else if (!new RegExp("^[+][0-9]{1,3}[-]{1}").test(value.phone2)) {
       errors.phone2 = "*Please enter hypen after country code.";
     } else if (!new RegExp("[0-9]{7,10}$").test(value.phone2)) {
       errors.phone2 = "*Invalid Format (Numbers Only).";
@@ -112,17 +113,26 @@ const validate = (value) => {
 };
 const PersonalTabContent = (props) => {
   const date = new Date();
-  const sm = useMediaQuery({ maxWidth: 768 });
   const dispatch = useDispatch();
+  const infos = useSelector((state) => state.info);
+  const sm = useMediaQuery({ maxWidth: 768 });
+  const [selectedGender, setSelectedGender] = useState("- Select Gender -");
+
   const formik = useFormik({
     initialValues,
     validate,
   });
-  const [selectedGender, setSelectedGender] = useState("- Select Gender -");
   const setGender = (value) => {
     formik.values.gender = value;
     setSelectedGender(value);
   };
+
+  useEffect(() => {
+    if (infos.submitted) {
+      setSelectedGender("- Select Gender -");
+      formik.resetForm();
+    }
+  }, [infos.submitted]);
 
   return (
     <TabContent>
@@ -136,6 +146,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="firstname"
+                    value={formik.values.firstname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -160,6 +171,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="lastname"
+                    value={formik.values.lastname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -186,6 +198,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="fathername"
+                    value={formik.values.fathername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -210,6 +223,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="mothername"
+                    value={formik.values.mothername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -236,6 +250,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="date"
                     name="dob"
+                    value={formik.values.dob}
                     max={
                       date.getFullYear() -
                       21 +
@@ -301,6 +316,7 @@ const PersonalTabContent = (props) => {
                     type="number"
                     min="21"
                     max="120"
+                    value={formik.values.age}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -325,11 +341,12 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="phone1"
+                    value={formik.values.phone1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
                       formik.errors.phone1 &&
-                      (formik.touched.email1 || formik.values.email1.length > 0)
+                      (formik.touched.phone1 || formik.values.phone1.length > 0)
                     }
                     isValid={
                       !formik.errors.phone1 &&
@@ -347,6 +364,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="phone2"
+                    value={formik.values.phone2}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -372,6 +390,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="email1"
+                    value={formik.values.email1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -392,6 +411,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="email2"
+                    value={formik.values.email2}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
