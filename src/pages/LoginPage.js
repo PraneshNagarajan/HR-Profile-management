@@ -55,10 +55,10 @@ const LoginPage = () => {
   const onVisibleHandler = () => {
     setIsVisibleField(!isVisibleField);
   };
-  
-  const onLoadinghandler = () =>{
+
+  const onLoadinghandler = () => {
     setIsLoading(true);
-  }
+  };
 
   const authNotification = () => {
     setAccoutStatus(true);
@@ -165,7 +165,7 @@ const LoginPage = () => {
       fireAuth
         .signInWithEmailAndPassword(value.username, value.password)
         .then((res) => {
-          onLoadinghandler()
+          onLoadinghandler();
           firestore
             .collection("Employee-Info")
             .doc(value.username)
@@ -174,27 +174,33 @@ const LoginPage = () => {
               const password_info = documentSnapshot.get("password-management");
               const auth_info = documentSnapshot.get("auth-info");
               const role_info = documentSnapshot.get("role-management");
+              const profile_info = documentSnapshot.get("profile");
               const dateDiff =
                 (new Date().getTime() -
                   new Date(password_info.last_changed).getTime()) /
                 (1000 * 3600 * 24);
-
+              console.log(auth_info.profile_completed);
               // get img url from firebase-Storage
-              fireStorage
-                .ref()
-                .child("employee-img/" + value.username + ".jpg")
-                .getDownloadURL()
-                .then((url) => {
-                  dispatch(
-                    AuthActions.getAuthStatus({
-                      flag: true,
-                      role: role_info.role,
-                      admin: role_info.admin_permission,
-                      name: fireAuth.currentUser.displayName,
-                      photoUrl: url,
-                    })
-                  );
-                  if (Math.round(dateDiff) <= 90) {
+              if (
+                Math.round(dateDiff) <= 90 &&
+                !auth_info.newly_added &&
+                profile_info.profile_completed
+              ) {
+                fireStorage
+                  .ref()
+                  .child("employee-img/" + value.username + ".jpg")
+                  .getDownloadURL()
+                  .then((url) => {
+                    dispatch(
+                      AuthActions.getAuthStatus({
+                        id: value.username,
+                        flag: true,
+                        role: role_info.role,
+                        admin: role_info.admin_permission,
+                        name: fireAuth.currentUser.displayName,
+                        photoUrl: url,
+                      })
+                    );
                     if (auth_info.locked === false) {
                       updateLoginStatus(value.username);
                       setAuthStatus(true);
@@ -212,19 +218,25 @@ const LoginPage = () => {
                     } else {
                       authNotification();
                     }
-                  } else {
-                    dispatch(
-                      AuthActions.getAuthStatus({
-                        flag: false,
-                        role: "",
-                        admin: "",
-                        name: "",
-                        photoUrl: "",
-                      })
-                    );
-                    history.push("/changePassword");
-                  }
-                });
+                  });
+              } else {
+                dispatch(
+                  AuthActions.getAuthStatus({
+                    flag: true,
+                    role: "",
+                    admin: "",
+                    name: "",
+                    photoUrl: "",
+                  })
+                );
+                if (auth_info.newly_added) {
+                  history.push("/changePassword");
+                }
+                if (!profile_info.profile_completed) {
+                  console.log("emp");
+                  history.push("/addEmployees");
+                }
+              }
             });
         })
         .catch((err) => {
@@ -287,9 +299,9 @@ const LoginPage = () => {
             />
             {/* invalid-feedback class display when isInvalid prop is true */}
             <p className="invalid-feedback">
-                {" "}
-                {authMsg.length > 0 ? "" : formik.errors.username}{" "}
-              </p>
+              {" "}
+              {authMsg.length > 0 ? "" : formik.errors.username}{" "}
+            </p>
           </FormGroup>
           <FormGroup className="noShow my-3">
             <FormLabel>
@@ -325,9 +337,9 @@ const LoginPage = () => {
               )}
             </span>
             <p className="invalid-feedback">
-                {" "}
-                {authMsg.length > 0 ? "" : formik.errors.password}{" "}
-              </p>
+              {" "}
+              {authMsg.length > 0 ? "" : formik.errors.password}{" "}
+            </p>
           </FormGroup>
           <div>
             {!isLoading && (

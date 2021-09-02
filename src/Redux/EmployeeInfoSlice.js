@@ -19,7 +19,7 @@ const EmployeeInfoSlice = createSlice({
       state.address = action.payload;
       state.activeTab = "employee-info";
     },
-    getEmployeeInfo() {
+    resetForm() {
       return { ...initialState, submitted: true };
     },
     getActiveTab(state, action) {

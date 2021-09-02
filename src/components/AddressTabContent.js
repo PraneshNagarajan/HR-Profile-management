@@ -337,6 +337,7 @@ const AddressTabContent = () => {
           <FormGroup>
             <FormCheck
               type="checkbox"
+              checked={addressFlag}
               label="Same as Present address"
               onClick={(e) => setAddressFlag(!addressFlag)}
             ></FormCheck>

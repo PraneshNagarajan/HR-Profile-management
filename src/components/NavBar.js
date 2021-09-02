@@ -163,7 +163,7 @@ const NavBar = () => {
                 <hr className="text-white line-break1" />
               </Nav.Item>
             )}
-            <Nav.Item>
+            {user.photoUrl.length > 0 && <Nav.Item>
               <NavDropdown
                 title={
                   <span>
@@ -192,12 +192,13 @@ const NavBar = () => {
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav.Item>
+            }
             {sm && <hr className="text-white line-break" />}
             {!sm && (
               <Nav.Item>
                 <Button
                   variant="outline-light"
-                  className="position-relative mt-2 me-4"
+                  className={`position-relative me-4 ${user.photoUrl.length > 0 ? `mt-2`: `mb-2`}`}
                 >
                   <b>
                     <FaBell className="me-1" />
@@ -215,7 +216,7 @@ const NavBar = () => {
                 <Button
                   variant="outline-light"
                   size=""
-                  className={`text-center mt-2 ${sm ? `ms-2` : ``}`}
+                  className={`text-center ${sm ? `ms-2` : ``} ${user.photoUrl.length > 0 ? `mt-2`: `mb-2`}`}
                   style={{ width: sm ? "97%" : "" }}
                 >
                   {" "}

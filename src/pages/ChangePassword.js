@@ -84,6 +84,9 @@ const ChangePasswordPage = () => {
         .then(() => {
           setAuthStatus(true);
           setAuthMsg("Your password has been changed sucessfully.");
+          firestore.collection("Employee-Info").doc(fireAuth.currentUser.email).update({
+            "auth-info.newly_added": false,
+          });
           setTimeout(() => {
             alert(fireAuth.currentUser.email);
             const store = firestore

@@ -1,7 +1,9 @@
+import { Fragment } from "react";
 import { Container, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import AddressTabContent from "../components/AddressTabContent";
+import Alerts from "../components/Alert";
 import EmployeeTabContent from "../components/EmployeeTabContent";
 import PersonalTabContent from "../components/PersonalTabContent";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
@@ -10,8 +12,11 @@ const AddEmployeePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
+  const alerts = useSelector(state => state.alert)
   return (
-    <Container fluid className={sm ? "my-3" : "p-5"}>
+    <Fragment>
+      <Alerts />
+      <Container fluid className={sm ? "my-3" : "p-5"}>
       <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
         <Nav.Item>
           <Nav.Link
@@ -59,6 +64,7 @@ const AddEmployeePage = () => {
           </Nav.Link>
         </Nav.Item>
       </Nav>
+      <div style={{opacity: alerts.show? '0.5': '1'}}>
       <div
         className={infos.activeTab.includes("personal") ? "d-block" : "d-none"}
       >
@@ -74,7 +80,10 @@ const AddEmployeePage = () => {
       >
         <EmployeeTabContent />
       </div>
+      </div>
     </Container>
+  
+    </Fragment>
   );
 };
 export default AddEmployeePage;

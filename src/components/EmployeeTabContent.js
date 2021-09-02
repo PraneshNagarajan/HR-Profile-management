@@ -15,6 +15,8 @@ import {
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
+import { fireAuth, firestore } from "../firebase";
+import { AlertActions } from "../Redux/AlertSlice";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const initialValues = {
@@ -44,12 +46,79 @@ const EmployeeTabContent = () => {
   const [selectedRole, setRole] = useState("- Select Role -");
   const [selectedPermission, setPermission] = useState("- Select Permission -");
   const infos = useSelector((state) => state.info);
-
+  const auth = useSelector((state) => state.auth);
   const formik = useFormik({
     initialValues,
     validate,
     onSubmit: (value) => {
-      dispatch(InfoActions.getEmployeeInfo());
+      firestore
+        .collection("Employee-Info")
+        .doc(formik.values.email)
+        .set({
+          "auth-info": {
+            attempts: 0,
+            chances: 0,
+            account_status: "active",
+            newly_added: true,
+            invalid_attempt_timestamp: null,
+            locked: false,
+          },
+          "login-info": {
+            last_logout: null,
+            last_login: null,
+            state: "active",
+          },
+          "password-management": {
+            question2: null,
+            answer1: null,
+            answer2: null,
+            question1: null,
+            last_changed: null,
+          },
+          profile: {
+            profile_completed: false,
+            personal: infos.personal,
+            address: infos.address,
+            employee: {
+              ...formik.values,
+              role: selectedRole,
+              permission: selectedPermission.includes("-") ? false : true,
+            },
+          },
+        })
+        .then((response) => {
+          fireAuth
+            .createUserWithEmailAndPassword(
+              formik.values.email,
+              formik.values.id
+            )
+            .then((auth) => {
+              dispatch(InfoActions.resetForm());
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Data added successfully.",
+                  flag: true,
+                })
+              );
+            })
+            .catch((err) => {
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Data added failed.",
+                  flag: false,
+                })
+              );
+              firestore
+                .collection("Employee-Info")
+                .doc(formik.values.email)
+                .delete();
+            });
+        })
+        .catch((err) => {
+          dispatch(
+            AlertActions.handleShow({ msg: "Data added failed.", flag: false })
+          );
+        });
     },
   });
 
