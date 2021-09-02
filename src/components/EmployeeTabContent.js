@@ -197,10 +197,10 @@ const EmployeeTabContent = (props) => {
 
   const handleChange = (e) => {
     console.log(e.target.files[0].size / 1024);
-    if (e.target.files[0].size / 1024 > 500) {
+    if (e.target.files[0].size / 1024 > 300) {
       dispatch(
         AlertActions.handleShow({
-          msg: "file size must be within 500kb",
+          msg: "file size must be within 300kb",
           flag: false,
         })
       );
