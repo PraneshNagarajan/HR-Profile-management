@@ -124,6 +124,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="flatno"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.flatno}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -149,6 +150,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="street"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.street}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -176,6 +178,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="landmark"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.landmark}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -201,6 +204,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="city"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.city}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -228,6 +232,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="district"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.district}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -253,6 +258,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="state"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.state}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -280,6 +286,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="country"
+                    style={{textTransform:'uppercase'}}
                     value={formik_presentAdd.values.country}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -347,6 +354,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="flatno"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -377,6 +385,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="street"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -409,6 +418,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="landmark"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -439,6 +449,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="city"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -471,6 +482,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="district"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -501,6 +513,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="state"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag
@@ -533,6 +546,7 @@ const AddressTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="country"
+                    style={{textTransform:'uppercase'}}
                     readOnly={addressFlag || props.view}
                     value={
                       addressFlag

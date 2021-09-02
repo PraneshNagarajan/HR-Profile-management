@@ -69,7 +69,7 @@ const NavBar = () => {
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
             <NavDropdown
-              active={location.pathname.includes("addEmployee") ? `active` : ``}
+              active={location.pathname.includes("addEmployee") || location.pathname.includes("manageEmployee") ? `active` : ``}
               title={
                 <span>
                   <FaUsersCog className="mb-1" /> Employees

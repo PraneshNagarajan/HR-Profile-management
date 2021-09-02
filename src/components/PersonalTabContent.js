@@ -146,6 +146,7 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="firstname"
                     readOnly={props.view}
+                    style={{textTransform:'uppercase'}}
                     value={formik.values.firstname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -172,6 +173,7 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="lastname"
                     readOnly={props.view}
+                    style={{textTransform:'uppercase'}}
                     value={formik.values.lastname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -199,8 +201,9 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="fathername"
-                    value={formik.values.fathername}
                     readOnly={props.view}
+                    style={{textTransform:'uppercase'}}
+                    value={formik.values.fathername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
@@ -226,6 +229,7 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="mothername"
                     readOnly={props.view}
+                    style={{textTransform:'uppercase'}}
                     value={formik.values.mothername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}

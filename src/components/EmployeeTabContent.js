@@ -61,33 +61,55 @@ const EmployeeTabContent = (props) => {
     initialValues: props.view ? infos.employee : initialValues,
     validate,
     onSubmit: (value) => {
-      if (props.view && Img.name.length > 0) {
+      if (Img.name.length > 0) {
         fireStorage
           .ref()
-          .child("employee-img/" + "sathyajana20@gmail.com")
+          .child("employee-img/" + value.email)
           .put(Img)
-          .then((url) => {
-            firestore
-              .collection("Employee-Info")
-              .doc("sathyajana20@gmail.com")
-              .update({
+          .then(() => {
+            if (!auth.admin || value.email === auth.id) {
+              firestore.collection("Employee-Info").doc(value.email).update({
                 "profile.img_uploaded": true,
               });
-            console.log(url);
-            dispatch(AuthActions.getPhoto(url));
+              if (infos.employee_status) {
+                dispatch(
+                  AuthActions.getAuthStatus({
+                    id: value.email,
+                    flag: true,
+                    role: infos.employee.role,
+                    admin: infos.employee.admin_permission,
+                    name: fireAuth.currentUser.displayName,
+                    photoUrl: URL.createObjectURL(Img),
+                  })
+                );
+              } else {
+                dispatch(AuthActions.getPhoto(URL.createObjectURL(Img)));
+              }
+            }
           })
           .catch(() => {});
       }
+      if (props.view) {
+        firestore
+          .collection("Employee-Info")
+          .doc(formik.values.email)
+          .update({
+            "profile.personal": infos.personal,
+            "profile.address": infos.address,
+          })
+          .catch(() => {});
 
-      const uploading_datas = props.view
-        ? {
-            profile: {
-              img_uploaded: false,
-              personal: infos.personal,
-              address: infos.address,
-            },
-          }
-        : {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Data added successfully.",
+            flag: true,
+          })
+        );
+      } else {
+        firestore
+          .collection("Employee-Info")
+          .doc(formik.values.email)
+          .set({
             "auth-info": {
               attempts: 0,
               chances: 0,
@@ -109,7 +131,7 @@ const EmployeeTabContent = (props) => {
               last_changed: null,
             },
             profile: {
-              img_uploaded: false,
+              img_uploaded: Img.name.length > 0 ? true: false,
               personal: infos.personal,
               address: infos.address,
               employee: {
@@ -120,20 +142,17 @@ const EmployeeTabContent = (props) => {
                   : false,
               },
             },
-          };
-
-      firestore
-        .collection("Employee-Info")
-        .doc(formik.values.email)
-        .set(uploading_datas)
-        .then(() => {
-          if (!props.view) {
+          })
+          .then(() => {
             fireAuth
               .createUserWithEmailAndPassword(
                 formik.values.email,
                 formik.values.id
               )
-              .then((auth) => {
+              .then((res) => {
+                res.user.updateProfile({
+                  displayName: infos.personal.firstname,
+                });
                 dispatch(InfoActions.resetForm());
                 dispatch(
                   AlertActions.handleShow({
@@ -154,20 +173,16 @@ const EmployeeTabContent = (props) => {
                   .doc(formik.values.email)
                   .delete();
               });
-          } else {
+          })
+          .catch(() => {
             dispatch(
               AlertActions.handleShow({
-                msg: "Data added successfully.",
-                flag: true,
+                msg: "Data added failed.",
+                flag: false,
               })
             );
-          }
-        })
-        .catch(() => {
-          dispatch(
-            AlertActions.handleShow({ msg: "Data added failed.", flag: false })
-          );
-        });
+          });
+      }
     },
   });
 
@@ -190,7 +205,6 @@ const EmployeeTabContent = (props) => {
         })
       );
     } else if (e.target.files[0]) {
-      console.log(e.target.files[0]);
       setImg(e.target.files[0]);
       setViewImg(true);
     }

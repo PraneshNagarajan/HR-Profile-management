@@ -180,12 +180,7 @@ const LoginPage = () => {
                   new Date(password_info.last_changed).getTime()) /
                 (1000 * 3600 * 24);
               // get img url from firebase-Storage
-              if (
-                Math.round(dateDiff) <= 90 &&
-                !auth_info.newly_added &&
-                profile_info.img_uploaded &&
-                password_info.status
-              ) {
+              if (profile_info.img_uploaded) {
                 fireStorage
                   .ref()
                   .child("employee-img/" + value.username)
@@ -201,24 +196,30 @@ const LoginPage = () => {
                         photoUrl: url,
                       })
                     );
-                    if (auth_info.locked === false) {
-                      updateLoginStatus(value.username);
-                      setAuthStatus(true);
-                      setAuthMsg("Login Successfully !");
-                      firestore
-                        .collection("Employee-Info")
-                        .doc(value.username)
-                        .update({
-                          "auth-info.chances": 0,
-                          "auth-info.attempts": 0,
-                          "auth-info.locked": false,
-                          "auth-info.invalid_attempt_timestamp": null,
-                        });
-                      history.push("/focalHomePage");
-                    } else {
-                      authNotification();
-                    }
                   });
+              }
+              if (
+                Math.round(dateDiff) <= 90 &&
+                !auth_info.newly_added &&
+                password_info.status
+              ) {
+                if (auth_info.locked === false) {
+                  updateLoginStatus(value.username);
+                  setAuthStatus(true);
+                  setAuthMsg("Login Successfully !");
+                  firestore
+                    .collection("Employee-Info")
+                    .doc(value.username)
+                    .update({
+                      "auth-info.chances": 0,
+                      "auth-info.attempts": 0,
+                      "auth-info.locked": false,
+                      "auth-info.invalid_attempt_timestamp": null,
+                    });
+                  history.push("/focalHomePage");
+                } else {
+                  authNotification();
+                }
               } else {
                 dispatch(
                   AuthActions.getAuthStatus({
@@ -238,13 +239,15 @@ const LoginPage = () => {
                       personal: profile_info.personal,
                       employee: profile_info.employee,
                       security: password_info,
-                      activeTab: !profile_info.img_uploaded ? "employee-info" : "security-info",
+                      activeTab: !profile_info.img_uploaded
+                        ? "employee-info"
+                        : "security-info",
                       employee_status: profile_info.img_uploaded,
-                      password_status: password_info.status
+                      password_status: password_info.status,
                     })
                   );
                   history.push("/manageEmployeeProfile");
-                } 
+                }
               }
             });
         })
