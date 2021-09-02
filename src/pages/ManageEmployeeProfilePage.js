@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Fragment } from "react";
 import { Container, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,17 +5,27 @@ import { useMediaQuery } from "react-responsive";
 import AddressTabContent from "../components/AddressTabContent";
 import Alerts from "../components/Alert";
 import EmployeeTabContent from "../components/EmployeeTabContent";
+import SecurityContent from "../components/SecurityContent";
 import PersonalTabContent from "../components/PersonalTabContent";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
+import { useEffect } from "react";
+import { AlertActions } from "../Redux/AlertSlice";
 
-const AddEmployeePage = () => {
+const ManageEmployeeProfilePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
 
   useEffect(() => {
-    dispatch(InfoActions.resetForm())
+    if(!infos.employee_status && !infos.password_status) {
+      dispatch(AlertActions.handleShow({msg: 'Please upload photo and choose your security questions and answers.' , flag: false}))
+    } else if (!infos.employee_status) {
+      dispatch(AlertActions.handleShow({msg: 'Please upload photo' , flag: false}))
+    } else if(!infos.password_status) {
+      dispatch(AlertActions.handleShow({msg: 'Please choose your security questions and answers.' , flag: false}))
+    }
   },[])
+
   return (
     <Fragment>
       <Alerts />
@@ -30,7 +39,7 @@ const AddEmployeePage = () => {
           >
             <span
               className={
-                Object.keys(infos.personal).length > 0 ? "fw-bold text-success" : "text-dark"
+               Object.keys(infos.personal).length > 0 ? "fw-bold text-success" : "text-dark"
               }
             >
               Personal-Info
@@ -67,25 +76,45 @@ const AddEmployeePage = () => {
             </span>
           </Nav.Link>
         </Nav.Item>
+        <Nav.Item>
+          <Nav.Link
+            eventKey="security-info"
+            active={infos.activeTab.includes("security")}
+            onClick={(e) => dispatch(InfoActions.getActiveTab("security-info"))}
+          >
+            <span
+              className={
+                infos.employee.length > 0 ? "fw-bold text-success" : "text-dark"
+              }
+            >
+              Security-Info
+            </span>
+          </Nav.Link>
+        </Nav.Item>
       </Nav>
       <div
         className={infos.activeTab.includes("personal") ? "d-block" : "d-none"}
       >
-        <PersonalTabContent view={false}/>
+        <PersonalTabContent view={true}/>
       </div>
       <div
         className={infos.activeTab.includes("address") ? "d-block" : "d-none"}
       >
-        <AddressTabContent view={false}/>
+        <AddressTabContent view={true}/>
       </div>
       <div
         className={infos.activeTab.includes("employee") ? "d-block" : "d-none"}
       >
-        <EmployeeTabContent view={false}/>
+        <EmployeeTabContent view={true}/>
+      </div>
+      <div
+        className={infos.activeTab.includes("security") ? "d-block" : "d-none"}
+      >
+        <SecurityContent />
       </div>
     </Container>
   
     </Fragment>
   );
 };
-export default AddEmployeePage;
+export default ManageEmployeeProfilePage;

@@ -100,13 +100,13 @@ const ResetPasswordPage = () => {
         .then((documentSnapshot) => {
           const auth_info = documentSnapshot.get("password-management");
           try {
-            const decrpted_answer1 = JSON.parse(
+            JSON.parse(
               CryptoJS.AES.decrypt(
                 auth_info.answer1,
                 String(value.answer1.trim())
               ).toString(CryptoJS.enc.Utf8)
             );
-            const decrpted_answer2 = JSON.parse(
+            JSON.parse(
               CryptoJS.AES.decrypt(
                 auth_info.answer2,
                 String(value.answer2.trim())

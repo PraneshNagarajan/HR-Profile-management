@@ -77,35 +77,29 @@ const validate = (value) => {
   return errors;
 };
 
-const AddressTabContent = () => {
+const AddressTabContent = (props) => {
   const [addressFlag, setAddressFlag] = useState(false);
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
+
   useEffect(() => {
     if (addressFlag) {
       formik_permanentAdd.setValues(formik_presentAdd.values);
+    } else if (props.view) {
+      formik_permanentAdd.setValues(infos.address.permanent);
     } else {
       formik_permanentAdd.setValues(initialValues);
     }
   }, [addressFlag]);
 
   const formik_presentAdd = useFormik({
-    initialValues,
+    initialValues: props.view ? infos.address.present : initialValues,
     validate,
   });
 
   const formik_permanentAdd = useFormik({
-    initialValues: {
-      flatno: "",
-      street: "",
-      landmark: "",
-      city: "",
-      district: "",
-      state: "",
-      country: "",
-      pincode: "",
-    },
+    initialValues,
     validate,
   });
 
@@ -338,6 +332,8 @@ const AddressTabContent = () => {
             <FormCheck
               type="checkbox"
               checked={addressFlag}
+              disabled={props.view}
+              onChange={() => {}}
               label="Same as Present address"
               onClick={(e) => setAddressFlag(!addressFlag)}
             ></FormCheck>
@@ -351,7 +347,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="flatno"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.flatno
@@ -381,7 +377,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="street"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.street
@@ -413,7 +409,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="landmark"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.landmark
@@ -443,7 +439,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="city"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.city
@@ -475,7 +471,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="district"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.district
@@ -505,7 +501,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="state"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.state
@@ -537,7 +533,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="text"
                     name="country"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.country
@@ -567,7 +563,7 @@ const AddressTabContent = () => {
                   <FormControl
                     type="number"
                     name="pincode"
-                    readOnly={addressFlag}
+                    readOnly={addressFlag || props.view}
                     value={
                       addressFlag
                         ? formik_presentAdd.values.pincode
@@ -596,15 +592,18 @@ const AddressTabContent = () => {
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={
-                  !(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
-                  !(formik_permanentAdd.dirty && formik_permanentAdd.isValid)
+                  (!(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
+                    !(
+                      formik_permanentAdd.dirty && formik_permanentAdd.isValid
+                    )) &&
+                  !props.view
                 }
                 onClick={(e) =>
                   dispatch(
-                    InfoActions.getAddressInfo([
-                      { present: formik_presentAdd.values },
-                      { permanent: formik_permanentAdd.values },
-                    ])
+                    InfoActions.getAddressInfo({
+                      present: formik_presentAdd.values,
+                      permanent: formik_permanentAdd.values,
+                    })
                   )
                 }
               >

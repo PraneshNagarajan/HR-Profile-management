@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   Row,
@@ -15,9 +14,10 @@ import {
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
-import { fireAuth, firestore } from "../firebase";
+import { fireAuth, fireStorage, firestore } from "../firebase";
 import { AlertActions } from "../Redux/AlertSlice";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
+import { AuthActions } from "../Redux/AuthenticationSlice";
 
 const initialValues = {
   id: "",
@@ -40,81 +40,130 @@ const validate = (value) => {
   }
   return errors;
 };
-const EmployeeTabContent = () => {
+const EmployeeTabContent = (props) => {
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
-  const [selectedRole, setRole] = useState("- Select Role -");
-  const [selectedPermission, setPermission] = useState("- Select Permission -");
   const infos = useSelector((state) => state.info);
   const auth = useSelector((state) => state.auth);
+  const [selectedRole, setRole] = useState(
+    props.view ? infos.employee.role : "- Select Role -"
+  );
+  const [selectedPermission, setPermission] = useState(
+    props.view
+      ? infos.employee.permission
+        ? "View & Edit"
+        : "View Only"
+      : "- Select Permission -"
+  );
+  const [viewImg, setViewImg] = useState(false);
+  const [Img, setImg] = useState();
   const formik = useFormik({
-    initialValues,
+    initialValues: props.view ? infos.employee : initialValues,
     validate,
     onSubmit: (value) => {
+      if (props.view && Img.name.length > 0) {
+        fireStorage
+          .ref()
+          .child("employee-img/" + "sathyajana20@gmail.com")
+          .put(Img)
+          .then((url) => {
+            firestore
+              .collection("Employee-Info")
+              .doc("sathyajana20@gmail.com")
+              .update({
+                "profile.img_uploaded": true,
+              });
+            console.log(url);
+            dispatch(AuthActions.getPhoto(url));
+          })
+          .catch(() => {});
+      }
+
+      const uploading_datas = props.view
+        ? {
+            profile: {
+              img_uploaded: false,
+              personal: infos.personal,
+              address: infos.address,
+            },
+          }
+        : {
+            "auth-info": {
+              attempts: 0,
+              chances: 0,
+              account_status: "active",
+              newly_added: true,
+              invalid_attempt_timestamp: null,
+              locked: false,
+            },
+            "login-info": {
+              last_logout: null,
+              last_login: null,
+              state: "active",
+            },
+            "password-management": {
+              question2: null,
+              answer1: null,
+              answer2: null,
+              question1: null,
+              last_changed: null,
+            },
+            profile: {
+              img_uploaded: false,
+              personal: infos.personal,
+              address: infos.address,
+              employee: {
+                ...formik.values,
+                role: selectedRole,
+                admin_permission: selectedPermission.includes("&&")
+                  ? true
+                  : false,
+              },
+            },
+          };
+
       firestore
         .collection("Employee-Info")
         .doc(formik.values.email)
-        .set({
-          "auth-info": {
-            attempts: 0,
-            chances: 0,
-            account_status: "active",
-            newly_added: true,
-            invalid_attempt_timestamp: null,
-            locked: false,
-          },
-          "login-info": {
-            last_logout: null,
-            last_login: null,
-            state: "active",
-          },
-          "password-management": {
-            question2: null,
-            answer1: null,
-            answer2: null,
-            question1: null,
-            last_changed: null,
-          },
-          profile: {
-            profile_completed: false,
-            personal: infos.personal,
-            address: infos.address,
-            employee: {
-              ...formik.values,
-              role: selectedRole,
-              permission: selectedPermission.includes("-") ? false : true,
-            },
-          },
+        .set(uploading_datas)
+        .then(() => {
+          if (!props.view) {
+            fireAuth
+              .createUserWithEmailAndPassword(
+                formik.values.email,
+                formik.values.id
+              )
+              .then((auth) => {
+                dispatch(InfoActions.resetForm());
+                dispatch(
+                  AlertActions.handleShow({
+                    msg: "Data added successfully.",
+                    flag: true,
+                  })
+                );
+              })
+              .catch((err) => {
+                dispatch(
+                  AlertActions.handleShow({
+                    msg: "Data added failed.",
+                    flag: false,
+                  })
+                );
+                firestore
+                  .collection("Employee-Info")
+                  .doc(formik.values.email)
+                  .delete();
+              });
+          } else {
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Data added successfully.",
+                flag: true,
+              })
+            );
+          }
         })
-        .then((response) => {
-          fireAuth
-            .createUserWithEmailAndPassword(
-              formik.values.email,
-              formik.values.id
-            )
-            .then((auth) => {
-              dispatch(InfoActions.resetForm());
-              dispatch(
-                AlertActions.handleShow({
-                  msg: "Data added successfully.",
-                  flag: true,
-                })
-              );
-            })
-            .catch((err) => {
-              dispatch(
-                AlertActions.handleShow({
-                  msg: "Data added failed.",
-                  flag: false,
-                })
-              );
-              firestore
-                .collection("Employee-Info")
-                .doc(formik.values.email)
-                .delete();
-            });
-        })
-        .catch((err) => {
+        .catch(() => {
           dispatch(
             AlertActions.handleShow({ msg: "Data added failed.", flag: false })
           );
@@ -131,6 +180,21 @@ const EmployeeTabContent = () => {
     }
   }, [infos.submitted]);
 
+  const handleChange = (e) => {
+    console.log(e.target.files[0].size / 1024);
+    if (e.target.files[0].size / 1024 > 500) {
+      dispatch(
+        AlertActions.handleShow({
+          msg: "file size must be within 500kb",
+          flag: false,
+        })
+      );
+    } else if (e.target.files[0]) {
+      console.log(e.target.files[0]);
+      setImg(e.target.files[0]);
+      setViewImg(true);
+    }
+  };
   return (
     <TabContent>
       <Card>
@@ -142,6 +206,22 @@ const EmployeeTabContent = () => {
               formik.handleSubmit();
             }}
           >
+            <div>
+              {viewImg && (
+                <div className="d-flex justify-content-center">
+                  <img
+                    src={URL.createObjectURL(Img)}
+                    accept="image/png, image/jpeg"
+                    className="border border-5 border-primary rounded-circle shadow"
+                    height="150px"
+                    width="150px"
+                  />
+                </div>
+              )}
+              <Col className="d-flex justify-content-center">
+                <FormControl type="file" onChange={handleChange} />
+              </Col>
+            </div>
             <Row className="my-2">
               <Col md={{ span: "5", offset: "1" }}>
                 <FormGroup>
@@ -149,6 +229,7 @@ const EmployeeTabContent = () => {
                   <FormControl
                     type="text"
                     name="id"
+                    readOnly={props.view}
                     value={formik.values.id}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -168,6 +249,7 @@ const EmployeeTabContent = () => {
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
+                    disabled={props.view}
                     variant={`outline-${
                       !formik.touched.role
                         ? `primary`
@@ -226,6 +308,7 @@ const EmployeeTabContent = () => {
                   <FormControl
                     type="text"
                     name="email"
+                    readOnly={props.view}
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -245,9 +328,9 @@ const EmployeeTabContent = () => {
                 <FormLabel>Permissions</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
-                    disabled={!selectedRole.includes("Focal")}
+                    disabled={!selectedRole.includes("Focal") || props.view}
                     variant={`outline-${
-                      !selectedRole.includes("Focal")
+                      !selectedRole.includes("Focal") || props.view
                         ? `primary`
                         : !selectedPermission.includes("-") &&
                           formik.touched.permission
@@ -274,7 +357,7 @@ const EmployeeTabContent = () => {
                     <Dropdown.Divider />
                     <Dropdown.Item
                       onClick={(e) => {
-                        setPermission("Read Only");
+                        setPermission("View Only");
                       }}
                       active={selectedPermission.includes("Only")}
                     >
@@ -297,8 +380,8 @@ const EmployeeTabContent = () => {
                   selectedRole.includes("Focal")
                     ? selectedPermission.includes("-")
                     : false ||
-                      !infos.personal.length > 0 ||
-                      !infos.address.length > 0
+                      !Object.keys(infos.personal).length > 0 ||
+                      !Object.keys(infos.address).length > 0
                 }
                 type="submit"
               >

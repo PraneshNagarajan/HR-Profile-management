@@ -16,6 +16,9 @@ const AuthenticationSlice = createSlice({
         },
         getAuthStatus(state, action) {
             return action.payload
+        },
+        getPhoto(state, action) {
+            state.photoUrl = action.payload
         }
     }
 })

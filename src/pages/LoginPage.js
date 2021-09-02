@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
+import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const formValidation = (field) => {
   const errors = {};
@@ -173,30 +174,29 @@ const LoginPage = () => {
             .then((documentSnapshot) => {
               const password_info = documentSnapshot.get("password-management");
               const auth_info = documentSnapshot.get("auth-info");
-              const role_info = documentSnapshot.get("role-management");
               const profile_info = documentSnapshot.get("profile");
               const dateDiff =
                 (new Date().getTime() -
                   new Date(password_info.last_changed).getTime()) /
                 (1000 * 3600 * 24);
-              console.log(auth_info.profile_completed);
               // get img url from firebase-Storage
               if (
                 Math.round(dateDiff) <= 90 &&
                 !auth_info.newly_added &&
-                profile_info.profile_completed
+                profile_info.img_uploaded &&
+                password_info.status
               ) {
                 fireStorage
                   .ref()
-                  .child("employee-img/" + value.username + ".jpg")
+                  .child("employee-img/" + value.username)
                   .getDownloadURL()
                   .then((url) => {
                     dispatch(
                       AuthActions.getAuthStatus({
                         id: value.username,
                         flag: true,
-                        role: role_info.role,
-                        admin: role_info.admin_permission,
+                        role: profile_info.employee.role,
+                        admin: profile_info.employee.admin_permission,
                         name: fireAuth.currentUser.displayName,
                         photoUrl: url,
                       })
@@ -231,11 +231,20 @@ const LoginPage = () => {
                 );
                 if (auth_info.newly_added) {
                   history.push("/changePassword");
-                }
-                if (!profile_info.profile_completed) {
-                  console.log("emp");
-                  history.push("/addEmployees");
-                }
+                } else {
+                  dispatch(
+                    InfoActions.getCompleteInfo({
+                      address: profile_info.address,
+                      personal: profile_info.personal,
+                      employee: profile_info.employee,
+                      security: password_info,
+                      activeTab: !profile_info.img_uploaded ? "employee-info" : "security-info",
+                      employee_status: profile_info.img_uploaded,
+                      password_status: password_info.status
+                    })
+                  );
+                  history.push("/manageEmployeeProfile");
+                } 
               }
             });
         })
