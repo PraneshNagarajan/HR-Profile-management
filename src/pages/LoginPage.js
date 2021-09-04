@@ -194,7 +194,7 @@ const LoginPage = () => {
                   (new Date().getTime() -
                     new Date(password_info.last_changed).getTime()) /
                   (1000 * 3600 * 24);
-
+                console.log("diff : " + dateDiff);
                 await dispatch(
                   AuthActions.getAuthStatus({
                     id: profile_info.employee.id,
@@ -237,7 +237,7 @@ const LoginPage = () => {
                     authNotification();
                   }
                 } else {
-                  if (auth_info.newly_added) {
+                  if (auth_info.newly_added || Math.round(dateDiff) >= 90) {
                     history.push("/changePassword");
                   } else {
                     history.push({
