@@ -291,7 +291,6 @@ const EmployeeTabContent = (props) => {
                   width={sm ? "100px" : "150px"}
                 />
               </div>
-              )
               {(props.view.user || !props.view) && (
                 <Col className="d-flex justify-content-center">
                   <FormControl
