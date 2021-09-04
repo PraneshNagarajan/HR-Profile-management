@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   Row,
@@ -73,6 +73,8 @@ const validate = (value) => {
   } else if (String(value.phone1).length > 14) {
     errors.phone1 =
       "*Phone number must be with in 15 charcaters with country code.";
+  } else if (!new RegExp("^[+]").test(value.phone1)) {
+    errors.phone1 = "*Please add '+' before country code.";
   } else if (!new RegExp("^[+][0-9]{1,3}[-]{1}").test(value.phone1)) {
     errors.phone1 = "*Please enter hypen after country code.";
   } else if (!new RegExp("[0-9]{7,10}$").test(value.phone1)) {
@@ -83,6 +85,8 @@ const validate = (value) => {
     if (String(value.phone2).length > 14) {
       errors.phone2 =
         "*Phone number must be with in 15 charcaters with country code.";
+    } else if (!new RegExp("^[+]").test(value.phone2)) {
+      errors.phone2 = "*Please add '+' before country code.";
     } else if (!new RegExp("^[+][0-9]{1,3}[-]{1}").test(value.phone2)) {
       errors.phone2 = "*Please enter hypen after country code.";
     } else if (!new RegExp("[0-9]{7,10}$").test(value.phone2)) {
@@ -115,10 +119,15 @@ const PersonalTabContent = (props) => {
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
   const sm = useMediaQuery({ maxWidth: 768 });
-  const [selectedGender, setSelectedGender] = useState(props.view ? infos.personal.gender : "- Select Gender -");
+  const [selectedGender, setSelectedGender] = useState(
+    props.view.user || props.view.admin
+      ? infos.personal.gender
+      : "- Select Gender -"
+  );
 
   const formik = useFormik({
-    initialValues: props.view ? infos.personal : initialValues,
+    initialValues:
+      props.view.user || props.view.admin ? infos.personal : initialValues,
     validate,
   });
   const setGender = (value) => {
@@ -145,8 +154,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="firstname"
-                    readOnly={props.view}
-                    style={{textTransform:'uppercase'}}
+                    readOnly={props.view.user || props.view.admin}
+                    style={{ textTransform: "uppercase" }}
                     value={formik.values.firstname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -172,8 +181,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="lastname"
-                    readOnly={props.view}
-                    style={{textTransform:'uppercase'}}
+                    readOnly={props.view.user || props.view.admin}
+                    style={{ textTransform: "uppercase" }}
                     value={formik.values.lastname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -201,8 +210,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="fathername"
-                    readOnly={props.view}
-                    style={{textTransform:'uppercase'}}
+                    readOnly={props.view.user || props.view.admin}
+                    style={{ textTransform: "uppercase" }}
                     value={formik.values.fathername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -228,8 +237,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="mothername"
-                    readOnly={props.view}
-                    style={{textTransform:'uppercase'}}
+                    readOnly={props.view.user || props.view.admin}
+                    style={{ textTransform: "uppercase" }}
                     value={formik.values.mothername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -257,7 +266,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="date"
                     name="dob"
-                    readOnly={props.view}
+                    readOnly={props.view.user || props.view.admin}
                     value={formik.values.dob}
                     max={
                       date.getFullYear() -
@@ -281,7 +290,7 @@ const PersonalTabContent = (props) => {
                 <FormLabel>Gender</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
-                  disabled={props.view}
+                    disabled={props.view.user || props.view.admin}
                     variant={`outline-${
                       !formik.touched.gender
                         ? `primary`
@@ -323,7 +332,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     name="age"
                     type="number"
-                    readOnly={props.view}
+                    readOnly={props.view.user || props.view.admin}
                     min="21"
                     max="120"
                     value={formik.values.age}
@@ -351,6 +360,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="phone1"
+                    placeholder="+91-9999999999"
+                    readOnly={props.view.admin}
                     value={formik.values.phone1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -374,6 +385,8 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="phone2"
+                    placeholder="+91-9999999999"
+                    readOnly={props.view.admin}
                     value={formik.values.phone2}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -400,6 +413,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="email1"
+                    readOnly={props.view.admin}
                     value={formik.values.email1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -421,6 +435,7 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="email2"
+                    readOnly={props.view.admin}
                     value={formik.values.email2}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -443,7 +458,10 @@ const PersonalTabContent = (props) => {
             <div className={sm ? "" : "float-end"}>
               <Button
                 className={sm ? "w-100" : ""}
-                disabled={!(formik.dirty && formik.isValid) && !props.view}
+                disabled={
+                  (!(formik.dirty && formik.isValid) && !props.view.user) ||
+                  props.view.admin
+                }
                 onClick={(e) =>
                   dispatch(InfoActions.getPersonalInfo(formik.values))
                 }

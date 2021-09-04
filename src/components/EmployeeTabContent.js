@@ -18,6 +18,7 @@ import { fireAuth, fireStorage, firestore } from "../firebase";
 import { AlertActions } from "../Redux/AlertSlice";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { AuthActions } from "../Redux/AuthenticationSlice";
+import noUserImg from "../images/noUserFound.jpg";
 
 const initialValues = {
   id: "",
@@ -27,6 +28,8 @@ const validate = (value) => {
   const errors = {};
   if (!value.id) {
     errors.id = "*Required.";
+  } else if (value.id.length < 6) {
+    errors.id = "*ID must be greater than 5 characters.";
   }
 
   if (!value.email) {
@@ -56,21 +59,35 @@ const EmployeeTabContent = (props) => {
       : "- Select Permission -"
   );
   const [viewImg, setViewImg] = useState(false);
-  const [Img, setImg] = useState();
+  const [Img, setImg] = useState("");
+  const [users, setUsers] = useState({});
+  const [errorsID, setErrorsID] = useState("");
+  const [errorsEmail, setErrorsEmail] = useState("");
+  useEffect(() => {
+    firestore
+      .collection("Employee-Info")
+      .doc("users")
+      .get()
+      .then((res) => {
+        setUsers(res.data());
+      });
+  }, []);
+
   const formik = useFormik({
     initialValues: props.view ? infos.employee : initialValues,
     validate,
     onSubmit: (value) => {
-      if (Img.name.length > 0) {
+      if (Object.values(Img).length >= 0) {
         fireStorage
           .ref()
           .child("employee-img/" + value.email)
           .put(Img)
           .then(() => {
-            if (!auth.admin || value.email === auth.id) {
+            if (!auth.admin || value.email === auth.email) {
               firestore.collection("Employee-Info").doc(value.email).update({
                 "profile.img_uploaded": true,
               });
+              dispatch(InfoActions.getImageFlag(true));
               if (infos.employee_status) {
                 dispatch(
                   AuthActions.getAuthStatus({
@@ -131,7 +148,7 @@ const EmployeeTabContent = (props) => {
               last_changed: null,
             },
             profile: {
-              img_uploaded: Img.name.length > 0 ? true: false,
+              img_uploaded: Img.length > 0 ? true : false,
               personal: infos.personal,
               address: infos.address,
               employee: {
@@ -144,6 +161,13 @@ const EmployeeTabContent = (props) => {
             },
           })
           .then(() => {
+            //pass value for key+ from variable
+            firestore
+              .collection("Employee-Info")
+              .doc("users")
+              .update({
+                [value.id]: value.email,
+              });
             fireAuth
               .createUserWithEmailAndPassword(
                 formik.values.email,
@@ -196,7 +220,6 @@ const EmployeeTabContent = (props) => {
   }, [infos.submitted]);
 
   const handleChange = (e) => {
-    console.log(e.target.files[0].size / 1024);
     if (e.target.files[0].size / 1024 > 300) {
       dispatch(
         AlertActions.handleShow({
@@ -209,6 +232,37 @@ const EmployeeTabContent = (props) => {
       setViewImg(true);
     }
   };
+
+  useEffect(() => {
+    if (!props.view) {
+      const timeout = setTimeout(() => {
+        if (Object.keys(users).includes(formik.values.id)) {
+          setErrorsID("*Already this ID has been taken.");
+        } else {
+          setErrorsID("");
+        }
+      }, 1500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [formik.values.id]);
+
+  useEffect(() => {
+    if (!props.view) {
+      const timeout = setTimeout(() => {
+        if (Object.values(users).includes(formik.values.email)) {
+          setErrorsEmail("*Already this Email has been taken.");
+        } else {
+          setErrorsEmail("");
+        }
+      }, 1500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [formik.values.email]);
+
   return (
     <TabContent>
       <Card>
@@ -221,24 +275,36 @@ const EmployeeTabContent = (props) => {
             }}
           >
             <div>
-              {viewImg && (
-                <div className="d-flex justify-content-center">
-                  <img
-                    src={URL.createObjectURL(Img)}
+              <div className="d-flex justify-content-center">
+                <img
+                  src={
+                    props.user.flag
+                      ? props.user.img
+                      : viewImg
+                      ? URL.createObjectURL(Img)
+                      : noUserImg
+                  }
+                  className={`rounded-circle shadow ${
+                    props.user.flag ? `border border-5 border-primary` : ``
+                  }`}
+                  height={sm ? "100px" : "150px"}
+                  width={sm ? "100px" : "150px"}
+                />
+              </div>
+              )
+              {(props.view.user || !props.view) && (
+                <Col className="d-flex justify-content-center">
+                  <FormControl
+                    type="file"
                     accept="image/png, image/jpeg"
-                    className="border border-5 border-primary rounded-circle shadow"
-                    height="150px"
-                    width="150px"
+                    onChange={handleChange}
                   />
-                </div>
+                </Col>
               )}
-              <Col className="d-flex justify-content-center">
-                <FormControl type="file" onChange={handleChange} />
-              </Col>
             </div>
             <Row className="my-2">
               <Col md={{ span: "5", offset: "1" }}>
-                <FormGroup>
+                <FormGroup className={sm ? "my-1" : ""}>
                   <FormLabel htmlFor="employee id">Employee Id</FormLabel>
                   <FormControl
                     type="text"
@@ -248,22 +314,25 @@ const EmployeeTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.id &&
-                      (formik.touched.id || formik.values.id.length > 0)
+                      (formik.errors.id &&
+                        (formik.touched.id || formik.values.id.length > 0)) ||
+                      errorsID.length !== 0
                     }
                     isValid={
                       !formik.errors.id &&
                       (formik.touched.id || formik.values.id.length > 0)
                     }
                   />
-                  <div className="invalid-feedback">{formik.errors.id}</div>
+                  <div className="invalid-feedback">
+                    {formik.errors.id ? formik.errors.id : errorsID}
+                  </div>
                 </FormGroup>
               </Col>
               <Col md="5">
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
-                    disabled={props.view}
+                    disabled={props.view.user}
                     variant={`outline-${
                       !formik.touched.role
                         ? `primary`
@@ -315,9 +384,9 @@ const EmployeeTabContent = (props) => {
                 )}
               </Col>
             </Row>
-            <Row className="my-5">
+            <Row className={sm ? "" : "my-5"}>
               <Col md={{ span: "5", offset: "1" }}>
-                <FormGroup>
+                <FormGroup className={sm ? "my-1" : ""}>
                   <FormLabel htmlFor="employee id">Employee email Id</FormLabel>
                   <FormControl
                     type="text"
@@ -327,22 +396,28 @@ const EmployeeTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
-                      formik.errors.email &&
-                      (formik.touched.email || formik.values.email.length > 0)
+                      (formik.errors.email &&
+                        (formik.touched.email ||
+                          formik.values.email.length > 0)) ||
+                      errorsEmail.length !== 0
                     }
                     isValid={
                       !formik.errors.email &&
                       (formik.touched.email || formik.values.email.length > 0)
                     }
                   />
-                  <div className="invalid-feedback">{formik.errors.email}</div>
+                  <div className="invalid-feedback">
+                    {formik.errors.email ? formik.errors.email : errorsEmail}
+                  </div>
                 </FormGroup>
               </Col>
               <Col md="5">
                 <FormLabel>Permissions</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
-                    disabled={!selectedRole.includes("Focal") || props.view}
+                    disabled={
+                      !selectedRole.includes("Focal") || props.view.user
+                    }
                     variant={`outline-${
                       !selectedRole.includes("Focal") || props.view
                         ? `primary`
@@ -385,7 +460,7 @@ const EmployeeTabContent = (props) => {
                   )}
               </Col>
             </Row>
-            <div className={sm ? "" : "float-end"}>
+            <div className={sm ? "mt-5" : "float-end"}>
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={

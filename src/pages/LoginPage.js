@@ -35,7 +35,7 @@ const formValidation = (field) => {
 
 const LoginPage = () => {
   const dispatch = useDispatch();
-  const msgFlag = useSelector((state) => state.auth.msg);
+  const auth = useSelector((state) => state.auth);
   const history = useHistory();
   const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
@@ -162,125 +162,127 @@ const LoginPage = () => {
       password: "",
     },
     validate: formValidation,
-    onSubmit: (value) => {
-      fireAuth
-        .signInWithEmailAndPassword(value.username, value.password)
-        .then((res) => {
-          onLoadinghandler();
-          firestore
-            .collection("Employee-Info")
-            .doc(value.username)
-            .get()
-            .then((documentSnapshot) => {
-              const password_info = documentSnapshot.get("password-management");
-              const auth_info = documentSnapshot.get("auth-info");
-              const profile_info = documentSnapshot.get("profile");
-              const dateDiff =
-                (new Date().getTime() -
-                  new Date(password_info.last_changed).getTime()) /
-                (1000 * 3600 * 24);
-              // get img url from firebase-Storage
-              if (profile_info.img_uploaded) {
-                fireStorage
-                  .ref()
-                  .child("employee-img/" + value.username)
-                  .getDownloadURL()
-                  .then((url) => {
-                    dispatch(
-                      AuthActions.getAuthStatus({
-                        id: value.username,
-                        flag: true,
-                        role: profile_info.employee.role,
-                        admin: profile_info.employee.admin_permission,
-                        name: fireAuth.currentUser.displayName,
-                        photoUrl: url,
-                      })
-                    );
-                  });
-              }
-              if (
-                Math.round(dateDiff) <= 90 &&
-                !auth_info.newly_added &&
-                password_info.status
-              ) {
-                if (auth_info.locked === false) {
-                  updateLoginStatus(value.username);
-                  setAuthStatus(true);
-                  setAuthMsg("Login Successfully !");
-                  firestore
-                    .collection("Employee-Info")
-                    .doc(value.username)
-                    .update({
+    onSubmit: async (value) => {
+      let doc = await "";
+      if (await value.username.includes("@")) {
+        doc = value.username;
+      } else {
+        await firestore
+          .collection("Employee-Info")
+          .doc("users")
+          .get()
+          .then((documentSnapshot) => {
+            doc = documentSnapshot.get(value.username);
+          });
+      }
+      if (doc.length > 0) {
+        fireAuth
+          .signInWithEmailAndPassword(doc, value.password)
+          .then(async (res) => {
+            onLoadinghandler();
+            await firestore
+              .collection("Employee-Info")
+              .doc(doc)
+              .get()
+              .then(async (documentSnapshot) => {
+                const password_info = documentSnapshot.get(
+                  "password-management"
+                );
+                const auth_info = documentSnapshot.get("auth-info");
+                const profile_info = documentSnapshot.get("profile");
+                const dateDiff =
+                  (new Date().getTime() -
+                    new Date(password_info.last_changed).getTime()) /
+                  (1000 * 3600 * 24);
+
+                await dispatch(
+                  AuthActions.getAuthStatus({
+                    id: profile_info.employee.id,
+                    email: profile_info.employee.email,
+                    msg: false,
+                    flag: true,
+                    role: profile_info.employee.role,
+                    admin: profile_info.employee.admin_permission,
+                    name: fireAuth.currentUser.displayName,
+                    photoUrl: "",
+                  })
+                );
+                // get img url from firebase-Storage
+                if (await profile_info.img_uploaded) {
+                  await fireStorage
+                    .ref()
+                    .child("employee-img/" + doc)
+                    .getDownloadURL()
+                    .then((url) => {
+                      dispatch(AuthActions.getPhoto(url));
+                    });
+                }
+                if (
+                  await (Math.round(dateDiff) <= 90 &&
+                    !auth_info.newly_added &&
+                    password_info.status)
+                ) {
+                  if (auth_info.locked === false) {
+                    updateLoginStatus(doc);
+                    setAuthStatus(true);
+                    setAuthMsg("Login Successfully !");
+                    firestore.collection("Employee-Info").doc(doc).update({
                       "auth-info.chances": 0,
                       "auth-info.attempts": 0,
                       "auth-info.locked": false,
                       "auth-info.invalid_attempt_timestamp": null,
                     });
-                  history.push("/focalHomePage");
+                    history.push("/focalHomePage");
+                  } else {
+                    authNotification();
+                  }
                 } else {
-                  authNotification();
+                  if (auth_info.newly_added) {
+                    history.push("/changePassword");
+                  } else {
+                    history.push({
+                      pathname: `/manageEmployeeProfile/${profile_info.employee.id}`,
+                      search: `?activeTab=${
+                        !profile_info.img_uploaded
+                          ? "employee-info"
+                          : "security-info"
+                      }`,
+                    });
+                  }
                 }
-              } else {
-                dispatch(
-                  AuthActions.getAuthStatus({
-                    flag: true,
-                    role: "",
-                    admin: "",
-                    name: "",
-                    photoUrl: "",
-                  })
-                );
-                if (auth_info.newly_added) {
-                  history.push("/changePassword");
-                } else {
-                  dispatch(
-                    InfoActions.getCompleteInfo({
-                      address: profile_info.address,
-                      personal: profile_info.personal,
-                      employee: profile_info.employee,
-                      security: password_info,
-                      activeTab: !profile_info.img_uploaded
-                        ? "employee-info"
-                        : "security-info",
-                      employee_status: profile_info.img_uploaded,
-                      password_status: password_info.status,
-                    })
-                  );
-                  history.push("/manageEmployeeProfile");
-                }
-              }
-            });
-        })
-        .catch((err) => {
-          setAuthStatus(false);
-          if (
-            String(err).includes("user") &&
-            !String(err).includes("password")
-          ) {
-            formik.setValues({ username: "", password: "" });
-          } else {
-            formik.setFieldValue("password", "");
-          }
-          setAuthMsg(String(err));
-          if (
-            !String(err).includes("There is no user") &&
-            !String(err).includes("badly formatted")
-          ) {
-            if (attempts === -1) {
-              checkDBStatus(value.username, attempts, true);
+              });
+          })
+          .catch((err) => {
+            setAuthStatus(false);
+            if (
+              String(err).includes("user") &&
+              !String(err).includes("password")
+            ) {
+              formik.setValues({ username: "", password: "" });
             } else {
-              setChances(chances + 1);
-              updateChanceStatus(value.username, chances + 1);
-              if (chances + 1 > 2) {
-                setAuthMsg("");
-                setAttempts(attempts + 1);
-                setChances(0);
-                updateChanceStatus(value.username, 0);
-                checkDBStatus(value.username, attempts + 1, false);
+              formik.setFieldValue("password", "");
+            }
+            setAuthMsg(String(err));
+            if (
+              !String(err).includes("There is no user") &&
+              !String(err).includes("badly formatted")
+            ) {
+              if (attempts === -1) {
+                checkDBStatus(doc, attempts, true);
+              } else {
+                setChances(chances + 1);
+                updateChanceStatus(doc, chances + 1);
+                if (chances + 1 > 2) {
+                  setAuthMsg("");
+                  setAttempts(attempts + 1);
+                  setChances(0);
+                  updateChanceStatus(doc, 0);
+                  checkDBStatus(doc, attempts + 1, false);
+                }
               }
             }
-          }
-        });
+          });
+      }
       setIsLoading(false);
     },
   });

@@ -69,7 +69,12 @@ const NavBar = () => {
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
             <NavDropdown
-              active={location.pathname.includes("addEmployee") || location.pathname.includes("manageEmployee") ? `active` : ``}
+              active={
+                location.pathname.includes("addEmployee") ||
+                location.pathname.includes("manageEmployee")
+                  ? `active`
+                  : ``
+              }
               title={
                 <span>
                   <FaUsersCog className="mb-1" /> Employees
@@ -90,7 +95,11 @@ const NavBar = () => {
                 Employee
               </NavDropdown.Item>
               <NavDropdown.Divider className="text-primary" />
-              <NavDropdown.Item className="text-warning fw-bold">
+              <NavDropdown.Item
+                className="text-warning fw-bold"
+                as={Link}
+                to="/manageEmployeeProfile/147852?activeTab=security-info"
+              >
                 {" "}
                 <FaUserEdit style={{ width: "20px", height: "20px" }} /> Manage
                 Employees
@@ -163,42 +172,56 @@ const NavBar = () => {
                 <hr className="text-white line-break1" />
               </Nav.Item>
             )}
-            {user.photoUrl.length > 0 && <Nav.Item>
-              <NavDropdown
-                title={
-                  <span>
-                    <img
-                      src={user.photoUrl}
-                      height="35px"
-                      width="35px"
-                      style={{ borderRadius: "50%", border: "1px solid white" }}
-                    />{" "}
-                    {user.name}
-                  </span>
-                }
-                id="collasible-nav-dropdown"
-                className={`active ${sm ? "h6 mx-2 " : "h5 me-2"}`}
-              >
-                <NavDropdown.Item className="text-primary fw-bold">
-                  {" "}
-                  <FaKey style={{ width: "20px", height: "20px" }} /> Password
-                  Management
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item className="text-warning fw-bold">
-                  {" "}
-                  <FaEdit style={{ width: "20px", height: "20px" }} />
-                  Edit Profile
-                </NavDropdown.Item>
-              </NavDropdown>
-            </Nav.Item>
-            }
+            {user.photoUrl.length > 0 && (
+              <Nav.Item>
+                <NavDropdown
+                  title={
+                    <span>
+                      <img
+                        src={user.photoUrl}
+                        height="35px"
+                        width="35px"
+                        style={{
+                          borderRadius: "50%",
+                          border: "1px solid white",
+                        }}
+                      />{" "}
+                      {user.name}
+                    </span>
+                  }
+                  id="collasible-nav-dropdown"
+                  className={`active ${sm ? "h6 mx-2 " : "h5 me-2"}`}
+                >
+                  <NavDropdown.Item className="text-primary fw-bold">
+                    {" "}
+                    <FaKey style={{ width: "20px", height: "20px" }} /> Password
+                    Management
+                  </NavDropdown.Item>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item
+                    className="text-warning fw-bold"
+                    as={Link}
+                    to={
+                      "/manageEmployeeProfile/" +
+                      user.id +
+                      "?activeTab=personal-info"
+                    }
+                  >
+                    {" "}
+                    <FaEdit style={{ width: "20px", height: "20px" }} />
+                    Edit Profile
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </Nav.Item>
+            )}
             {sm && <hr className="text-white line-break" />}
             {!sm && (
               <Nav.Item>
                 <Button
                   variant="outline-light"
-                  className={`position-relative me-4 ${user.photoUrl.length > 0 ? `mt-2`: `mb-2`}`}
+                  className={`position-relative me-4 ${
+                    user.photoUrl.length > 0 ? `mt-2` : `mb-2`
+                  }`}
                 >
                   <b>
                     <FaBell className="me-1" />
@@ -216,7 +239,9 @@ const NavBar = () => {
                 <Button
                   variant="outline-light"
                   size=""
-                  className={`text-center ${sm ? `ms-2` : ``} ${user.photoUrl.length > 0 ? `mt-2`: `mb-2`}`}
+                  className={`text-center ${sm ? `ms-2` : ``} ${
+                    user.photoUrl.length > 0 ? `mt-2` : `mb-2`
+                  }`}
                   style={{ width: sm ? "97%" : "" }}
                 >
                   {" "}

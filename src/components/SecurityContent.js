@@ -1,5 +1,7 @@
 import { useState, Fragment } from "react";
 import { useMediaQuery } from "react-responsive";
+import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
+import { AlertActions } from "../Redux/AlertSlice";
 import {
   Card,
   Row,
@@ -13,31 +15,100 @@ import {
   Button,
 } from "react-bootstrap";
 import { useFormik } from "formik";
+import { firestore } from "../firebase";
+import { useDispatch, useSelector } from "react-redux";
+import { InfoActions } from "../Redux/EmployeeInfoSlice";
 var CryptoJS = require("crypto-js");
 
 const questions = [
-  "Which year did you completed your high school?",
+  "Where did your mother born?",
   "Who is favourite sports player?",
-  "Which is your favourite color?",
-  "Where did you born?",
-  "What was your favorite school teacher’s name?",
+  "What was your childhood nickname?",
+  "What was your maths teacher name?",
+  "What is your eldest cousin’s name?",
 ];
 
-const SecurityContent = () => {
-  const [selectedQuestion1, setQuestion1] = useState(
-    "- Select your Security question -")
-  const [selectedQuestion2, setQuestion2] = useState(
-    "- Select your Security question -")
+const initialValues = {
+  answer1: "",
+  answer2: "",
+};
+
+const SecurityContent = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
-  
+  const [selectedQuestion1, setQuestion1] = useState(
+    "- Select your Security question -"
+  );
+  const [selectedQuestion2, setQuestion2] = useState(
+    "- Select your Security question -"
+  );
+  const [isVisibleField1, setIsVisibleField1] = useState(false);
+  const [isVisibleField2, setIsVisibleField2] = useState(false);
+  const dispatch = useDispatch();
+  const doc = useSelector((state) => state.auth.email);
+
+  const onVisibleHandler = (field) => {
+    if (field === "field1") {
+      setIsVisibleField1(!isVisibleField1);
+    } else {
+      setIsVisibleField2(!isVisibleField2);
+    }
+  };
+
   const formik = useFormik({
-    initialValues: {
-      question1: "",
-      answer1: "",
-      question2: "",
-      answer2: "",
+    initialValues,
+    validate: (value) => {
+      const errors = {};
+      if (!value.answer1) {
+        errors.answer1 = "*Required.";
+      }
+      if (!value.answer2) {
+        errors.answer2 = "*Required.";
+      }
+      return errors;
+    },
+
+    onSubmit: (value) => {
+      // Encrypt
+      const ans1 = CryptoJS.AES.encrypt(
+        JSON.stringify(value.answer1),
+        value.answer1
+      ).toString();
+      const ans2 = CryptoJS.AES.encrypt(
+        JSON.stringify(value.answer2),
+        value.answer2
+      ).toString();
+
+      firestore
+        .collection("Employee-Info")
+        .doc(doc)
+        .update({
+          "password-management.question1": selectedQuestion1,
+          "password-management.question2": selectedQuestion2,
+          "password-management.answer1": ans1,
+          "password-management.answer2": ans2,
+          "password-management.status": true,
+          "password-management.last_changed": new Date().toString(),
+        })
+        .then(() => {
+          dispatch(InfoActions.getSecurityFlag(true));
+          dispatch(
+            AlertActions.handleShow({
+              msg: "Data added successfully.",
+              flag: true,
+            })
+          );
+        })
+        .catch(() => {
+          dispatch(
+            AlertActions.handleShow({
+              msg: "Data added failed.",
+              flag: false,
+            })
+          );
+        });
     },
   });
+
   return (
     <TabContent>
       <Card>
@@ -50,7 +121,7 @@ const SecurityContent = () => {
             }}
           >
             <Row className="my-2">
-              <Col md={{ span: "5", offset: "1" }}>
+              <Col md={{ span: "5", offset: "1" }} className={sm ? "my-2" : ""}>
                 <FormLabel>Security Question 1</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
@@ -72,63 +143,91 @@ const SecurityContent = () => {
                     {selectedQuestion1}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
-                    {questions.map((ques,index) => {
+                    {questions.map((ques, index) => {
                       return (
                         <Fragment key={index}>
                           <Dropdown.Item
                             onClick={(e) => {
                               setQuestion1(ques);
+                              formik.setFieldValue("question1", ques);
                             }}
                             active={selectedQuestion1.includes(ques)}
                           >
                             {ques}
                           </Dropdown.Item>
-                          {index != questions.length-1 && <Dropdown.Divider />}
+                          {index !== questions.length - 1 && (
+                            <Dropdown.Divider />
+                          )}
                         </Fragment>
                       );
                     })}
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedQuestion1.includes("?") && (
-                  <div className="text-danger">{formik.errors.question1}</div>
-                )}
+                {selectedQuestion1.includes("-") &&
+                  formik.touched.question1 && (
+                    <div className="text-danger">*Required.</div>
+                  )}
               </Col>
 
               <Col md="5">
-                <FormGroup>
+                <FormGroup className="noShow">
                   <FormLabel htmlFor="Answer1">Answer1</FormLabel>
                   <FormControl
-                    type="text"
+                    type={isVisibleField1 ? "text" : "password"}
                     name="answer1"
                     value={formik.values.answer1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={
                       formik.errors.answer1 &&
-                      (formik.touched.answer1 || formik.values.answer1.length > 0)
+                      (formik.touched.answer1 ||
+                        formik.values.answer1.length > 0)
                     }
                     isValid={
                       !formik.errors.answer1 &&
-                      (formik.touched.answer1 || formik.values.answer1.length > 0)
+                      (formik.touched.answer1 ||
+                        formik.values.answer1.length > 0)
                     }
                   />
-                  <div className="invalid-feedback">{formik.errors.answer1}</div>
+                  <span
+                    className="float-end me-2"
+                    style={{ position: "relative", marginTop: "-33px" }}
+                  >
+                    {isVisibleField1 && (
+                      <FaRegEye
+                        role="button"
+                        onClick={(e) => onVisibleHandler("field1")}
+                        style={{ color: "#0d6efd" }}
+                      />
+                    )}
+                    {!isVisibleField1 && (
+                      <FaRegEyeSlash
+                        style={{ width: "5rem", height: "5rem" }}
+                        role="button"
+                        onClick={(e) => onVisibleHandler("field1")}
+                        style={{ color: "red" }}
+                      />
+                    )}
+                  </span>
+                  <div className="invalid-feedback">
+                    {formik.errors.answer1}
+                  </div>
                 </FormGroup>
               </Col>
             </Row>
 
-            <Row className="my-5">
-              <Col md={{ span: "5", offset: "1" }}>
+            <Row className={sm ? "" : "my-5"}>
+              <Col md={{ span: "5", offset: "1" }} className={sm ? "my-2" : ""}>
                 <FormLabel>Security Question 2</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
                     variant={`outline-${
                       !formik.touched.question2
                         ? `primary`
-                        : selectedQuestion1.includes("?") &&
+                        : selectedQuestion2.includes("?") &&
                           formik.touched.question2
                         ? `success`
-                        : !selectedQuestion1.includes("?") &&
+                        : !selectedQuestion2.includes("?") &&
                           formik.touched.question2
                         ? `danger`
                         : ``
@@ -140,34 +239,38 @@ const SecurityContent = () => {
                     {selectedQuestion2}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
-                    {questions.map((ques,index) => {
-                      if (selectedQuestion1 != ques) {
+                    {questions.map((ques, index) => {
+                      if (selectedQuestion1 !== ques) {
                         return (
                           <Fragment key={index}>
                             <Dropdown.Item
                               onClick={(e) => {
                                 setQuestion2(ques);
+                                formik.setFieldValue("question2", ques);
                               }}
                               active={selectedQuestion2.includes(ques)}
                             >
                               {ques}
                             </Dropdown.Item>
-                            {index != questions.length-1 && <Dropdown.Divider />}
+                            {index != questions.length - 1 && (
+                              <Dropdown.Divider />
+                            )}
                           </Fragment>
                         );
                       }
                     })}
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedQuestion1.includes("?") && (
-                  <div className="text-danger">{formik.errors.question1}</div>
-                )}
+                {formik.touched.question2 &&
+                  selectedQuestion2.includes("-") && (
+                    <div className="text-danger">*Required.</div>
+                  )}
               </Col>
               <Col md="5">
-                <FormGroup>
+                <FormGroup className="noShow">
                   <FormLabel>Answer2</FormLabel>
                   <FormControl
-                    type="text"
+                    type={isVisibleField2 ? "text" : "password"}
                     name="answer2"
                     value={formik.values.answer2}
                     onChange={formik.handleChange}
@@ -183,6 +286,26 @@ const SecurityContent = () => {
                         formik.values.answer2.length > 0)
                     }
                   />
+                  <span
+                    className="float-end me-2"
+                    style={{ position: "relative", marginTop: "-33px" }}
+                  >
+                    {isVisibleField2 && (
+                      <FaRegEye
+                        role="button"
+                        onClick={() => onVisibleHandler("field2")}
+                        style={{ color: "#0d6efd" }}
+                      />
+                    )}
+                    {!isVisibleField2 && (
+                      <FaRegEyeSlash
+                        style={{ width: "5rem", height: "5rem" }}
+                        role="button"
+                        onClick={() => onVisibleHandler("field2")}
+                        style={{ color: "red" }}
+                      />
+                    )}
+                  </span>
                   <div className="invalid-feedback">
                     {formik.errors.answer2}
                   </div>
@@ -190,12 +313,10 @@ const SecurityContent = () => {
               </Col>
             </Row>
 
-            <div className={sm ? "" : "float-end"}>
+            <div className={sm ? "mt-5" : "float-end"}>
               <Button
                 className={sm ? "w-100" : ""}
-                disabled={
-                  !(formik.dirty && formik.isValid) 
-                }
+                disabled={!(formik.dirty && formik.isValid) && props.view}
                 type="submit"
               >
                 Save && Submit
@@ -207,4 +328,4 @@ const SecurityContent = () => {
     </TabContent>
   );
 };
-export default SecurityContent
+export default SecurityContent;

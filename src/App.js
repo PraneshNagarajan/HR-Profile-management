@@ -50,7 +50,7 @@ function App() {
             <AddEmployeePage />
             </MainLayout>
           </Route>
-          <Route path="/manageEmployeeProfile">
+          <Route path="/manageEmployeeProfile/:id">
             <MainLayout>
             <ManageEmployeeProfilePage />
             </MainLayout>

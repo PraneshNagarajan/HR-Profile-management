@@ -4,11 +4,10 @@ const initialState = {
   personal: {},
   address: {},
   employee: {},
-  employee_status: true,
   activeTab: "personal-info",
   submitted: false,
-  passwordManagement: {},
-  password_status: true
+  img_uploaded:"",
+  security: "",
 };
 const EmployeeInfoSlice = createSlice({
   name: "employee-info",
@@ -20,8 +19,6 @@ const EmployeeInfoSlice = createSlice({
       state.employee = action.payload.employee
       state.passwordManagement = action.payload.security
       state.activeTab = action.payload.activeTab;
-      state.employee_status = action.payload.employee_status
-      state.password_status = action.payload.password_status
     },
     getPersonalInfo(state, action) {
       state.personal = action.payload;
@@ -40,6 +37,12 @@ const EmployeeInfoSlice = createSlice({
     getSubmittedStatus(state) {
       state.submitted = false;
     },
+    getSecurityFlag(state,action){
+      state.security = action.payload
+    },
+    getImageFlag(state, action){
+      state.img_uploaded = action.payload
+    }
   },
 });
 export const InfoActions = EmployeeInfoSlice.actions;
