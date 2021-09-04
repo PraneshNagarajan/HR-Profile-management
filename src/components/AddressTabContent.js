@@ -630,11 +630,11 @@ const AddressTabContent = (props) => {
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={
-                  (!(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
+                  ((!(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
                     !(
                       formik_permanentAdd.dirty && formik_permanentAdd.isValid
-                    )) &&
-                  !props.view
+                    ))  && !props.view.user) ||
+                    props.view.admin
                 }
                 onClick={(e) =>
                   dispatch(

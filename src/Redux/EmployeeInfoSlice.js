@@ -17,7 +17,7 @@ const EmployeeInfoSlice = createSlice({
       state.personal = action.payload.personal
       state.address = action.payload.address
       state.employee = action.payload.employee
-      state.passwordManagement = action.payload.security
+      state.security = action.payload.security
       state.activeTab = action.payload.activeTab;
     },
     getPersonalInfo(state, action) {

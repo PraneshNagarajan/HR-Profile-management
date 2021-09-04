@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { AlertActions } from "../Redux/AlertSlice";
 import { Link, useHistory, useLocation, useParams } from "react-router-dom";
 import { fireStorage, firestore } from "../firebase";
+import Spinners from "../components/Spinners";
 
 const ManageEmployeeProfilePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
@@ -24,8 +25,10 @@ const ManageEmployeeProfilePage = () => {
   const activeTab = queryParams.get("activeTab");
   const [userImg, setUserImg] = useState("");
   const [userImgFlag, setUserImgFlag] = useState(false);
+  const [isSpinner, setIsSpinner] = useState(true)
 
   useEffect(() => {
+    setIsSpinner(true)
     firestore
       .collection("Employee-Info")
       .doc("users")
@@ -48,27 +51,6 @@ const ManageEmployeeProfilePage = () => {
                 activeTab,
               })
             );
-
-            if (
-              profile_info.img_uploaded &&
-              profile_info.employee.id !== auth.id
-            ) {
-              fireStorage
-                .ref()
-                .child("employee-img/" + doc)
-                .getDownloadURL()
-                .then((url) => {
-                  setUserImg(url);
-                  setUserImgFlag(true);
-                });
-            } else if (profile_info.employee.id === auth.id) {
-              setUserImg(auth.photoUrl);
-              console.log("test");
-              setUserImgFlag(true);
-            } else {
-              setUserImgFlag(false);
-            }
-
             if (profile_info.employee.id === auth.id) {
               if (!profile_info.img_uploaded && !password_info.status) {
                 dispatch(
@@ -94,7 +76,28 @@ const ManageEmployeeProfilePage = () => {
               }
             } else {
               dispatch(InfoActions.getActiveTab("personal-info"));
+            }    
+
+            if (
+              profile_info.img_uploaded &&
+              profile_info.employee.id !== auth.id
+            ) {
+              fireStorage
+                .ref()
+                .child("employee-img/" + doc)
+                .getDownloadURL()
+                .then((url) => {
+                  setUserImg(url);
+                  setUserImgFlag(true);
+                });
+            } else if (profile_info.employee.id === auth.id) {
+              setUserImg(auth.photoUrl);
+              console.log("test");
+              setUserImgFlag(true);
+            } else {
+              setUserImgFlag(false);
             }
+            setIsSpinner(false)
           });
       });
   }, [params.id]);
@@ -102,7 +105,10 @@ const ManageEmployeeProfilePage = () => {
   return (
     <Fragment>
       <Alerts />
-      {Object.keys(infos.personal).length > 0 && (
+      {
+        isSpinner && <Spinners />
+      }
+      {!isSpinner && (
         <Container fluid className={sm ? "my-3" : "p-5"}>
           <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
             <Nav.Item>
@@ -165,7 +171,7 @@ const ManageEmployeeProfilePage = () => {
                 >
                   <span
                     className={
-                      infos.security.status
+                      infos.security
                         ? "fw-bold text-success"
                         : "fw-bold text-danger"
                     }
