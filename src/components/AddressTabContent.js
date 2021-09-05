@@ -125,7 +125,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="flatno"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.flatno}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -152,7 +152,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="street"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.street}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -181,7 +181,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="landmark"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.landmark}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -208,7 +208,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="city"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.city}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -237,7 +237,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="district"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.district}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -264,7 +264,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="state"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.state}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -293,7 +293,7 @@ const AddressTabContent = (props) => {
                     type="text"
                     name="country"
                     style={{ textTransform: "uppercase" }}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     value={formik_presentAdd.values.country}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
@@ -320,7 +320,7 @@ const AddressTabContent = (props) => {
                     type="number"
                     name="pincode"
                     value={formik_presentAdd.values.pincode}
-                    readOnly={props.view.user || props.view.admin}
+                    readOnly={props.view.admin}
                     onChange={formik_presentAdd.handleChange}
                     onBlur={formik_presentAdd.handleBlur}
                     isInvalid={
@@ -630,11 +630,14 @@ const AddressTabContent = (props) => {
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={
-                  ((!(formik_presentAdd.dirty && formik_presentAdd.isValid) ||
-                    !(
-                      formik_permanentAdd.dirty && formik_permanentAdd.isValid
-                    ))  && !props.view.user) ||
-                    props.view.admin
+                  (!(formik_presentAdd.dirty && formik_presentAdd.isValid) &&
+                  props.view.admin
+                    ? true
+                    : !formik_presentAdd.isValid) || props.view.admin
+                    ? true
+                    : !(
+                        formik_permanentAdd.dirty && formik_permanentAdd.isValid
+                      )
                 }
                 onClick={(e) =>
                   dispatch(

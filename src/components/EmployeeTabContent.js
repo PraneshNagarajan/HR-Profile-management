@@ -169,8 +169,8 @@ const EmployeeTabContent = (props) => {
                 [value.id]: {
                   email: value.email,
                   name: infos.personal.firstname,
-                  role: selectedRole
-                }
+                  role: selectedRole,
+                },
               });
             fireAuth
               .createUserWithEmailAndPassword(
@@ -338,7 +338,9 @@ const EmployeeTabContent = (props) => {
                     disabled={props.view.user}
                     variant={`outline-${
                       !formik.touched.role
-                        ? props.view.user ? `secondary`: `primary`
+                        ? props.view.user
+                          ? `secondary`
+                          : `primary`
                         : !selectedRole.includes("Role") && formik.touched.role
                         ? `success`
                         : selectedRole.includes("Role") && formik.touched.role
@@ -423,7 +425,9 @@ const EmployeeTabContent = (props) => {
                     }
                     variant={`outline-${
                       !selectedRole.includes("Focal") || props.view
-                        ? props.view.user ? `secondary`:`primary`
+                        ? props.view.user
+                          ? `secondary`
+                          : `primary`
                         : !selectedPermission.includes("-") &&
                           formik.touched.permission
                         ? `success`

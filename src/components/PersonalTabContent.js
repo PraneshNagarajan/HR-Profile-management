@@ -281,7 +281,10 @@ const PersonalTabContent = (props) => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={formik.errors.dob && formik.touched.dob}
-                    isValid={!formik.errors.dob && formik.touched.dob}
+                    isValid={
+                      (!formik.errors.dob && formik.touched.dob) ||
+                      formik.values.dob.length > 0
+                    }
                   />
                   <div className="invalid-feedback">{formik.errors.dob}</div>
                 </FormGroup>
@@ -293,7 +296,9 @@ const PersonalTabContent = (props) => {
                     disabled={props.view.user || props.view.admin}
                     variant={`outline-${
                       !formik.touched.gender
-                        ? (props.view.user || props.view.admin) ? `secondary`: `primary`
+                        ? props.view.user || props.view.admin
+                          ? `secondary`
+                          : `primary`
                         : !selectedGender.includes("-") && formik.touched.gender
                         ? `success`
                         : selectedGender.includes("-") && formik.touched.gender
@@ -459,8 +464,11 @@ const PersonalTabContent = (props) => {
               <Button
                 className={sm ? "w-100" : ""}
                 disabled={
-                  (!(formik.dirty && formik.isValid) && !props.view.user) ||
                   props.view.admin
+                    ? true
+                    : props.view.user
+                    ? !formik.isValid
+                    : !(formik.dirty && formik.isValid)
                 }
                 onClick={(e) =>
                   dispatch(InfoActions.getPersonalInfo(formik.values))
