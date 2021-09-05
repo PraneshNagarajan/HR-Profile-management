@@ -293,7 +293,7 @@ const PersonalTabContent = (props) => {
                     disabled={props.view.user || props.view.admin}
                     variant={`outline-${
                       !formik.touched.gender
-                        ? `primary`
+                        ? (props.view.user || props.view.admin) ? `secondary`: `primary`
                         : !selectedGender.includes("-") && formik.touched.gender
                         ? `success`
                         : selectedGender.includes("-") && formik.touched.gender

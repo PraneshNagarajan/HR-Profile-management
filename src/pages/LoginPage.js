@@ -49,16 +49,14 @@ const LoginPage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
 
   useEffect(() => {
-    const flag = authMsg.length > 0;
-    dispatch(AuthActions.getMsg(flag));
+    if(authMsg.length > 0) {
+      dispatch(AuthActions.getMsg(true));
+        setIsLoading(false)
+    }
   }, [authMsg]);
 
   const onVisibleHandler = () => {
     setIsVisibleField(!isVisibleField);
-  };
-
-  const onLoadinghandler = () => {
-    setIsLoading(true);
   };
 
   const authNotification = () => {
@@ -163,6 +161,8 @@ const LoginPage = () => {
     },
     validate: formValidation,
     onSubmit: async (value) => {
+      setIsLoading(true);
+      setAuthMsg("");
       let doc = await "";
       if (await value.username.includes("@")) {
         doc = value.username;
@@ -172,14 +172,18 @@ const LoginPage = () => {
           .doc("users")
           .get()
           .then((documentSnapshot) => {
-            doc = documentSnapshot.get(value.username);
+            if (!documentSnapshot.get(value.username)) {
+              setAuthStatus(false);
+              setAuthMsg("Username is invalid.");
+            } else {
+              doc = documentSnapshot.get(value.username);
+            }
           });
       }
-      if (doc.length > 0) {
+      if ((await doc.length) > 0) {
         fireAuth
           .signInWithEmailAndPassword(doc, value.password)
           .then(async (res) => {
-            onLoadinghandler();
             await firestore
               .collection("Employee-Info")
               .doc(doc)
@@ -222,16 +226,19 @@ const LoginPage = () => {
                     !auth_info.newly_added &&
                     password_info.status)
                 ) {
-                  if (auth_info.locked === false) {
+                  if ((await auth_info.locked) === false) {
                     updateLoginStatus(doc);
                     setAuthStatus(true);
                     setAuthMsg("Login Successfully !");
-                    firestore.collection("Employee-Info").doc(doc).update({
-                      "auth-info.chances": 0,
-                      "auth-info.attempts": 0,
-                      "auth-info.locked": false,
-                      "auth-info.invalid_attempt_timestamp": null,
-                    });
+                    await firestore
+                      .collection("Employee-Info")
+                      .doc(doc)
+                      .update({
+                        "auth-info.chances": 0,
+                        "auth-info.attempts": 0,
+                        "auth-info.locked": false,
+                        "auth-info.invalid_attempt_timestamp": null,
+                      }).catch(err => {})
                     history.push("/focalHomePage");
                   } else {
                     authNotification();
@@ -283,7 +290,6 @@ const LoginPage = () => {
             }
           });
       }
-      setIsLoading(false);
     },
   });
 

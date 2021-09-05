@@ -334,7 +334,7 @@ const EmployeeTabContent = (props) => {
                     disabled={props.view.user}
                     variant={`outline-${
                       !formik.touched.role
-                        ? `primary`
+                        ? props.view.user ? `secondary`: `primary`
                         : !selectedRole.includes("Role") && formik.touched.role
                         ? `success`
                         : selectedRole.includes("Role") && formik.touched.role
@@ -419,7 +419,7 @@ const EmployeeTabContent = (props) => {
                     }
                     variant={`outline-${
                       !selectedRole.includes("Focal") || props.view
-                        ? `primary`
+                        ? props.view.user ? `secondary`:`primary`
                         : !selectedPermission.includes("-") &&
                           formik.touched.permission
                         ? `success`
