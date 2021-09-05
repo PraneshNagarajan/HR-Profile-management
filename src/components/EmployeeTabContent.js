@@ -166,7 +166,11 @@ const EmployeeTabContent = (props) => {
               .collection("Employee-Info")
               .doc("users")
               .update({
-                [value.id]: value.email,
+                [value.id]: {
+                  email: value.email,
+                  name: infos.personal.firstname,
+                  role: selectedRole
+                }
               });
             fireAuth
               .createUserWithEmailAndPassword(
