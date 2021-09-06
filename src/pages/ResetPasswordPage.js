@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
+
 var CryptoJS = require("crypto-js");
 
 const formValidation = (field) => {
@@ -43,6 +44,7 @@ const ResetPasswordPage = () => {
   const [db_question2, setDB_Question2] = useState("");
   const [isVisibleField1, setIsVisibleField1] = useState(false);
   const [isVisibleField2, setIsVisibleField2] = useState(false);
+  const [doc, setDoc] = useState("");
   const sm = useMediaQuery({ maxWidth: 768 });
 
   const onVisibleHandler = (field) => {
@@ -62,7 +64,7 @@ const ResetPasswordPage = () => {
     });
 
     fireAuth
-      .sendPasswordResetEmail(formik.values.username)
+      .sendPasswordResetEmail(doc)
       .then((res) => {
         setAuthStatus(true);
         setAuthMsg(
@@ -95,7 +97,7 @@ const ResetPasswordPage = () => {
     onSubmit: (value) => {
       firestore
         .collection("Employee-Info")
-        .doc(value.username)
+        .doc(doc)
         .get()
         .then((documentSnapshot) => {
           const auth_info = documentSnapshot.get("password-management");
@@ -126,46 +128,54 @@ const ResetPasswordPage = () => {
   });
 
   useEffect(() => {
+    if (doc.length > 0) {
+      firestore
+        .collection("Employee-Info")
+        .doc(doc)
+        .get()
+        .then((documentSnapshot) => {
+          const auth_info = documentSnapshot.get("password-management");
+          setDB_Question1(auth_info.question1);
+          setDB_Question2(auth_info.question2);
+          setIsLoading(false);
+          setAuthStatus(true);
+          setAuthMsg("");
+        })
+        .catch((err) => {});
+    }
+  }, [doc]);
+
+  useEffect(() => {
     if (formik.values.username.length > 0) {
       setIsLoading(true);
-      const timer = setTimeout(() => {
-        firestore
-          .collection("Employee-Info")
-          .get()
-          .then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-              setAuthMsg("");
-              if (doc.id === formik.values.username) {
-                firestore
-                  .collection("Employee-Info")
-                  .doc(formik.values.username)
-                  .get()
-                  .then((documentSnapshot) => {
-                    const auth_info = documentSnapshot.get(
-                      "password-management"
-                    );
-                    setDB_Question1(auth_info.question1);
-                    setDB_Question2(auth_info.question2);
-                    setIsLoading(false);
-                    setAuthStatus(true);
-                  })
-                  .catch((err) => {
-                    setAuthStatus(false);
-                    setAuthMsg(String(err));
-                  });
-              } else {
+      const timer = setTimeout(async () => {
+        if (await formik.values.username.includes("@")) {
+          setDoc(formik.values.username);
+        } else {
+          await firestore
+            .collection("Employee-Info")
+            .doc("users")
+            .get()
+            .then(async (documentSnapshot) => {
+              if (await !documentSnapshot.get(formik.values.username)) {
                 setIsLoading(false);
                 setAuthStatus(false);
                 setDB_Question1("");
                 setDB_Question2("");
                 setAuthMsg("Invalid user name or User name doesn't exists");
+              } else {
+                setDoc(documentSnapshot.get(formik.values.username));
               }
             });
-          });
+        }
       }, 2000);
       return () => {
         clearTimeout(timer);
       };
+    } else {
+      setDB_Question1("");
+      setDB_Question2("");
+      setAuthMsg("");
     }
   }, [formik.values.username]);
 

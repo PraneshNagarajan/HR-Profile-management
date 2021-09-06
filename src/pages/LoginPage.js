@@ -239,7 +239,7 @@ const LoginPage = () => {
                         "auth-info.locked": false,
                         "auth-info.invalid_attempt_timestamp": null,
                       }).catch(err => {})
-                    history.push("/focalHomePage");
+                    // history.push("/focalHomePage");
                   } else {
                     authNotification();
                   }
