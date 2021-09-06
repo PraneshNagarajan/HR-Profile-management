@@ -11,6 +11,7 @@ import FocalHomePage from "./pages/FocalHomePage";
 import { Fragment } from "react";
 import AddEmployeePage from "./pages/AddEmployeePage";
 import ManageEmployeeProfilePage from "./pages/ManageEmployeeProfilePage";
+import CreateDemand from "./pages/CreateDemand";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -47,12 +48,17 @@ function App() {
           </Route>
           <Route path="/addEmployees">
             <MainLayout>
-            <AddEmployeePage />
+              <AddEmployeePage />
             </MainLayout>
           </Route>
           <Route path="/manageEmployeeProfile/:id">
             <MainLayout>
-            <ManageEmployeeProfilePage />
+              <ManageEmployeeProfilePage />
+            </MainLayout>
+          </Route>
+          <Route path="/createDemand">
+            <MainLayout>
+              <CreateDemand />
             </MainLayout>
           </Route>
         </Fragment>
