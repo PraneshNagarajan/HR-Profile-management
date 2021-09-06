@@ -88,7 +88,6 @@ const ChangePasswordPage = () => {
             "auth-info.newly_added": false,
           });
           setTimeout(() => {
-            alert(fireAuth.currentUser.email);
             const store = firestore
               .collection("Employee-Info")
               .doc(fireAuth.currentUser.email);
