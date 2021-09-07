@@ -176,7 +176,8 @@ const LoginPage = () => {
               setAuthStatus(false);
               setAuthMsg("Username is invalid.");
             } else {
-              doc = documentSnapshot.get(value.username);
+              const data = documentSnapshot.get(value.username);
+              doc = data.email;
             }
           });
       }
@@ -198,7 +199,6 @@ const LoginPage = () => {
                   (new Date().getTime() -
                     new Date(password_info.last_changed).getTime()) /
                   (1000 * 3600 * 24);
-                console.log("diff : " + dateDiff);
                 await dispatch(
                   AuthActions.getAuthStatus({
                     id: profile_info.employee.id,
@@ -239,7 +239,7 @@ const LoginPage = () => {
                         "auth-info.locked": false,
                         "auth-info.invalid_attempt_timestamp": null,
                       }).catch(err => {})
-                    // history.push("/focalHomePage");
+                    history.push("/focalHomePage");
                   } else {
                     authNotification();
                   }

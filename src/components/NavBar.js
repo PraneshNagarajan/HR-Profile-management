@@ -39,6 +39,7 @@ const NavBar = () => {
         expand="lg"
         bg="primary"
         variant="dark"
+        sticky="top"
         style={{
           paddingTop: sm ? ".5rem" : "0rem",
           paddingBottom: sm ? ".5rem" : "0rem",

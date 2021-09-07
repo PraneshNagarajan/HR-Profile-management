@@ -8,14 +8,50 @@ import ChangePasswordPage from "./pages/ChangePassword";
 import { useSelector } from "react-redux";
 import MainLayout from "./UI/Main-Layout";
 import FocalHomePage from "./pages/FocalHomePage";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import AddEmployeePage from "./pages/AddEmployeePage";
 import ManageEmployeeProfilePage from "./pages/ManageEmployeeProfilePage";
 import CreateDemand from "./pages/CreateDemand";
+import { firestore } from "./firebase";
+import { useDispatch } from "react-redux";
+import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
   const user = useSelector((state) => state.auth.role);
+  const dispatch = useDispatch()
+
+  const clientRef = firestore.collection('Clients')
+  const techonologyRef = firestore.collection('Skills')
+  const recruiterRef = firestore.collection('Employee-Info').doc('users')
+
+  useEffect(() => { 
+    // Get real-time data
+    if(user.includes('Admin')){
+       recruiterRef.onSnapshot(querySnapshot => {
+         dispatch(DemandPreRequisiteActions.getRecruiters(Object.values(querySnapshot.data())))
+       })
+      techonologyRef.onSnapshot(querySnapshot => {
+        let technologies= {}
+        querySnapshot.docs.map((doc, index)=> {
+          technologies[doc.id]=(doc.data().sets)
+          if(querySnapshot.docs.length-1 == index){
+            dispatch(DemandPreRequisiteActions.getTechnology(technologies))
+          }
+        })
+      })
+      clientRef.onSnapshot(querySnapshot => {
+        let clients={}
+        querySnapshot.docs.map((doc,index) => {
+          clients[doc.id]=(doc.data().names)  
+        if(querySnapshot.docs.length-1 == index){
+          dispatch(DemandPreRequisiteActions.getClients(clients))
+        }
+        })
+      })
+    }
+},[user,clientRef,techonologyRef,recruiterRef])
+
   return (
     <Switch>
       <Route path="/" exact>

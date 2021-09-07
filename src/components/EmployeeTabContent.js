@@ -376,11 +376,11 @@ const EmployeeTabContent = (props) => {
                     <Dropdown.Divider />
                     <Dropdown.Item
                       onClick={(e) => {
-                        setRole("Focal");
+                        setRole("Admin");
                       }}
-                      active={selectedRole.includes("Focal")}
+                      active={selectedRole.includes("Admin")}
                     >
-                      Focal
+                      Admin
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -421,10 +421,10 @@ const EmployeeTabContent = (props) => {
                 <Dropdown>
                   <Dropdown.Toggle
                     disabled={
-                      !selectedRole.includes("Focal") || props.view.user
+                      !selectedRole.includes("Admin") || props.view.user
                     }
                     variant={`outline-${
-                      !selectedRole.includes("Focal") || props.view
+                      !selectedRole.includes("Admin") || props.view
                         ? props.view.user
                           ? `secondary`
                           : `primary`
@@ -461,7 +461,7 @@ const EmployeeTabContent = (props) => {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedRole.includes("Focal") &&
+                {selectedRole.includes("Admin") &&
                   selectedPermission.includes("-") && (
                     <div className="text-danger">*Required.</div>
                   )}
@@ -473,7 +473,7 @@ const EmployeeTabContent = (props) => {
                 disabled={
                   !(formik.dirty && formik.isValid) ||
                   selectedRole.includes("Role") ||
-                  selectedRole.includes("Focal")
+                  selectedRole.includes("Admin")
                     ? selectedPermission.includes("-")
                     : false ||
                       !Object.keys(infos.personal).length > 0 ||
