@@ -16,20 +16,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
-const initialValues = {
-  firstname: "",
-  lastname: "",
-  fathername: "",
-  mothername: "",
-  dob: "",
-  gender: "",
-  age: 21,
-  email1: "",
-  email2: "",
-  phone1: "",
-  phone2: "",
-};
-
 const validate = (value) => {
   const errors = {};
   if (!value.firstname) {
@@ -119,25 +105,32 @@ const PersonalTabContent = (props) => {
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
   const sm = useMediaQuery({ maxWidth: 768 });
-  const [selectedGender, setSelectedGender] = useState(
-    props.view.user || props.view.admin
-      ? infos.personal.gender
-      : "- Select Gender -"
-  );
+
+  const initialValues = {
+    firstname: "",
+    lastname: "",
+    fathername: "",
+    mothername: "",
+    dob: "",
+    gender:
+      props.view.user || props.view.admin
+        ? infos.personal.gender
+        : "- Select Gender -",
+    age: 21,
+    email1: "",
+    email2: "",
+    phone1: "",
+    phone2: "",
+  };
 
   const formik = useFormik({
     initialValues:
       props.view.user || props.view.admin ? infos.personal : initialValues,
     validate,
   });
-  const setGender = (value) => {
-    formik.values.gender = value;
-    setSelectedGender(value);
-  };
 
   useEffect(() => {
     if (infos.submitted) {
-      setSelectedGender("- Select Gender -");
       formik.resetForm();
     }
   }, [infos.submitted]);
@@ -299,9 +292,11 @@ const PersonalTabContent = (props) => {
                         ? props.view.user || props.view.admin
                           ? `secondary`
                           : `primary`
-                        : !selectedGender.includes("-") && formik.touched.gender
+                        : !formik.values.gender.includes("-") &&
+                          formik.touched.gender
                         ? `success`
-                        : selectedGender.includes("-") && formik.touched.gender
+                        : formik.values.gender.includes("-") &&
+                          formik.touched.gender
                         ? `danger`
                         : ``
                     }`}
@@ -309,23 +304,29 @@ const PersonalTabContent = (props) => {
                     name="gender"
                     onBlur={formik.handleBlur}
                   >
-                    {selectedGender}
+                    {formik.values.gender}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
-                    <Dropdown.Item onClick={(e) => setGender("Male")}>
+                    <Dropdown.Item
+                      onClick={(e) => formik.setFieldValue("gender", "Male")}
+                    >
                       Male
                     </Dropdown.Item>
                     <Dropdown.Divider />
-                    <Dropdown.Item onClick={(e) => setGender("Female")}>
+                    <Dropdown.Item
+                      onClick={(e) => formik.setFieldValue("gender", "Female")}
+                    >
                       Female
                     </Dropdown.Item>
                     <Dropdown.Divider />
-                    <Dropdown.Item onClick={(e) => setGender("Others")}>
+                    <Dropdown.Item
+                      onClick={(e) => formik.setFieldValue("gender", "Others")}
+                    >
                       Others
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedGender.includes("-") && formik.touched.gender && (
+                {formik.values.gender.includes("-") && formik.touched.gender && (
                   <p className="text-danger" style={{ fontSize: ".9rem" }}>
                     *Required.
                   </p>

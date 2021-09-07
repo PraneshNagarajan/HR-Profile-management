@@ -20,10 +20,6 @@ import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import noUserImg from "../images/noUserFound.jpg";
 
-const initialValues = {
-  id: "",
-  email: "",
-};
 const validate = (value) => {
   const errors = {};
   if (!value.id) {
@@ -48,21 +44,33 @@ const EmployeeTabContent = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
   const auth = useSelector((state) => state.auth);
-  const [selectedRole, setRole] = useState(
-    props.view ? infos.employee.role : "- Select Role -"
-  );
-  const [selectedPermission, setPermission] = useState(
-    props.view
-      ? infos.employee.permission
-        ? "View & Edit"
-        : "View Only"
-      : "- Select Permission -"
-  );
+  // const [formik.values.role, setRole] = useState(
+  //   props.view ? infos.employee.role : "- Select Role -"
+  // );
+  // const [formik.values.permission, setPermission] = useState(
+  //   props.view
+  //     ? infos.employee.permission
+  //       ? "View & Edit"
+  //       : "View Only"
+  //     : "- Select Permission -"
+  // );
   const [viewImg, setViewImg] = useState(false);
   const [Img, setImg] = useState("");
   const [users, setUsers] = useState({});
   const [errorsID, setErrorsID] = useState("");
   const [errorsEmail, setErrorsEmail] = useState("");
+
+  const initialValues = {
+    id: "",
+    email: "",
+    role: props.view ? infos.employee.role : "- Select Role -",
+    permission: props.view
+      ? infos.employee.permission
+        ? "View & Edit"
+        : "View Only"
+      : "- Select Permission -",
+  };
+
   useEffect(() => {
     firestore
       .collection("Employee-Info")
@@ -153,8 +161,7 @@ const EmployeeTabContent = (props) => {
               address: infos.address,
               employee: {
                 ...formik.values,
-                role: selectedRole,
-                admin_permission: selectedPermission.includes("&&")
+                admin_permission: formik.values.permission.includes("&&")
                   ? true
                   : false,
               },
@@ -169,7 +176,7 @@ const EmployeeTabContent = (props) => {
                 [value.id]: {
                   email: value.email,
                   name: infos.personal.firstname,
-                  role: selectedRole,
+                  role: formik.values.role,
                 },
               });
             fireAuth
@@ -217,8 +224,6 @@ const EmployeeTabContent = (props) => {
   useEffect(() => {
     if (infos.submitted) {
       formik.resetForm();
-      setPermission("- Select Permission -");
-      setRole("- Select Role -");
       dispatch(InfoActions.getSubmittedStatus());
     }
   }, [infos.submitted]);
@@ -283,7 +288,9 @@ const EmployeeTabContent = (props) => {
                 <img
                   src={
                     props.user.flag
-                      ? props.user.img
+                      ? viewImg
+                        ? URL.createObjectURL(Img)
+                        : props.user.img
                       : viewImg
                       ? URL.createObjectURL(Img)
                       : noUserImg
@@ -341,9 +348,11 @@ const EmployeeTabContent = (props) => {
                         ? props.view.user
                           ? `secondary`
                           : `primary`
-                        : !selectedRole.includes("Role") && formik.touched.role
+                        : !formik.values.role.includes("Role") &&
+                          formik.touched.role
                         ? `success`
-                        : selectedRole.includes("Role") && formik.touched.role
+                        : formik.values.role.includes("Role") &&
+                          formik.touched.role
                         ? `danger`
                         : ``
                     }`}
@@ -351,40 +360,46 @@ const EmployeeTabContent = (props) => {
                     className="w-100"
                     onBlur={formik.handleBlur}
                   >
-                    {selectedRole}
+                    {formik.values.role}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
                     <Dropdown.Item
                       onClick={(e) => {
-                        setRole("Junior-Recruiter");
-                        setPermission("- Select Permission -");
+                        formik.setFieldValue("role", "Recruiter");
+                        formik.setFieldValue(
+                          "permission",
+                          "- Select Permission -"
+                        );
                       }}
-                      active={selectedRole.includes("Junior")}
+                      active={formik.values.role.includes("Junior")}
                     >
                       Recruiter
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
-                      onClick={(e) => {
-                        setRole("Senior-Recruiter");
-                        setPermission("- Select Permission -");
+                      onClick={() => {
+                        formik.setFieldValue("role", "Senior Recruiter");
+                        formik.setFieldValue(
+                          "permission",
+                          "- Select Permission -"
+                        );
                       }}
-                      active={selectedRole.includes("Senior")}
+                      active={formik.values.role.includes("Senior")}
                     >
-                      Senior-Recruiter
+                      Senior Recruiter
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
-                      onClick={(e) => {
-                        setRole("Admin");
+                      onClick={() => {
+                        formik.setFieldValue("role", "Admin");
                       }}
-                      active={selectedRole.includes("Admin")}
+                      active={formik.values.role.includes("Admin")}
                     >
                       Admin
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedRole.includes("-") && (
+                {formik.touched.role && formik.errors.role && (
                   <div className="text-danger">{formik.errors.role}</div>
                 )}
               </Col>
@@ -421,17 +436,17 @@ const EmployeeTabContent = (props) => {
                 <Dropdown>
                   <Dropdown.Toggle
                     disabled={
-                      !selectedRole.includes("Admin") || props.view.user
+                      !formik.values.role.includes("Admin") || props.view.user
                     }
                     variant={`outline-${
-                      !selectedRole.includes("Admin") || props.view
+                      !formik.values.role.includes("Admin") || props.view
                         ? props.view.user
                           ? `secondary`
                           : `primary`
-                        : !selectedPermission.includes("-") &&
+                        : !formik.values.permission.includes("-") &&
                           formik.touched.permission
                         ? `success`
-                        : selectedPermission.includes("-")
+                        : formik.values.permission.includes("-")
                         ? `danger`
                         : ``
                     }`}
@@ -439,30 +454,30 @@ const EmployeeTabContent = (props) => {
                     className="w-100"
                     onBlur={formik.handleBlur}
                   >
-                    {selectedPermission}
+                    {formik.values.permission}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
                     <Dropdown.Item
-                      onClick={(e) => {
-                        setPermission("View & Edit");
+                      onClick={() => {
+                        formik.setFieldValue("permission", "View & Edit");
                       }}
-                      active={selectedPermission.includes("Write")}
+                      active={formik.values.permission.includes("Write")}
                     >
                       View & Edit
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
-                      onClick={(e) => {
-                        setPermission("View Only");
+                      onClick={() => {
+                        formik.setFieldValue("permission", "View Only");
                       }}
-                      active={selectedPermission.includes("Only")}
+                      active={formik.values.permission.includes("Only")}
                     >
                       View Only
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                {selectedRole.includes("Admin") &&
-                  selectedPermission.includes("-") && (
+                {formik.values.role.includes("Admin") &&
+                  formik.values.permission.includes("-") && (
                     <div className="text-danger">*Required.</div>
                   )}
               </Col>
@@ -472,9 +487,9 @@ const EmployeeTabContent = (props) => {
                 className={sm ? "w-100" : ""}
                 disabled={
                   !(formik.dirty && formik.isValid) ||
-                  selectedRole.includes("Role") ||
-                  selectedRole.includes("Admin")
-                    ? selectedPermission.includes("-")
+                  formik.values.role.includes("Role") ||
+                  formik.values.role.includes("Admin")
+                    ? formik.values.permission.includes("-")
                     : false ||
                       !Object.keys(infos.personal).length > 0 ||
                       !Object.keys(infos.address).length > 0
