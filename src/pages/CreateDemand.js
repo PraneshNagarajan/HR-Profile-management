@@ -10,22 +10,30 @@ import {
   FormControl,
   FormLabel,
   FormCheck,
+  Spinner
 } from "react-bootstrap";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateDemand.css";
 import Spinners from "../components/Spinners";
+import Alerts from '../components/Alert'
 import { useSelector } from "react-redux";
 import { useFormik } from "formik";
+import { firestore } from "../firebase";
+import { useDispatch } from "react-redux";
+import { AlertActions } from "../Redux/AlertSlice";
 
 const CreateDemand = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
+  const dispatch = useDispatch()
+  const loggedUser = useSelector((state) => state.auth);
   const [ptIsChecked, setPrimaryTechIsChecked] = useState(false);
   const [psIsChecked, setPrimarySkillIsChecked] = useState(false);
   const [stIsChecked, setSecondaryTechIsChecked] = useState(false);
   const [ssIsChecked, setSecondarySkillIsChecked] = useState(false);
   const [clientIsChecked, setClientIsChecked] = useState(false);
   const [end_clientIsChecked, setEndClientIsChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
 
   const formik = useFormik({
@@ -117,11 +125,49 @@ const CreateDemand = () => {
       }
       return errors;
     },
+    onSubmit: (value) => {
+      setIsLoading(true)
+      firestore
+        .collection("Demands")
+        .doc(loggedUser.email)
+        .update({
+          ["F" + loggedUser.id + new Date().getTime()]: {
+            ...value,
+          },
+        })
+        .then(() => {
+          setIsLoading(false)
+          dispatch(AlertActions.handleShow({msg: 'Data added successfully.', flag: true}))
+        })
+        .catch((err) => {
+          setIsLoading(false)
+          if (String(err).includes("No document to update")) {
+            firestore
+              .collection("Demands")
+              .doc(loggedUser.email)
+              .set({
+                ["F" + loggedUser.id + new Date().getTime()]: {
+                  ...value,
+                },
+              })
+              .then(() => {
+                dispatch(AlertActions.handleShow({msg: 'Data added successfully.', flag: true}))
+              }).catch(err => {
+                dispatch(AlertActions.handleShow({msg: 'Data added failed.', flag: false}))
+              })
+          } else {
+            dispatch(AlertActions.handleShow({msg: 'Data added failed.', flag: false}))
+          }
+        });
+    },
   });
 
   return (
     <Fragment>
-      {!Object.values(pre_requisite.clients).length > 0 && <Spinners />}
+      {(!Object.values(pre_requisite.clients).length > 0) && (
+        <Spinners />
+      )}
+      <Alerts />
       {Object.values(pre_requisite.clients).length > 0 && (
         <Container className="d-flex justify-content-center ">
           <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
@@ -129,7 +175,12 @@ const CreateDemand = () => {
               <h4>Create Demand</h4>
             </Card.Header>
             <Card.Body className="mb-4">
-              <Form>
+              <Form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  formik.handleSubmit();
+                }}
+              >
                 <Col md={{ span: 12 }}>
                   <FormGroup className="my-2">
                     <Row>
@@ -756,14 +807,13 @@ const CreateDemand = () => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
-                            onClick={() =>{
+                            onClick={() => {
                               formik.setFieldValue(
                                 "primaryskill",
                                 "- Select the Skill -"
                               );
-                              setPrimarySkillIsChecked(!psIsChecked)
-                            }
-                            }
+                              setPrimarySkillIsChecked(!psIsChecked);
+                            }}
                           />
                         )}
                       </Col>
@@ -869,7 +919,6 @@ const CreateDemand = () => {
                               "secondaryskill",
                               "- Select the Skill -"
                             );
-                            
                           }}
                         />
                       </Col>
@@ -961,14 +1010,13 @@ const CreateDemand = () => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
-                            onClick={() =>{
+                            onClick={() => {
                               formik.setFieldValue(
                                 "secondaryskill",
                                 "- Select the Skill -"
                               );
-                              setSecondarySkillIsChecked(!ssIsChecked)
-                            }
-                            }
+                              setSecondarySkillIsChecked(!ssIsChecked);
+                            }}
                           />
                         )}
                       </Col>
@@ -976,13 +1024,32 @@ const CreateDemand = () => {
                   </FormGroup>
                 </Col>
                 <Col className="text-center">
-                  <Button
-                    variant="primary"
-                    disabled={!(formik.dirty && formik.isValid)}
-                    className={`my-3 ${sm ? `w-100` : `w-75`}`}
-                  >
-                    Submit
-                  </Button>
+                  {!isLoading && (
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={!(formik.dirty && formik.isValid)}
+                      className={`my-3 ${sm ? `w-100` : `w-75`}`}
+                    >
+                      Submit
+                    </Button>
+                  )}
+                  {isLoading && (
+                    <Button
+                      variant="primary"
+                      className={`my-3 ${sm ? `w-100` : `w-75`}`}
+                      disabled
+                    >
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      <span className="visually-hidden">Loading...</span>
+                    </Button>
+                  )}
                 </Col>
               </Form>
             </Card.Body>
