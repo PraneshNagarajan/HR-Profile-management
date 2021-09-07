@@ -44,7 +44,7 @@ const EmployeeTabContent = (props) => {
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
-  const auth = useSelector((state) => state.auth);
+  const loggedUser = useSelector((state) => state.auth);
   const [viewImg, setViewImg] = useState(false);
   const [Img, setImg] = useState("");
   const [users, setUsers] = useState({});
@@ -84,7 +84,7 @@ const EmployeeTabContent = (props) => {
           .child("employee-img/" + value.email)
           .put(Img)
           .then(() => {
-            if (!auth.admin || value.email === auth.email) {
+            if (!loggedUser.admin || value.email === loggedUser.email) {
               firestore.collection("Employee-Info").doc(value.email).update({
                 "profile.img_uploaded": true,
               });
@@ -162,7 +162,7 @@ const EmployeeTabContent = (props) => {
               },
             },
             uploader_info: {
-              id: auth.id,
+              id: loggedUser.id,
               date: new Date(),
             },
           })

@@ -18,24 +18,24 @@ const ManageEmployeeProfilePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
-  const auth = useSelector((state) => state.auth);
+  const loggedUser = useSelector((state) => state.auth);
   const location = useLocation();
   const params = useParams();
   const queryParams = new URLSearchParams(location.search);
   const activeTab = queryParams.get("activeTab");
   const [userImg, setUserImg] = useState("");
   const [userImgFlag, setUserImgFlag] = useState(false);
-  const [isSpinner, setIsSpinner] = useState(true)
+  const [isSpinner, setIsSpinner] = useState(true);
 
   useEffect(() => {
-    setIsSpinner(true)
+    setIsSpinner(true);
     firestore
       .collection("Employee-Info")
       .doc("users")
       .get()
       .then((documentSnapshot) => {
         const doc = documentSnapshot.get(params.id).email;
-        console.log(doc)
+        console.log(doc);
         firestore
           .collection("Employee-Info")
           .doc(doc)
@@ -52,7 +52,7 @@ const ManageEmployeeProfilePage = () => {
                 activeTab,
               })
             );
-            if (profile_info.employee.id === auth.id) {
+            if (profile_info.employee.id === loggedUser.id) {
               if (!profile_info.img_uploaded && !password_info.status) {
                 dispatch(
                   AlertActions.handleShow({
@@ -77,11 +77,11 @@ const ManageEmployeeProfilePage = () => {
               }
             } else {
               dispatch(InfoActions.getActiveTab("personal-info"));
-            }    
+            }
 
             if (
               profile_info.img_uploaded &&
-              profile_info.employee.id !== auth.id
+              profile_info.employee.id !== loggedUser.id
             ) {
               fireStorage
                 .ref()
@@ -91,14 +91,13 @@ const ManageEmployeeProfilePage = () => {
                   setUserImg(url);
                   setUserImgFlag(true);
                 });
-            } else if (profile_info.employee.id === auth.id) {
-              setUserImg(auth.photoUrl);
-              console.log("test");
+            } else if (profile_info.employee.id === loggedUser.id) {
+              setUserImg(loggedUser.photoUrl);
               setUserImgFlag(true);
             } else {
               setUserImgFlag(false);
             }
-            setIsSpinner(false)
+            setIsSpinner(false);
           });
       });
   }, [params.id]);
@@ -106,9 +105,7 @@ const ManageEmployeeProfilePage = () => {
   return (
     <Fragment>
       <Alerts />
-      {
-        isSpinner && <Spinners />
-      }
+      {isSpinner && <Spinners />}
       {!isSpinner && (
         <Container fluid className={sm ? "my-3" : "p-5"}>
           <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
@@ -159,7 +156,7 @@ const ManageEmployeeProfilePage = () => {
                 </span>
               </Nav.Link>
             </Nav.Item>
-            {infos.employee.id === auth.id && (
+            {infos.employee.id === loggedUser.id && (
               <Nav.Item>
                 <Nav.Link
                   as={Link}
@@ -190,8 +187,8 @@ const ManageEmployeeProfilePage = () => {
           >
             <PersonalTabContent
               view={{
-                user: infos.employee.id === auth.id,
-                admin: infos.employee.id !== auth.id,
+                user: infos.employee.id === loggedUser.id,
+                admin: infos.employee.id !== loggedUser.id,
               }}
             />
           </div>
@@ -202,8 +199,8 @@ const ManageEmployeeProfilePage = () => {
           >
             <AddressTabContent
               view={{
-                user: infos.employee.id === auth.id,
-                admin: infos.employee.id !== auth.id,
+                user: infos.employee.id === loggedUser.id,
+                admin: infos.employee.id !== loggedUser.id,
               }}
             />
           </div>
@@ -214,15 +211,16 @@ const ManageEmployeeProfilePage = () => {
           >
             <EmployeeTabContent
               view={{
-                user: infos.employee.id === auth.id,
-                admin: infos.employee.id !== auth.id,
+                user: infos.employee.id === loggedUser.id,
+                admin: infos.employee.id !== loggedUser.id,
               }}
               user={{ img: userImg, flag: userImgFlag }}
             />
           </div>
           <div
             className={
-              activeTab.includes("security") && infos.employee.id === auth.id
+              activeTab.includes("security") &&
+              infos.employee.id === loggedUser.id
                 ? "d-block"
                 : "d-none"
             }

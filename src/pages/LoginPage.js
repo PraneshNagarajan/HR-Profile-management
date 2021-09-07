@@ -35,7 +35,6 @@ const formValidation = (field) => {
 
 const LoginPage = () => {
   const dispatch = useDispatch();
-  const auth = useSelector((state) => state.auth);
   const history = useHistory();
   const [timer, SetTimer] = useState();
   const [authMsg, setAuthMsg] = useState("");
