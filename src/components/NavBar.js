@@ -70,12 +70,7 @@ const NavBar = () => {
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
             <NavDropdown
-              active={
-                location.pathname.includes("addEmployee") ||
-                location.pathname.includes("manageEmployee")
-                  ? `active`
-                  : ``
-              }
+              active={location.pathname.includes("Employee") ? `active` : ``}
               title={
                 <span>
                   <FaUsersCog className="mb-1" /> Employees
@@ -99,7 +94,7 @@ const NavBar = () => {
               <NavDropdown.Item
                 className="text-warning fw-bold"
                 as={Link}
-                to="/manageEmployeeProfile/147852?activeTab=security-info"
+                to="/manageEmployeeProfile/147852?activeTab=personal-info"
               >
                 {" "}
                 <FaUserEdit style={{ width: "20px", height: "20px" }} /> Manage
@@ -109,6 +104,7 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
 
             <NavDropdown
+              active={location.pathname.includes("Demand") ? `active` : ``}
               title={
                 <span>
                   <FaRegListAlt className="mb-1" /> Demands
@@ -119,7 +115,11 @@ const NavBar = () => {
                 location.pathname.includes("employee") ? "active" : ""
               } ${sm ? "h6 mx-2" : "h5 me-2"}`}
             >
-              <NavDropdown.Item className="text-primary fw-bold" as={Link} to="/createDemand">
+              <NavDropdown.Item
+                className="text-primary fw-bold"
+                as={Link}
+                to="/createDemand"
+              >
                 {" "}
                 <FaPlusCircle style={{ width: "20px", height: "20px" }} />{" "}
                 Create Demand

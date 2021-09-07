@@ -74,7 +74,7 @@ const EmployeeTabContent = (props) => {
   }, []);
 
   const formik = useFormik({
-    initialValues: props.view ? infos.employee : initialValues,
+    initialValues: props.view ? {...infos.employee, permission: infos.employee.permission ? 'View & Edit' : 'View Only' } : initialValues,
     validate,
     onSubmit: (value) => {
       setIsLoading(true);
@@ -463,7 +463,7 @@ const EmployeeTabContent = (props) => {
                       onClick={() => {
                         formik.setFieldValue("permission", "View & Edit");
                       }}
-                      active={formik.values.permission.includes("Write")}
+                      active={formik.values.permission.includes("View")}
                     >
                       View & Edit
                     </Dropdown.Item>
