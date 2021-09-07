@@ -44,16 +44,6 @@ const EmployeeTabContent = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
   const auth = useSelector((state) => state.auth);
-  // const [formik.values.role, setRole] = useState(
-  //   props.view ? infos.employee.role : "- Select Role -"
-  // );
-  // const [formik.values.permission, setPermission] = useState(
-  //   props.view
-  //     ? infos.employee.permission
-  //       ? "View & Edit"
-  //       : "View Only"
-  //     : "- Select Permission -"
-  // );
   const [viewImg, setViewImg] = useState(false);
   const [Img, setImg] = useState("");
   const [users, setUsers] = useState({});
@@ -166,6 +156,10 @@ const EmployeeTabContent = (props) => {
                   : false,
               },
             },
+            uploader_info: {
+              id: auth.id,
+              date: new Date()
+            }
           })
           .then(() => {
             //pass value for key+ from variable
