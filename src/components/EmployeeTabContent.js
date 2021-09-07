@@ -11,6 +11,7 @@ import {
   Form,
   FormGroup,
   Button,
+  Spinner,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
@@ -49,6 +50,7 @@ const EmployeeTabContent = (props) => {
   const [users, setUsers] = useState({});
   const [errorsID, setErrorsID] = useState("");
   const [errorsEmail, setErrorsEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const initialValues = {
     id: "",
@@ -75,6 +77,7 @@ const EmployeeTabContent = (props) => {
     initialValues: props.view ? infos.employee : initialValues,
     validate,
     onSubmit: (value) => {
+      setIsLoading(true);
       if (Object.values(Img).length >= 0) {
         fireStorage
           .ref()
@@ -112,14 +115,16 @@ const EmployeeTabContent = (props) => {
             "profile.personal": infos.personal,
             "profile.address": infos.address,
           })
-          .catch(() => {});
-
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Data added successfully.",
-            flag: true,
+          .then(() => {
+            setIsLoading(false);
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Data added successfully.",
+                flag: true,
+              })
+            );
           })
-        );
+          .catch(() => {});
       } else {
         firestore
           .collection("Employee-Info")
@@ -158,8 +163,8 @@ const EmployeeTabContent = (props) => {
             },
             uploader_info: {
               id: auth.id,
-              date: new Date()
-            }
+              date: new Date(),
+            },
           })
           .then(() => {
             //pass value for key+ from variable
@@ -182,6 +187,7 @@ const EmployeeTabContent = (props) => {
                 res.user.updateProfile({
                   displayName: infos.personal.firstname,
                 });
+                setIsLoading(false);
                 dispatch(InfoActions.resetForm());
                 dispatch(
                   AlertActions.handleShow({
@@ -191,6 +197,7 @@ const EmployeeTabContent = (props) => {
                 );
               })
               .catch((err) => {
+                setIsLoading(false);
                 dispatch(
                   AlertActions.handleShow({
                     msg: "Data added failed.",
@@ -204,6 +211,7 @@ const EmployeeTabContent = (props) => {
               });
           })
           .catch(() => {
+            setIsLoading(false);
             dispatch(
               AlertActions.handleShow({
                 msg: "Data added failed.",
@@ -477,21 +485,39 @@ const EmployeeTabContent = (props) => {
               </Col>
             </Row>
             <div className={sm ? "mt-5" : "float-end"}>
-              <Button
-                className={sm ? "w-100" : ""}
-                disabled={
-                  !(formik.dirty && formik.isValid) ||
-                  formik.values.role.includes("Role") ||
-                  formik.values.role.includes("Admin")
-                    ? formik.values.permission.includes("-")
-                    : false ||
-                      !Object.keys(infos.personal).length > 0 ||
-                      !Object.keys(infos.address).length > 0
-                }
-                type="submit"
-              >
-                Save && Submit
-              </Button>
+              {!isLoading && (
+                <Button
+                  className={sm ? "w-100" : ""}
+                  disabled={
+                    !(formik.dirty && formik.isValid) ||
+                    formik.values.role.includes("Role") ||
+                    formik.values.role.includes("Admin")
+                      ? formik.values.permission.includes("-")
+                      : false ||
+                        !Object.keys(infos.personal).length > 0 ||
+                        !Object.keys(infos.address).length > 0
+                  }
+                  type="submit"
+                >
+                  Save && Submit
+                </Button>
+              )}
+              {isLoading && (
+                <Button
+                  variant="primary"
+                  className={sm ? "w-100" : ""}
+                  disabled
+                >
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  <span className="visually-hidden">Loading...</span>
+                </Button>
+              )}
             </div>
           </Form>
         </Card.Body>
