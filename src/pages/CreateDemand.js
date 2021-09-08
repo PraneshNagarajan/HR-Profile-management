@@ -72,17 +72,17 @@ const CreateDemand = (props) => {
   const formik = useFormik({
     initialValues: {
       recruiter: "- Select the Recruiter -",
-      clientname: "- Select the Client -",
-      endclientname: "- Select the End-Client -",
+      clientname: props.clientFlag ? "- Select the Client -" : "",
+      endclientname: props.clientFlag ? "- Select the End-Client -" : "",
       location: "",
       panlocation: "",
       type: "- Select the type -",
       demand: 1,
       demandallot: "",
-      primarytech: "- Select the Techonology -",
-      primaryskill: "- Select the Skill -",
-      secondarytech: "- Select the Techonology -",
-      secondaryskill: "- Select the Skill -",
+      primarytech: props.techFlag ? "- Select the Techonology -" : "",
+      primaryskill: props.techFlag ? "- Select the Skill -" : "",
+      secondarytech: props.techFlag ? "- Select the Techonology -" : "",
+      secondaryskill:  props.techFlag ? "- Select the Skill -" : "",
     },
     validate: (value) => {
       const errors = {};
@@ -200,7 +200,7 @@ const CreateDemand = (props) => {
               false
             );
           }
-        } else {
+        } else if (stIsChecked || ssIsChecked){
           data.push(value.secondaryskill);
           if (!pre_requisite.technologies[value.secondarytech]) {
             addSkills(
@@ -298,7 +298,16 @@ const CreateDemand = (props) => {
             );
           }
         });
-    },
+        if(!isLoading){
+          formik.resetForm()
+          setPrimaryTechIsChecked(false)
+          setPrimarySkillIsChecked(false)
+          setSecondaryTechIsChecked(false)
+          setSecondarySkillIsChecked(false)
+          setClientIsChecked(false)
+          setEndClientIsChecked(false)
+        }
+    }
   });
 
   return (
@@ -395,6 +404,8 @@ const CreateDemand = (props) => {
                           <FormControl
                             type="text"
                             name="clientname"
+                            value={formik.values.clientname}
+                            style={{ textTransform: "uppercase" }}
                             isInvalid={
                               formik.errors.clientname &&
                               formik.touched.clientname &&
@@ -437,6 +448,7 @@ const CreateDemand = (props) => {
                                 return (
                                   <Fragment key={index}>
                                     <Dropdown.Item
+                                    className="text-center"
                                       active={formik.values.clientname.includes(
                                         client
                                       )}
@@ -469,16 +481,18 @@ const CreateDemand = (props) => {
                         <FormCheck
                           type="checkbox"
                           label="Enter manually."
+                          checked={clientIsChecked}
+                          onChange={()=>{}}
                           onClick={() => {
                             setClientIsChecked(!clientIsChecked);
                             setEndClientIsChecked(!clientIsChecked);
                             formik.setFieldValue(
                               "clientname",
-                              "- Select the Client -"
+                              !clientIsChecked ? "" : "- Select the Client -"
                             );
                             formik.setFieldValue(
                               "endclientname",
-                              "- Select the EndClient -"
+                              !clientIsChecked ? "" : "- Select the EndClient -"
                             );
                           }}
                         />
@@ -494,6 +508,8 @@ const CreateDemand = (props) => {
                           <FormControl
                             type="text"
                             name="endclientname"
+                            value={formik.values.endclientname}
+                            style={{ textTransform: "uppercase" }}
                             isInvalid={
                               formik.errors.endclientname &&
                               formik.touched.endclientname &&
@@ -538,6 +554,7 @@ const CreateDemand = (props) => {
                                 return (
                                   <Fragment key={index}>
                                     <Dropdown.Item
+                                    className="text-center"
                                       onClick={() =>
                                         formik.setFieldValue(
                                           "endclientname",
@@ -571,11 +588,13 @@ const CreateDemand = (props) => {
                         <FormCheck
                           type="checkbox"
                           label="Enter manually."
+                          checked={end_clientIsChecked}
+                          onChange={()=>{}}
                           onClick={() => {
                             setEndClientIsChecked(!end_clientIsChecked);
                             formik.setFieldValue(
                               "endclientname",
-                              "- Select the EndClient -"
+                              !end_clientIsChecked ? "" : "- Select the EndClient -"
                             );
                           }}
                         />
@@ -594,6 +613,8 @@ const CreateDemand = (props) => {
                         <FormControl
                           type="text"
                           name="location"
+                          value={formik.values.location}
+                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.location && formik.touched.location
                           }
@@ -620,6 +641,8 @@ const CreateDemand = (props) => {
                         <FormControl
                           type="text"
                           name="panlocation"
+                          value={formik.values.panlocation}
+                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.panlocation &&
                             formik.touched.panlocation
@@ -674,6 +697,7 @@ const CreateDemand = (props) => {
 
                           <Dropdown.Menu className="w-100">
                             <Dropdown.Item
+                            className="text-center"
                               onClick={() =>
                                 formik.setFieldValue("type", "Full TIme")
                               }
@@ -682,6 +706,7 @@ const CreateDemand = (props) => {
                             </Dropdown.Item>
                             <Dropdown.Divider />
                             <Dropdown.Item
+                            className="text-center"
                               onClick={() =>
                                 formik.setFieldValue("type", "Part TIme")
                               }
@@ -710,6 +735,7 @@ const CreateDemand = (props) => {
                         <FormControl
                           type="number"
                           name="demand"
+                          value={formik.values.demand}
                           min="1"
                           value={formik.values.demand}
                           isInvalid={
@@ -736,6 +762,8 @@ const CreateDemand = (props) => {
                         <FormControl
                           type="date"
                           name="demandallot"
+                          value={formik.values.demandallot}
+                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.demandallot &&
                             formik.touched.demandallot
@@ -773,6 +801,8 @@ const CreateDemand = (props) => {
                             <FormControl
                               type="text"
                               name="primarytech"
+                              value={formik.values.primarytech}
+                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.primarytech &&
                                 formik.touched.primarytech &&
@@ -816,6 +846,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
+                                      className="text-center"
                                         active={formik.values.primarytech.includes(
                                           tech
                                         )}
@@ -849,16 +880,18 @@ const CreateDemand = (props) => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
+                            checked={ptIsChecked}
+                            onChange={()=>{}}
                             onClick={() => {
                               setPrimaryTechIsChecked(!ptIsChecked);
                               setPrimarySkillIsChecked(!ptIsChecked);
                               formik.setFieldValue(
                                 "primarytech",
-                                "- Select the Technology -"
+                                !ptIsChecked ?  "" : "- Select the Technology -"
                               );
                               formik.setFieldValue(
                                 "primaryskill",
-                                "- Select the Skill -"
+                                !ptIsChecked ? "" : "- Select the Skill -"
                               );
                             }}
                           />
@@ -875,6 +908,8 @@ const CreateDemand = (props) => {
                             <FormControl
                               type="text"
                               name="primaryskill"
+                              value={formik.values.primaryskill}
+                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.primaryskill &&
                                 formik.touched.primaryskill &&
@@ -919,6 +954,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
+                                      className="text-center"
                                         active={formik.values.primaryskill.includes(
                                           skill
                                         )}
@@ -952,12 +988,14 @@ const CreateDemand = (props) => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
+                            checked={psIsChecked}
+                            onChange={()=>{}}
                             onClick={() => {
+                              setPrimarySkillIsChecked(!psIsChecked);
                               formik.setFieldValue(
                                 "primaryskill",
-                                "- Select the Skill -"
+                                !psIsChecked ? "" : "- Select the Skill -"
                               );
-                              setPrimarySkillIsChecked(!psIsChecked);
                             }}
                           />
                         )}
@@ -980,6 +1018,8 @@ const CreateDemand = (props) => {
                             <FormControl
                               type="text"
                               name="secondarytech"
+                              value={formik.values.secondarytech}
+                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.secondarytech &&
                                 formik.touched.secondarytech &&
@@ -1023,6 +1063,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
+                                      className="text-center"
                                         active={formik.values.secondarytech.includes(
                                           tech
                                         )}
@@ -1056,16 +1097,18 @@ const CreateDemand = (props) => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
+                            checked={stIsChecked}
+                            onChange={()=>{}}
                             onClick={() => {
                               setSecondaryTechIsChecked(!stIsChecked);
                               setSecondarySkillIsChecked(!stIsChecked);
                               formik.setFieldValue(
-                                "secondarytech",
-                                "- Select the Technology -"
+                                 "secondarytech",
+                                 !stIsChecked ? "" : "- Select the Technology -"
                               );
                               formik.setFieldValue(
                                 "secondaryskill",
-                                "- Select the Skill -"
+                                !stIsChecked ? "" :  "- Select the Skill -"
                               );
                             }}
                           />
@@ -1082,6 +1125,8 @@ const CreateDemand = (props) => {
                             <FormControl
                               type="text"
                               name="secondaryskill"
+                              value={formik.values.secondaryskill}
+                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.secondaryskill &&
                                 formik.touched.secondaryskill &&
@@ -1128,6 +1173,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
+                                      className="text-center"
                                         active={formik.values.secondaryskill.includes(
                                           skill
                                         )}
@@ -1161,12 +1207,14 @@ const CreateDemand = (props) => {
                           <FormCheck
                             type="checkbox"
                             label="Enter manually."
+                            checked={ssIsChecked}
+                            onChange={()=>{}}
                             onClick={() => {
+                              setSecondarySkillIsChecked(!ssIsChecked);
                               formik.setFieldValue(
                                 "secondaryskill",
-                                "- Select the Skill -"
+                                !ssIsChecked ? "" : "- Select the Skill -"
                               );
-                              setSecondarySkillIsChecked(!ssIsChecked);
                             }}
                           />
                         )}
