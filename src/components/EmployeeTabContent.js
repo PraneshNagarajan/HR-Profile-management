@@ -74,11 +74,16 @@ const EmployeeTabContent = (props) => {
   }, []);
 
   const formik = useFormik({
-    initialValues: props.view ? {...infos.employee, permission: infos.employee.permission ? 'View & Edit' : 'View Only' } : initialValues,
+    initialValues: props.view
+      ? {
+          ...infos.employee,
+          permission: infos.employee.permission ? "View & Edit" : "View Only",
+        }
+      : initialValues,
     validate,
     onSubmit: (value) => {
       setIsLoading(true);
-      console.log((Img.name))
+      console.log(Img.name);
       if (!!Img.name) {
         fireStorage
           .ref()
@@ -127,123 +132,122 @@ const EmployeeTabContent = (props) => {
           })
           .catch(() => {});
       } else {
-        if(props.view.admin) {
+        if (props.view.admin) {
           firestore
-          .collection("Employee-Info")
-          .doc(formik.values.email)
-          .update({
-            "profile.employee": {
-              ...formik.values,
-              admin_permission: formik.values.permission.includes("&&")
-                ? true
-                : false,
-            },
-          })
-          .then(() => {
-            setIsLoading(false);
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Data added successfully.",
-                flag: true,
-              })
-            );
-          })
-          .catch(() => {});
-        }
-        else {
-          firestore
-          .collection("Employee-Info")
-          .doc(formik.values.email)
-          .set({
-            "auth-info": {
-              attempts: 0,
-              chances: 0,
-              account_status: "active",
-              newly_added: true,
-              invalid_attempt_timestamp: null,
-              locked: false,
-            },
-            "login-info": {
-              last_logout: null,
-              last_login: null,
-              state: "active",
-            },
-            "password-management": {
-              question2: null,
-              answer1: null,
-              answer2: null,
-              question1: null,
-              last_changed: null,
-            },
-            profile: {
-              img_uploaded: Img.length > 0 ? true : false,
-              personal: infos.personal,
-              address: infos.address,
-              employee: {
+            .collection("Employee-Info")
+            .doc(formik.values.email)
+            .update({
+              "profile.employee": {
                 ...formik.values,
                 admin_permission: formik.values.permission.includes("&&")
                   ? true
                   : false,
               },
-            },
-            uploader_info: {
-              id: loggedUser.id,
-              date: new Date(),
-            },
-          })
-          .then(() => {
-            //pass value for key+ from variable
-            firestore
-              .collection("Employee-Info")
-              .doc("users")
-              .update({
-                [value.id]: {
-                  email: value.email,
-                  name: infos.personal.firstname,
-                  role: formik.values.role,
+            })
+            .then(() => {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Data added successfully.",
+                  flag: true,
+                })
+              );
+            })
+            .catch(() => {});
+        } else {
+          firestore
+            .collection("Employee-Info")
+            .doc(formik.values.email)
+            .set({
+              "auth-info": {
+                attempts: 0,
+                chances: 0,
+                account_status: "active",
+                newly_added: true,
+                invalid_attempt_timestamp: null,
+                locked: false,
+              },
+              "login-info": {
+                last_logout: null,
+                last_login: null,
+                state: "active",
+              },
+              "password-management": {
+                question2: null,
+                answer1: null,
+                answer2: null,
+                question1: null,
+                last_changed: null,
+              },
+              profile: {
+                img_uploaded: Img.length > 0 ? true : false,
+                personal: infos.personal,
+                address: infos.address,
+                employee: {
+                  ...formik.values,
+                  admin_permission: formik.values.permission.includes("&&")
+                    ? true
+                    : false,
                 },
-              });
-            fireAuth
-              .createUserWithEmailAndPassword(
-                formik.values.email,
-                formik.values.id
-              )
-              .then((res) => {
-                res.user.updateProfile({
-                  displayName: infos.personal.firstname,
+              },
+              uploader_info: {
+                id: loggedUser.id,
+                date: new Date(),
+              },
+            })
+            .then(() => {
+              //pass value for key+ from variable
+              firestore
+                .collection("Employee-Info")
+                .doc("users")
+                .update({
+                  [value.id]: {
+                    email: value.email,
+                    name: infos.personal.firstname,
+                    role: formik.values.role,
+                  },
                 });
-                setIsLoading(false);
-                dispatch(InfoActions.resetForm());
-                dispatch(
-                  AlertActions.handleShow({
-                    msg: "Data added successfully.",
-                    flag: true,
-                  })
-                );
-              })
-              .catch((err) => {
-                setIsLoading(false);
-                dispatch(
-                  AlertActions.handleShow({
-                    msg: "Data added failed.",
-                    flag: false,
-                  })
-                );
-                firestore
-                  .collection("Employee-Info")
-                  .doc(formik.values.email)
-                  .delete();
-              });
-          })
-          .catch(() => {
-            setIsLoading(false);
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Data added failed.",
-                flag: false,
-              })
-            );
-          });
+              fireAuth
+                .createUserWithEmailAndPassword(
+                  formik.values.email,
+                  formik.values.id
+                )
+                .then((res) => {
+                  res.user.updateProfile({
+                    displayName: infos.personal.firstname,
+                  });
+                  setIsLoading(false);
+                  dispatch(InfoActions.resetForm());
+                  dispatch(
+                    AlertActions.handleShow({
+                      msg: "Data added successfully.",
+                      flag: true,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  setIsLoading(false);
+                  dispatch(
+                    AlertActions.handleShow({
+                      msg: "Data added failed.",
+                      flag: false,
+                    })
+                  );
+                  firestore
+                    .collection("Employee-Info")
+                    .doc(formik.values.email)
+                    .delete();
+                });
+            })
+            .catch(() => {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Data added failed.",
+                  flag: false,
+                })
+              );
+            });
         }
       }
     },
@@ -298,15 +302,18 @@ const EmployeeTabContent = (props) => {
       };
     }
   }, [formik.values.email]);
-  console.log(props.user.img)
-console.log(props.user.flag
-  ? viewImg
-    ? URL.createObjectURL(Img)
-    : props.user.img.length > 0 ? props.user.img : noUserImg
-  : viewImg
-  ? URL.createObjectURL(Img)
-  : noUserImg)
- 
+  console.log(props.user.img);
+  console.log(
+    props.user.flag
+      ? viewImg
+        ? URL.createObjectURL(Img)
+        : props.user.img.length > 0
+        ? props.user.img
+        : noUserImg
+      : viewImg
+      ? URL.createObjectURL(Img)
+      : noUserImg
+  );
 
   return (
     <TabContent>
@@ -323,10 +330,16 @@ console.log(props.user.flag
               <div className="d-flex justify-content-center">
                 <img
                   src={
-                     !!Img.name ? URL.createObjectURL(Img) : props.user.img !== undefined ? props.user.img : noUserImg
+                    !!Img.name
+                      ? URL.createObjectURL(Img)
+                      : props.user.img !== undefined
+                      ? props.user.img
+                      : noUserImg
                   }
                   className={`rounded-circle shadow ${
-                    !!Img.name || props.user.img !== undefined ? `border border-5 border-primary` : ``
+                    !!Img.name || props.user.img !== undefined
+                      ? `border border-5 border-primary`
+                      : ``
                   }`}
                   height={sm ? "100px" : "150px"}
                   width={sm ? "100px" : "150px"}
@@ -515,7 +528,7 @@ console.log(props.user.flag
             <div className={sm ? "mt-5" : "float-end"}>
               {!isLoading && (
                 <Button
-                  className={sm ? "w-100" : ""}
+                  className="w-100"
                   disabled={
                     !(formik.dirty && formik.isValid) ||
                     formik.values.role.includes("Role") ||
@@ -533,7 +546,7 @@ console.log(props.user.flag
               {isLoading && (
                 <Button
                   variant="primary"
-                  className={sm ? "w-100" : ""}
+                  className="w-100"
                   disabled
                 >
                   <Spinner
@@ -543,6 +556,7 @@ console.log(props.user.flag
                     role="status"
                     aria-hidden="true"
                   />
+                  {" "}Uploading...
                   <span className="visually-hidden">Loading...</span>
                 </Button>
               )}

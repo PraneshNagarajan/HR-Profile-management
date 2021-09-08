@@ -383,6 +383,7 @@ const LoginPage = () => {
                   role="status"
                   aria-hidden="true"
                 />
+                {" "}Authenticating...
                 <span className="visually-hidden">Loading...</span>
               </Button>
             )}

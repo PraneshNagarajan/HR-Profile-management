@@ -254,6 +254,7 @@ const ChangePasswordPage = () => {
                   role="status"
                   aria-hidden="true"
                 />
+                {" "}Processing...
                 <span className="visually-hidden">Loading...</span>
               </Button>
             )}
