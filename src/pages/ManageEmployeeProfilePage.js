@@ -23,19 +23,19 @@ const ManageEmployeeProfilePage = () => {
   const params = useParams();
   const queryParams = new URLSearchParams(location.search);
   const activeTab = queryParams.get("activeTab");
-  const [userImg, setUserImg] = useState("");
+  const [userImg, setUserImg] = useState(undefined);
   const [userImgFlag, setUserImgFlag] = useState(false);
   const [isSpinner, setIsSpinner] = useState(true);
 
   useEffect(() => {
     setIsSpinner(true);
+    setUserImg(undefined)
     firestore
       .collection("Employee-Info")
       .doc("users")
       .get()
       .then((documentSnapshot) => {
         const doc = documentSnapshot.get(params.id).email;
-        console.log(doc);
         firestore
           .collection("Employee-Info")
           .doc(doc)
@@ -78,7 +78,7 @@ const ManageEmployeeProfilePage = () => {
             } else {
               dispatch(InfoActions.getActiveTab("personal-info"));
             }
-
+            console.log(profile_info.img_uploaded)
             if (
               profile_info.img_uploaded &&
               profile_info.employee.id !== loggedUser.id
@@ -91,10 +91,11 @@ const ManageEmployeeProfilePage = () => {
                   setUserImg(url);
                   setUserImgFlag(true);
                 });
-            } else if (profile_info.employee.id === loggedUser.id) {
+            } else if (profile_info.img_uploaded && profile_info.employee.id === loggedUser.id) {
               setUserImg(loggedUser.photoUrl);
               setUserImgFlag(true);
             } else {
+              console.log(userImg)
               setUserImgFlag(false);
             }
             setIsSpinner(false);
@@ -147,7 +148,7 @@ const ManageEmployeeProfilePage = () => {
               >
                 <span
                   className={
-                    userImg.length > 0
+                    userImg !== undefined
                       ? "fw-bold text-success"
                       : "fw-bold text-danger"
                   }
@@ -214,7 +215,7 @@ const ManageEmployeeProfilePage = () => {
                 user: infos.employee.id === loggedUser.id,
                 admin: infos.employee.id !== loggedUser.id,
               }}
-              user={{ img: userImg, flag: userImgFlag }}
+              user={{ img: userImg }}
             />
           </div>
           <div

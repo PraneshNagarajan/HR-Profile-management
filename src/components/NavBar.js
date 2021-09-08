@@ -94,7 +94,7 @@ const NavBar = () => {
               <NavDropdown.Item
                 className="text-warning fw-bold"
                 as={Link}
-                to="/manageEmployeeProfile/147852?activeTab=personal-info"
+                to="/manageEmployeeProfile/159635?activeTab=personal-info"
               >
                 {" "}
                 <FaUserEdit style={{ width: "20px", height: "20px" }} /> Manage

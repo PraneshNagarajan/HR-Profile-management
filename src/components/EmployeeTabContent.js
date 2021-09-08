@@ -46,7 +46,7 @@ const EmployeeTabContent = (props) => {
   const infos = useSelector((state) => state.info);
   const loggedUser = useSelector((state) => state.auth);
   const [viewImg, setViewImg] = useState(false);
-  const [Img, setImg] = useState("");
+  const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
   const [errorsID, setErrorsID] = useState("");
   const [errorsEmail, setErrorsEmail] = useState("");
@@ -78,7 +78,8 @@ const EmployeeTabContent = (props) => {
     validate,
     onSubmit: (value) => {
       setIsLoading(true);
-      if (Object.values(Img).length >= 0) {
+      console.log((Img.name))
+      if (!!Img.name) {
         fireStorage
           .ref()
           .child("employee-img/" + value.email)
@@ -107,7 +108,7 @@ const EmployeeTabContent = (props) => {
           })
           .catch(() => {});
       }
-      if (props.view) {
+      if (props.view.user) {
         firestore
           .collection("Employee-Info")
           .doc(formik.values.email)
@@ -126,7 +127,31 @@ const EmployeeTabContent = (props) => {
           })
           .catch(() => {});
       } else {
-        firestore
+        if(props.view.admin) {
+          firestore
+          .collection("Employee-Info")
+          .doc(formik.values.email)
+          .update({
+            "profile.employee": {
+              ...formik.values,
+              admin_permission: formik.values.permission.includes("&&")
+                ? true
+                : false,
+            },
+          })
+          .then(() => {
+            setIsLoading(false);
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Data added successfully.",
+                flag: true,
+              })
+            );
+          })
+          .catch(() => {});
+        }
+        else {
+          firestore
           .collection("Employee-Info")
           .doc(formik.values.email)
           .set({
@@ -219,10 +244,10 @@ const EmployeeTabContent = (props) => {
               })
             );
           });
+        }
       }
     },
   });
-
   useEffect(() => {
     if (infos.submitted) {
       formik.resetForm();
@@ -273,6 +298,15 @@ const EmployeeTabContent = (props) => {
       };
     }
   }, [formik.values.email]);
+  console.log(props.user.img)
+console.log(props.user.flag
+  ? viewImg
+    ? URL.createObjectURL(Img)
+    : props.user.img.length > 0 ? props.user.img : noUserImg
+  : viewImg
+  ? URL.createObjectURL(Img)
+  : noUserImg)
+ 
 
   return (
     <TabContent>
@@ -289,16 +323,10 @@ const EmployeeTabContent = (props) => {
               <div className="d-flex justify-content-center">
                 <img
                   src={
-                    props.user.flag
-                      ? viewImg
-                        ? URL.createObjectURL(Img)
-                        : props.user.img
-                      : viewImg
-                      ? URL.createObjectURL(Img)
-                      : noUserImg
+                     !!Img.name ? URL.createObjectURL(Img) : props.user.img !== undefined ? props.user.img : noUserImg
                   }
                   className={`rounded-circle shadow ${
-                    props.user.flag ? `border border-5 border-primary` : ``
+                    !!Img.name || props.user.img !== undefined ? `border border-5 border-primary` : ``
                   }`}
                   height={sm ? "100px" : "150px"}
                   width={sm ? "100px" : "150px"}

@@ -48,9 +48,9 @@ const LoginPage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
 
   useEffect(() => {
-    if(authMsg.length > 0) {
+    if (authMsg.length > 0) {
       dispatch(AuthActions.getMsg(true));
-        setIsLoading(false)
+      setIsLoading(false);
     }
   }, [authMsg]);
 
@@ -222,6 +222,7 @@ const LoginPage = () => {
                 }
                 if (
                   await (Math.round(dateDiff) <= 90 &&
+                    profile_info.img_uploaded &&
                     !auth_info.newly_added &&
                     password_info.status)
                 ) {
@@ -237,7 +238,8 @@ const LoginPage = () => {
                         "auth-info.attempts": 0,
                         "auth-info.locked": false,
                         "auth-info.invalid_attempt_timestamp": null,
-                      }).catch(err => {})
+                      })
+                      .catch((err) => {});
                     history.push("/focalHomePage");
                   } else {
                     authNotification();
