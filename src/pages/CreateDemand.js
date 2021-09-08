@@ -10,29 +10,41 @@ import {
   FormControl,
   FormLabel,
   FormCheck,
-  Spinner
+  Spinner,
 } from "react-bootstrap";
 import { Fragment, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateDemand.css";
 import Spinners from "../components/Spinners";
-import Alerts from '../components/Alert'
+import Alerts from "../components/Alert";
 import { useSelector } from "react-redux";
 import { useFormik } from "formik";
 import { firestore } from "../firebase";
 import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 
-const CreateDemand = () => {
+const CreateDemand = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const loggedUser = useSelector((state) => state.auth);
-  const [ptIsChecked, setPrimaryTechIsChecked] = useState(false);
-  const [psIsChecked, setPrimarySkillIsChecked] = useState(false);
-  const [stIsChecked, setSecondaryTechIsChecked] = useState(false);
-  const [ssIsChecked, setSecondarySkillIsChecked] = useState(false);
-  const [clientIsChecked, setClientIsChecked] = useState(false);
-  const [end_clientIsChecked, setEndClientIsChecked] = useState(false);
+  const [ptIsChecked, setPrimaryTechIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+  const [psIsChecked, setPrimarySkillIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+  const [stIsChecked, setSecondaryTechIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+  const [ssIsChecked, setSecondarySkillIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+  const [clientIsChecked, setClientIsChecked] = useState(
+    props.clientFlag ? false : true
+  );
+  const [end_clientIsChecked, setEndClientIsChecked] = useState(
+    props.clientFlag ? false : true
+  );
   const [isLoading, setIsLoading] = useState(false);
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
 
@@ -126,7 +138,7 @@ const CreateDemand = () => {
       return errors;
     },
     onSubmit: (value) => {
-      setIsLoading(true)
+      setIsLoading(true);
       firestore
         .collection("Demands")
         .doc(loggedUser.email)
@@ -136,11 +148,16 @@ const CreateDemand = () => {
           },
         })
         .then(() => {
-          setIsLoading(false)
-          dispatch(AlertActions.handleShow({msg: 'Data added successfully.', flag: true}))
+          setIsLoading(false);
+          dispatch(
+            AlertActions.handleShow({
+              msg: "Data added successfully.",
+              flag: true,
+            })
+          );
         })
         .catch((err) => {
-          setIsLoading(false)
+          setIsLoading(false);
           if (String(err).includes("No document to update")) {
             firestore
               .collection("Demands")
@@ -151,12 +168,28 @@ const CreateDemand = () => {
                 },
               })
               .then(() => {
-                dispatch(AlertActions.handleShow({msg: 'Data added successfully.', flag: true}))
-              }).catch(err => {
-                dispatch(AlertActions.handleShow({msg: 'Data added failed.', flag: false}))
+                dispatch(
+                  AlertActions.handleShow({
+                    msg: "Data added successfully.",
+                    flag: true,
+                  })
+                );
               })
+              .catch((err) => {
+                dispatch(
+                  AlertActions.handleShow({
+                    msg: "Data added failed.",
+                    flag: false,
+                  })
+                );
+              });
           } else {
-            dispatch(AlertActions.handleShow({msg: 'Data added failed.', flag: false}))
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Data added failed.",
+                flag: false,
+              })
+            );
           }
         });
     },
@@ -164,11 +197,9 @@ const CreateDemand = () => {
 
   return (
     <Fragment>
-      {(!Object.values(pre_requisite.clients).length > 0) && (
-        <Spinners />
-      )}
+      {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
       <Alerts />
-      {Object.values(pre_requisite.clients).length > 0 && (
+      {Object.values(pre_requisite.recruiters).length > 0 && (
         <Container className="d-flex justify-content-center ">
           <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
             <Card.Header className="bg-primary text-center text-white">
@@ -260,13 +291,13 @@ const CreateDemand = () => {
                             name="clientname"
                             isInvalid={
                               formik.errors.clientname &&
-                              (formik.touched.clientname ||
-                                formik.values.clientname.length > 0)
+                              formik.touched.clientname &&
+                              formik.values.clientname.includes("-")
                             }
                             isValid={
                               !formik.errors.clientname &&
-                              (formik.touched.clientname ||
-                                formik.values.clientname.length > 0)
+                              formik.touched.clientname &&
+                              !formik.values.clientname.includes("-")
                             }
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
@@ -328,22 +359,24 @@ const CreateDemand = () => {
                             {formik.errors.clientname}
                           </div>
                         )}
-                      <FormCheck
-                        type="checkbox"
-                        label="Enter manually."
-                        onClick={() => {
-                          setClientIsChecked(!clientIsChecked);
-                          setEndClientIsChecked(!clientIsChecked);
-                          formik.setFieldValue(
-                            "clientname",
-                            "- Select the Client -"
-                          );
-                          formik.setFieldValue(
-                            "endclientname",
-                            "- Select the EndClient -"
-                          );
-                        }}
-                      />
+                      {props.clientFlag && (
+                        <FormCheck
+                          type="checkbox"
+                          label="Enter manually."
+                          onClick={() => {
+                            setClientIsChecked(!clientIsChecked);
+                            setEndClientIsChecked(!clientIsChecked);
+                            formik.setFieldValue(
+                              "clientname",
+                              "- Select the Client -"
+                            );
+                            formik.setFieldValue(
+                              "endclientname",
+                              "- Select the EndClient -"
+                            );
+                          }}
+                        />
+                      )}
                     </Col>
 
                     <Col md="6" className="my-2">
@@ -357,13 +390,13 @@ const CreateDemand = () => {
                             name="endclientname"
                             isInvalid={
                               formik.errors.endclientname &&
-                              (formik.touched.endclientname ||
-                                formik.values.endclientname.length > 0)
+                              formik.touched.endclientname &&
+                              formik.values.endclientname.includes("-")
                             }
                             isValid={
                               !formik.errors.endclientname &&
-                              (formik.touched.endclientname ||
-                                formik.values.endclientname.length > 0)
+                              formik.touched.endclientname &&
+                              !formik.values.endclientname.includes("-")
                             }
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
@@ -636,11 +669,11 @@ const CreateDemand = () => {
                               name="primarytech"
                               isInvalid={
                                 formik.errors.primarytech &&
-                                formik.touched.primarytech
+                                formik.touched.primarytech && formik.values.primarytech.includes('-')
                               }
                               isValid={
                                 !formik.errors.primarytech &&
-                                formik.touched.primarytech
+                                formik.touched.primarytech && !formik.values.primarytech.includes('-')
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -704,22 +737,24 @@ const CreateDemand = () => {
                               {formik.errors.primarytech}
                             </div>
                           )}
-                        <FormCheck
-                          type="checkbox"
-                          label="Enter manually."
-                          onClick={() => {
-                            setPrimaryTechIsChecked(!ptIsChecked);
-                            setPrimarySkillIsChecked(!ptIsChecked);
-                            formik.setFieldValue(
-                              "primarytech",
-                              "- Select the Technology -"
-                            );
-                            formik.setFieldValue(
-                              "primaryskill",
-                              "- Select the Skill -"
-                            );
-                          }}
-                        />
+                        {props.techFlag && (
+                          <FormCheck
+                            type="checkbox"
+                            label="Enter manually."
+                            onClick={() => {
+                              setPrimaryTechIsChecked(!ptIsChecked);
+                              setPrimarySkillIsChecked(!ptIsChecked);
+                              formik.setFieldValue(
+                                "primarytech",
+                                "- Select the Technology -"
+                              );
+                              formik.setFieldValue(
+                                "primaryskill",
+                                "- Select the Skill -"
+                              );
+                            }}
+                          />
+                        )}
                       </Col>
                       <Col md="6" className="my-1">
                         {(ptIsChecked || psIsChecked) && (
@@ -734,11 +769,11 @@ const CreateDemand = () => {
                               name="primaryskill"
                               isInvalid={
                                 formik.errors.primaryskill &&
-                                formik.touched.primaryskill
+                                formik.touched.primaryskill && formik.values.primaryskill.includes('-')
                               }
                               isValid={
                                 !formik.errors.primaryskill &&
-                                formik.touched.primaryskill
+                                formik.touched.primaryskill && !formik.values.primaryskill.includes('-')
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -837,11 +872,11 @@ const CreateDemand = () => {
                               name="secondarytech"
                               isInvalid={
                                 formik.errors.secondarytech &&
-                                formik.touched.secondarytech
+                                formik.touched.secondarytech && formik.values.secondarytech.includes('-')
                               }
                               isValid={
                                 !formik.errors.secondarytech &&
-                                formik.touched.secondarytech
+                                formik.touched.secondarytech && !formik.values.secondarytech.includes('-')
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -905,22 +940,24 @@ const CreateDemand = () => {
                               {formik.errors.secondarytech}
                             </div>
                           )}
-                        <FormCheck
-                          type="checkbox"
-                          label="Enter manually."
-                          onClick={() => {
-                            setSecondaryTechIsChecked(!stIsChecked);
-                            setSecondarySkillIsChecked(!stIsChecked);
-                            formik.setFieldValue(
-                              "secondarytech",
-                              "- Select the Technology -"
-                            );
-                            formik.setFieldValue(
-                              "secondaryskill",
-                              "- Select the Skill -"
-                            );
-                          }}
-                        />
+                        {props.techFlag && (
+                          <FormCheck
+                            type="checkbox"
+                            label="Enter manually."
+                            onClick={() => {
+                              setSecondaryTechIsChecked(!stIsChecked);
+                              setSecondarySkillIsChecked(!stIsChecked);
+                              formik.setFieldValue(
+                                "secondarytech",
+                                "- Select the Technology -"
+                              );
+                              formik.setFieldValue(
+                                "secondaryskill",
+                                "- Select the Skill -"
+                              );
+                            }}
+                          />
+                        )}
                       </Col>
                       <Col md="6" className="my-1">
                         {(stIsChecked || ssIsChecked) && (
@@ -935,11 +972,11 @@ const CreateDemand = () => {
                               name="secondaryskill"
                               isInvalid={
                                 formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill
+                                formik.touched.secondaryskill && formik.values.secondaryskill.includes('-')
                               }
                               isValid={
                                 !formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill
+                                formik.touched.secondaryskill && !formik.values.secondaryskill.includes('-')
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
