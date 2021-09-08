@@ -48,6 +48,27 @@ const CreateDemand = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
 
+  const addSkills = (doc, data, flag, method) => {
+    if (method) {
+      firestore
+        .collection("Skills")
+        .doc(doc)
+        .set(data)
+        .catch((err) => {
+          console.log(String(err));
+        });
+    } else {
+      firestore
+        .collection("Skills")
+        .doc(doc)
+        .update(data)
+        .catch((err) => {});
+    }
+    if (flag) {
+      firestore.collection("Skills").doc("new").delete();
+    }
+  };
+
   const formik = useFormik({
     initialValues: {
       recruiter: "- Select the Recruiter -",
@@ -137,8 +158,93 @@ const CreateDemand = (props) => {
       }
       return errors;
     },
+
     onSubmit: (value) => {
+      console.log();
       setIsLoading(true);
+      let data = [];
+      if (value.primarytech === value.secondarytech) {
+        if (!props.techFlag) {
+          addSkills(
+            value.primarytech,
+            { sets: [value.primaryskill, value.secondaryskill] },
+            !props.techFlag,
+            true
+          );
+        } else {
+          data.push(value.primaryskill);
+          data.push(value.secondaryskill);
+          if (!pre_requisite.technologies[value.primarytech]) {
+            addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
+          } else {
+            data.push(...pre_requisite.technologies[value.primarytech]);
+            addSkills(
+              value.primarytech,
+              { sets: data },
+              !props.techFlag,
+              false
+            );
+          }
+        }
+      } else {
+        if (ptIsChecked || psIsChecked) {
+          data.push(value.primaryskill);
+          if (!pre_requisite.technologies[value.primarytech]) {
+            addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
+          } else {
+            data.push(...pre_requisite.technologies[value.primarytech]);
+            addSkills(
+              value.primarytech,
+              { sets: data },
+              !props.techFlag,
+              false
+            );
+          }
+        } else {
+          data.push(value.secondaryskill);
+          if (!pre_requisite.technologies[value.secondarytech]) {
+            addSkills(
+              value.secondarytech,
+              { sets: data },
+              !props.techFlag,
+              true
+            );
+          } else {
+            data.push(...pre_requisite.technologies[value.secondarytech]);
+            addSkills(
+              value.secondarytech,
+              { sets: data },
+              !props.techFlag,
+              false
+            );
+          }
+        }
+      }
+      if (!props.clientFlag) {
+        firestore
+          .collection("Clients")
+          .doc(value.clientname)
+          .set({ names: [value.endclientname] })
+          .then(() => {
+            firestore.collection("Clients").doc("new").delete();
+          })
+          .catch((err) => {});
+      } else if (clientIsChecked || end_clientIsChecked) {
+        data = [];
+        if (!pre_requisite.clients[value.clientname]) {
+          data = value.endclientname;
+        } else {
+          data.push(value.endclientname);
+          data.push(...pre_requisite.clients[value.clientname]);
+        }
+
+        firestore
+          .collection("Clients")
+          .doc(value.clientname)
+          .update({ names: data })
+          .catch((err) => {});
+      }
+
       firestore
         .collection("Demands")
         .doc(loggedUser.email)
@@ -669,11 +775,13 @@ const CreateDemand = (props) => {
                               name="primarytech"
                               isInvalid={
                                 formik.errors.primarytech &&
-                                formik.touched.primarytech && formik.values.primarytech.includes('-')
+                                formik.touched.primarytech &&
+                                formik.values.primarytech.includes("-")
                               }
                               isValid={
                                 !formik.errors.primarytech &&
-                                formik.touched.primarytech && !formik.values.primarytech.includes('-')
+                                formik.touched.primarytech &&
+                                !formik.values.primarytech.includes("-")
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -769,11 +877,13 @@ const CreateDemand = (props) => {
                               name="primaryskill"
                               isInvalid={
                                 formik.errors.primaryskill &&
-                                formik.touched.primaryskill && formik.values.primaryskill.includes('-')
+                                formik.touched.primaryskill &&
+                                formik.values.primaryskill.includes("-")
                               }
                               isValid={
                                 !formik.errors.primaryskill &&
-                                formik.touched.primaryskill && !formik.values.primaryskill.includes('-')
+                                formik.touched.primaryskill &&
+                                !formik.values.primaryskill.includes("-")
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -872,11 +982,13 @@ const CreateDemand = (props) => {
                               name="secondarytech"
                               isInvalid={
                                 formik.errors.secondarytech &&
-                                formik.touched.secondarytech && formik.values.secondarytech.includes('-')
+                                formik.touched.secondarytech &&
+                                formik.values.secondarytech.includes("-")
                               }
                               isValid={
                                 !formik.errors.secondarytech &&
-                                formik.touched.secondarytech && !formik.values.secondarytech.includes('-')
+                                formik.touched.secondarytech &&
+                                !formik.values.secondarytech.includes("-")
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
@@ -972,11 +1084,13 @@ const CreateDemand = (props) => {
                               name="secondaryskill"
                               isInvalid={
                                 formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill && formik.values.secondaryskill.includes('-')
+                                formik.touched.secondaryskill &&
+                                formik.values.secondaryskill.includes("-")
                               }
                               isValid={
                                 !formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill && !formik.values.secondaryskill.includes('-')
+                                formik.touched.secondaryskill &&
+                                !formik.values.secondaryskill.includes("-")
                               }
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
