@@ -58,7 +58,7 @@ const EmployeeTabContent = (props) => {
     role: props.view ? infos.employee.role : "- Select Role -",
     permission: props.view
       ? infos.employee.permission
-        ? "View & Edit"
+        ? "View && Edit"
         : "View Only"
       : "- Select Permission -",
   };
@@ -77,7 +77,7 @@ const EmployeeTabContent = (props) => {
     initialValues: props.view
       ? {
           ...infos.employee,
-          permission: infos.employee.permission ? "View & Edit" : "View Only",
+          permission: infos.employee.admin_permission ? "View && Edit" : "View Only",
         }
       : initialValues,
     validate,
@@ -502,11 +502,11 @@ const EmployeeTabContent = (props) => {
                   <Dropdown.Menu className="w-100 text-center">
                     <Dropdown.Item
                       onClick={() => {
-                        formik.setFieldValue("permission", "View & Edit");
+                        formik.setFieldValue("permission", "View && Edit");
                       }}
                       active={formik.values.permission.includes("View")}
                     >
-                      View & Edit
+                      View && Edit
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item

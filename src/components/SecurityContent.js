@@ -13,6 +13,7 @@ import {
   Form,
   FormGroup,
   Button,
+  Spinner
 } from "react-bootstrap";
 import { useFormik } from "formik";
 import { firestore } from "../firebase";
@@ -43,6 +44,7 @@ const SecurityContent = (props) => {
   );
   const [isVisibleField1, setIsVisibleField1] = useState(false);
   const [isVisibleField2, setIsVisibleField2] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const dispatch = useDispatch();
   const doc = useSelector((state) => state.auth.email);
 
@@ -68,6 +70,7 @@ const SecurityContent = (props) => {
     },
 
     onSubmit: (value) => {
+      setIsLoading(true)
       // Encrypt
       const ans1 = CryptoJS.AES.encrypt(
         JSON.stringify(value.answer1),
@@ -90,6 +93,7 @@ const SecurityContent = (props) => {
           "password-management.last_changed": new Date().toString(),
         })
         .then(() => {
+          setIsLoading(false)
           dispatch(InfoActions.getSecurityFlag(true));
           dispatch(
             AlertActions.handleShow({
@@ -99,6 +103,7 @@ const SecurityContent = (props) => {
           );
         })
         .catch(() => {
+          setIsLoading(false)
           dispatch(
             AlertActions.handleShow({
               msg: "Data added failed.",
@@ -312,15 +317,29 @@ const SecurityContent = (props) => {
                 </FormGroup>
               </Col>
             </Row>
-
             <div className={sm ? "mt-5" : "float-end"}>
-              <Button
-                className={sm ? "w-100" : ""}
-                disabled={!(formik.dirty && formik.isValid) && props.view}
-                type="submit"
-              >
-                Save && Submit
-              </Button>
+              {!isLoading && (
+                <Button
+                  className={sm ? "w-100" : ""}
+                  disabled={!(formik.dirty && formik.isValid) && props.view}
+                  type="submit"
+                >
+                  Save && Submit
+                </Button>
+              )}
+              {isLoading && (
+                <Button variant="primary" className="w-100" disabled>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />{" "}
+                  Uploading...
+                  <span className="visually-hidden">Loading...</span>
+                </Button>
+              )}
             </div>
           </Form>
         </Card.Body>
