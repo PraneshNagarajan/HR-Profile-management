@@ -11,6 +11,7 @@ const AuthenticationSlice = createSlice({
         admin: '',
         name: '',
         photoUrl: '',
+        security: false
     },
     reducers: {
         getMsg(state, action) {
@@ -21,6 +22,9 @@ const AuthenticationSlice = createSlice({
         },
         getPhoto(state, action) {
             state.photoUrl = action.payload
+        },
+        getSecurityStatus(state) {
+            state.security = true
         }
     }
 })

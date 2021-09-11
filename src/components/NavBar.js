@@ -60,9 +60,15 @@ const NavBar = () => {
           <Nav className="me-auto mt-2">
             {sm && <hr className="text-white my-1 line-break" />}
             <Nav.Link
+              disabled={!(user.photoUrl.length > 0 && user.security)}
               as={Link}
               to="/focalHomePage"
-              active={location.pathname.includes("Home") ? `active` : ``}
+              active={
+                location.pathname.includes("Home") &&
+                !(user.photoUrl.length > 0 && user.security)
+                  ? `active`
+                  : ``
+              }
             >
               <span className={sm ? "h6 ms-2" : "h5 me-2"}>
                 <FaHome className="mb-1" /> Home
@@ -70,6 +76,7 @@ const NavBar = () => {
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
             <NavDropdown
+              disabled={!(user.photoUrl.length > 0 && user.security)}
               active={location.pathname.includes("Employee") ? `active` : ``}
               title={
                 <span>
@@ -79,7 +86,7 @@ const NavBar = () => {
               id="collasible-nav-dropdown"
               className={`${
                 location.pathname.includes("employee") ? "active" : ""
-              } ${sm ? "h6 mx-2 mt-2" : "h5 me-2"}`}
+              } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
                 as={Link}
@@ -104,6 +111,7 @@ const NavBar = () => {
             {sm && <hr className="text-white line-break" />}
 
             <NavDropdown
+              disabled={!(user.photoUrl.length > 0 && user.security)}
               active={location.pathname.includes("Demand") ? `active` : ``}
               title={
                 <span>
@@ -113,7 +121,7 @@ const NavBar = () => {
               id="collasible-nav-dropdown"
               className={`${
                 location.pathname.includes("employee") ? "active" : ""
-              } ${sm ? "h6 mx-2" : "h5 me-2"}`}
+              } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
                 className="text-primary fw-bold"
@@ -133,6 +141,7 @@ const NavBar = () => {
             </NavDropdown>
             {sm && <hr className="text-white line-break" />}
             <NavDropdown
+              disabled={!(user.photoUrl.length > 0 && user.security)}
               title={
                 <span>
                   <FaRegIdBadge className="mb-1" /> Profiles
@@ -141,7 +150,7 @@ const NavBar = () => {
               id="collasible-nav-dropdown"
               className={`${
                 location.pathname.includes("employee") ? "active" : ""
-              } ${sm ? "h6 mx-2" : "h5 me-2"}`}
+              } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item className="text-primary fw-bold">
                 {" "}
@@ -159,23 +168,38 @@ const NavBar = () => {
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
             {sm && (
-              <Nav.Item>
+              <Nav.Link
+                disabled={!(user.photoUrl.length > 0 && user.security)}
+                as={Link}
+                to="\"
+              >
                 <span
-                  className={`d-flex text-white mx-2 fw-bold mt-1`}
+                  className={`d-flex  mx-2 fw-bold ${
+                    user.photoUrl.length > 0 && user.security
+                      ? `text-white`
+                      : ``
+                  }`}
                   style={{ marginTop: sm ? "" : "0.75rem" }}
                 >
                   <FaBell className="me-1 mt-1" />
                   Notifications
-                  <span className="badge rounded-circle bg-warning ms-1 mt-1">
+                  <span
+                    className={` ms-1 ${
+                      user.photoUrl.length > 0 && user.security
+                        ? "badge rounded-circle bg-warning mt-1"
+                        : ""
+                    }`}
+                  >
                     5
                   </span>
                 </span>
                 <hr className="text-white line-break1" />
-              </Nav.Item>
+              </Nav.Link>
             )}
             {user.photoUrl.length > 0 && (
               <Nav.Item>
                 <NavDropdown
+                  disabled={!(user.photoUrl.length > 0 && user.security)}
                   title={
                     <span>
                       <img
@@ -193,7 +217,11 @@ const NavBar = () => {
                   id="collasible-nav-dropdown"
                   className={`active ${sm ? "h6 mx-2 " : "h5 me-2"}`}
                 >
-                  <NavDropdown.Item className="text-primary fw-bold" as={Link} to='/changePassword'>
+                  <NavDropdown.Item
+                    className="text-primary fw-bold"
+                    as={Link}
+                    to="/changePassword"
+                  >
                     {" "}
                     <FaKey style={{ width: "20px", height: "20px" }} /> Password
                     Management
@@ -219,6 +247,7 @@ const NavBar = () => {
             {!sm && (
               <Nav.Item>
                 <Button
+                  disabled={!(user.photoUrl.length > 0 && user.security)}
                   variant="outline-light"
                   className={`position-relative me-4 ${
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`

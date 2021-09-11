@@ -8,18 +8,16 @@ import {
   Alert,
   Spinner,
 } from "react-bootstrap";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { BsShieldLockFill } from "react-icons/bs";
 import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
 import { fireAuth, fireStorage, firestore } from "../firebase";
 import { useFormik } from "formik";
 import Timer from "../Timer";
 import { useMediaQuery } from "react-responsive";
-import { useEffect } from "react";
 import { AuthActions } from "../Redux/AuthenticationSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
-import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const formValidation = (field) => {
   const errors = {};
@@ -208,6 +206,7 @@ const LoginPage = () => {
                     admin: profile_info.employee.admin_permission,
                     name: fireAuth.currentUser.displayName,
                     photoUrl: "",
+                    security: false
                   })
                 );
                 // get img url from firebase-Storage
@@ -227,6 +226,7 @@ const LoginPage = () => {
                     password_info.status)
                 ) {
                   if ((await auth_info.locked) === false) {
+                    dispatch(AuthActions.getSecurityStatus())
                     updateLoginStatus(doc);
                     setAuthStatus(true);
                     setAuthMsg("Login Successfully !");
