@@ -160,7 +160,6 @@ const CreateDemand = (props) => {
     },
 
     onSubmit: (value) => {
-      console.log();
       setIsLoading(true);
       let data = [];
       if (value.primarytech === value.secondarytech) {
@@ -257,7 +256,7 @@ const CreateDemand = (props) => {
           setIsLoading(false);
           dispatch(
             AlertActions.handleShow({
-              msg: "Data added successfully.",
+              msg: "Demand created successfully.",
               flag: true,
             })
           );
@@ -276,7 +275,7 @@ const CreateDemand = (props) => {
               .then(() => {
                 dispatch(
                   AlertActions.handleShow({
-                    msg: "Data added successfully.",
+                    msg: "Unable to create demand.",
                     flag: true,
                   })
                 );
@@ -359,25 +358,27 @@ const CreateDemand = (props) => {
                           <Dropdown.Menu className="w-100">
                             {pre_requisite.recruiters.map(
                               (recruiter, index) => {
-                                return (
-                                  <Fragment key={index}>
-                                    <Dropdown.Item
-                                      className="text-center"
-                                      onClick={() => {
-                                        formik.setFieldValue(
-                                          "recruiter",
-                                          recruiter.name
-                                        );
-                                      }}
-                                    >
-                                      {recruiter.name}
-                                    </Dropdown.Item>
-                                    {index <
-                                      pre_requisite.recruiters.length - 1 && (
-                                      <Dropdown.Divider />
-                                    )}
-                                  </Fragment>
-                                );
+                                if(recruiter.role !== 'Admin') {
+                                  return (
+                                    <Fragment key={index}>
+                                      <Dropdown.Item
+                                        className="text-center"
+                                        onClick={() => {
+                                          formik.setFieldValue(
+                                            "recruiter",
+                                            recruiter.name
+                                          );
+                                        }}
+                                      >
+                                        {recruiter.name}
+                                      </Dropdown.Item>
+                                      {index <
+                                        pre_requisite.recruiters.length - 1 && (
+                                        <Dropdown.Divider />
+                                      )}
+                                    </Fragment>
+                                  );
+                                }
                               }
                             )}
                           </Dropdown.Menu>
@@ -1245,7 +1246,7 @@ const CreateDemand = (props) => {
                         size="sm"
                         role="status"
                         aria-hidden="true"
-                      />
+                      />{" "} Processing...
                       <span className="visually-hidden">Loading...</span>
                     </Button>
                   )}
