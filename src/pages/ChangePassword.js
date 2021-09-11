@@ -63,6 +63,7 @@ const ChangePasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisibleField1, setIsVisibleField1] = useState(false);
   const [isVisibleField2, setIsVisibleField2] = useState(false);
+  const [loadingLabel ,setLoadingLabel] = useState()
 
   const onVisibleHandler = (field) => {
     if (field === "field1") {
@@ -116,7 +117,8 @@ const ChangePasswordPage = () => {
   const new_password_error =
     formik.touched.confirm_password && formik.errors.confirm_password;
   useEffect(() => {
-    if (formik.values.confirm_password.length > 1) {
+    setLoadingLabel('Validating...')
+    if (formik.values.confirm_password.length > 1 ) {
       setIsLoading(true);
       const timeout = setTimeout(() => {
         if (
@@ -129,13 +131,14 @@ const ChangePasswordPage = () => {
           setAuthMsg("Error: Password doesn't match.");
         }
         setIsLoading(false);
-      }, 1500);
+        setLoadingLabel('Processing...')
+      }, 1000);
 
       return () => {
         clearTimeout(timeout);
       };
     }
-  }, [formik.values.confirm_password]);
+  }, [formik.values.confirm_password, formik.values.new_password]);
 
   useEffect(() => {
     const flag = authMsg.length > 0;
@@ -254,7 +257,7 @@ const ChangePasswordPage = () => {
                   role="status"
                   aria-hidden="true"
                 />
-                {" "}Processing...
+                {" "+loadingLabel}
                 <span className="visually-hidden">Loading...</span>
               </Button>
             )}
