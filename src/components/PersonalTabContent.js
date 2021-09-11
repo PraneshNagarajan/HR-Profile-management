@@ -20,26 +20,26 @@ const validate = (value) => {
   const errors = {};
   if (!value.firstname) {
     errors.firstname = "*Required.";
-  } else if (!new RegExp("^[A-Za-z]*$").test(value.firstname)) {
-    errors.firstname = "*Alphabets Only.";
+  } else if (!new RegExp("^[A-Z]+$").test(value.firstname)) {
+    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.lastname) {
     errors.lastname = "*Required.";
-  } else if (!new RegExp("^[A-Za-z]*$").test(value.lasstname)) {
-    errors.firstname = "*Alphabets Only.";
+  } else if (!new RegExp("^[A-Z]+$").test(value.lasstname)) {
+    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.fathername) {
     errors.fathername = "*Required.";
-  } else if (!new RegExp("^[A-Za-z]*$").test(value.fathername)) {
-    errors.firstname = "*Alphabets Only.";
+  } else if (!new RegExp("^[A-Z]+$").test(value.fathername)) {
+    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.mothername) {
     errors.mothername = "*Required.";
-  } else if (!new RegExp("^[A-Za-z]*$").test(value.mothername)) {
-    errors.firstname = "*Alphabets Only.";
+  } else if (!new RegExp("^[A-Z]+$").test(value.mothername)) {
+    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.dob) {
@@ -148,7 +148,6 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="firstname"
                     readOnly={props.view.user || props.view.admin}
-                    style={{ textTransform: "uppercase" }}
                     value={formik.values.firstname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -175,7 +174,6 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="lastname"
                     readOnly={props.view.user || props.view.admin}
-                    style={{ textTransform: "uppercase" }}
                     value={formik.values.lastname}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -204,7 +202,6 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="fathername"
                     readOnly={props.view.user || props.view.admin}
-                    style={{ textTransform: "uppercase" }}
                     value={formik.values.fathername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -231,7 +228,6 @@ const PersonalTabContent = (props) => {
                     type="text"
                     name="mothername"
                     readOnly={props.view.user || props.view.admin}
-                    style={{ textTransform: "uppercase" }}
                     value={formik.values.mothername}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}

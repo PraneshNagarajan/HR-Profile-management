@@ -82,7 +82,7 @@ const CreateDemand = (props) => {
       primarytech: props.techFlag ? "- Select the Techonology -" : "",
       primaryskill: props.techFlag ? "- Select the Skill -" : "",
       secondarytech: props.techFlag ? "- Select the Techonology -" : "",
-      secondaryskill:  props.techFlag ? "- Select the Skill -" : "",
+      secondaryskill: props.techFlag ? "- Select the Skill -" : "",
     },
     validate: (value) => {
       const errors = {};
@@ -92,29 +92,30 @@ const CreateDemand = (props) => {
 
       if (value.clientname.includes("-") || !value.clientname) {
         errors.clientname = "*Required.";
-      } else if (!new RegExp("^^[A-Za-z_ ]+$").test(value.clientname)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.clientname)) {
         errors.clientname =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (value.endclientname.includes("-") || !value.endclientname) {
         errors.endclientname = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.endclientname)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.endclientname)) {
         errors.endclientname =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (!value.location) {
         errors.location = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.location)) {
-        errors.location = 'Alphabets whitespace and "_" character only allowd.';
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.location)) {
+        errors.location =
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (!value.panlocation) {
         errors.panlocation = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.panlocation)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.panlocation)) {
         errors.panlocation =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (value.type.includes("-")) {
@@ -131,34 +132,33 @@ const CreateDemand = (props) => {
 
       if (value.primarytech.includes("-") || !value.primarytech) {
         errors.primarytech = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.primarytech)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.primarytech)) {
         errors.primarytech =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (value.primaryskill.includes("-") || !value.primaryskill) {
         errors.primaryskill = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.primaryskill)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.primaryskill)) {
         errors.primaryskill =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (value.secondarytech.includes("-") || !value.secondarytech) {
         errors.secondarytech = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.secondarytech)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.secondarytech)) {
         errors.secondarytech =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
       if (value.secondaryskill.includes("-") || !value.secondaryskill) {
         errors.secondaryskill = "*Required.";
-      } else if (!new RegExp("^[A-Za-z_ ]+$").test(value.secondaryskill)) {
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.secondaryskill)) {
         errors.secondaryskill =
-          'Alphabets whitespace and "_" character only allowd.';
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
       return errors;
     },
-
     onSubmit: (value) => {
       setIsLoading(true);
       let data = [];
@@ -199,7 +199,7 @@ const CreateDemand = (props) => {
               false
             );
           }
-        } else if (stIsChecked || ssIsChecked){
+        } else if (stIsChecked || ssIsChecked) {
           data.push(value.secondaryskill);
           if (!pre_requisite.technologies[value.secondarytech]) {
             addSkills(
@@ -297,18 +297,18 @@ const CreateDemand = (props) => {
             );
           }
         });
-        if(!isLoading){
-          formik.resetForm()
-          setPrimaryTechIsChecked(false)
-          setPrimarySkillIsChecked(false)
-          setSecondaryTechIsChecked(false)
-          setSecondarySkillIsChecked(false)
-          setClientIsChecked(false)
-          setEndClientIsChecked(false)
-        }
-    }
+      if (!isLoading) {
+        formik.resetForm();
+        setPrimaryTechIsChecked(false);
+        setPrimarySkillIsChecked(false);
+        setSecondaryTechIsChecked(false);
+        setSecondarySkillIsChecked(false);
+        setClientIsChecked(false);
+        setEndClientIsChecked(false);
+      }
+    },
   });
-
+  
   return (
     <Fragment>
       {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
@@ -358,7 +358,7 @@ const CreateDemand = (props) => {
                           <Dropdown.Menu className="w-100">
                             {pre_requisite.recruiters.map(
                               (recruiter, index) => {
-                                if(recruiter.role !== 'Admin') {
+                                if (recruiter.role !== "Admin") {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
@@ -406,7 +406,6 @@ const CreateDemand = (props) => {
                             type="text"
                             name="clientname"
                             value={formik.values.clientname}
-                            style={{ textTransform: "uppercase" }}
                             isInvalid={
                               formik.errors.clientname &&
                               formik.touched.clientname &&
@@ -449,7 +448,7 @@ const CreateDemand = (props) => {
                                 return (
                                   <Fragment key={index}>
                                     <Dropdown.Item
-                                    className="text-center"
+                                      className="text-center"
                                       active={formik.values.clientname.includes(
                                         client
                                       )}
@@ -483,7 +482,7 @@ const CreateDemand = (props) => {
                           type="checkbox"
                           label="Enter manually."
                           checked={clientIsChecked}
-                          onChange={()=>{}}
+                          onChange={() => {}}
                           onClick={() => {
                             setClientIsChecked(!clientIsChecked);
                             setEndClientIsChecked(!clientIsChecked);
@@ -510,7 +509,6 @@ const CreateDemand = (props) => {
                             type="text"
                             name="endclientname"
                             value={formik.values.endclientname}
-                            style={{ textTransform: "uppercase" }}
                             isInvalid={
                               formik.errors.endclientname &&
                               formik.touched.endclientname &&
@@ -555,7 +553,7 @@ const CreateDemand = (props) => {
                                 return (
                                   <Fragment key={index}>
                                     <Dropdown.Item
-                                    className="text-center"
+                                      className="text-center"
                                       onClick={() =>
                                         formik.setFieldValue(
                                           "endclientname",
@@ -590,12 +588,14 @@ const CreateDemand = (props) => {
                           type="checkbox"
                           label="Enter manually."
                           checked={end_clientIsChecked}
-                          onChange={()=>{}}
+                          onChange={() => {}}
                           onClick={() => {
                             setEndClientIsChecked(!end_clientIsChecked);
                             formik.setFieldValue(
                               "endclientname",
-                              !end_clientIsChecked ? "" : "- Select the EndClient -"
+                              !end_clientIsChecked
+                                ? ""
+                                : "- Select the EndClient -"
                             );
                           }}
                         />
@@ -615,7 +615,6 @@ const CreateDemand = (props) => {
                           type="text"
                           name="location"
                           value={formik.values.location}
-                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.location && formik.touched.location
                           }
@@ -643,7 +642,6 @@ const CreateDemand = (props) => {
                           type="text"
                           name="panlocation"
                           value={formik.values.panlocation}
-                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.panlocation &&
                             formik.touched.panlocation
@@ -698,7 +696,7 @@ const CreateDemand = (props) => {
 
                           <Dropdown.Menu className="w-100">
                             <Dropdown.Item
-                            className="text-center"
+                              className="text-center"
                               onClick={() =>
                                 formik.setFieldValue("type", "Full TIme")
                               }
@@ -707,7 +705,7 @@ const CreateDemand = (props) => {
                             </Dropdown.Item>
                             <Dropdown.Divider />
                             <Dropdown.Item
-                            className="text-center"
+                              className="text-center"
                               onClick={() =>
                                 formik.setFieldValue("type", "Part TIme")
                               }
@@ -764,7 +762,6 @@ const CreateDemand = (props) => {
                           type="date"
                           name="demandallot"
                           value={formik.values.demandallot}
-                          style={{ textTransform: "uppercase" }}
                           isInvalid={
                             formik.errors.demandallot &&
                             formik.touched.demandallot
@@ -803,7 +800,6 @@ const CreateDemand = (props) => {
                               type="text"
                               name="primarytech"
                               value={formik.values.primarytech}
-                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.primarytech &&
                                 formik.touched.primarytech &&
@@ -847,7 +843,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
-                                      className="text-center"
+                                        className="text-center"
                                         active={formik.values.primarytech.includes(
                                           tech
                                         )}
@@ -882,13 +878,13 @@ const CreateDemand = (props) => {
                             type="checkbox"
                             label="Enter manually."
                             checked={ptIsChecked}
-                            onChange={()=>{}}
+                            onChange={() => {}}
                             onClick={() => {
                               setPrimaryTechIsChecked(!ptIsChecked);
                               setPrimarySkillIsChecked(!ptIsChecked);
                               formik.setFieldValue(
                                 "primarytech",
-                                !ptIsChecked ?  "" : "- Select the Technology -"
+                                !ptIsChecked ? "" : "- Select the Technology -"
                               );
                               formik.setFieldValue(
                                 "primaryskill",
@@ -910,7 +906,6 @@ const CreateDemand = (props) => {
                               type="text"
                               name="primaryskill"
                               value={formik.values.primaryskill}
-                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.primaryskill &&
                                 formik.touched.primaryskill &&
@@ -955,7 +950,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
-                                      className="text-center"
+                                        className="text-center"
                                         active={formik.values.primaryskill.includes(
                                           skill
                                         )}
@@ -990,7 +985,7 @@ const CreateDemand = (props) => {
                             type="checkbox"
                             label="Enter manually."
                             checked={psIsChecked}
-                            onChange={()=>{}}
+                            onChange={() => {}}
                             onClick={() => {
                               setPrimarySkillIsChecked(!psIsChecked);
                               formik.setFieldValue(
@@ -1020,7 +1015,6 @@ const CreateDemand = (props) => {
                               type="text"
                               name="secondarytech"
                               value={formik.values.secondarytech}
-                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.secondarytech &&
                                 formik.touched.secondarytech &&
@@ -1064,7 +1058,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
-                                      className="text-center"
+                                        className="text-center"
                                         active={formik.values.secondarytech.includes(
                                           tech
                                         )}
@@ -1099,17 +1093,17 @@ const CreateDemand = (props) => {
                             type="checkbox"
                             label="Enter manually."
                             checked={stIsChecked}
-                            onChange={()=>{}}
+                            onChange={() => {}}
                             onClick={() => {
                               setSecondaryTechIsChecked(!stIsChecked);
                               setSecondarySkillIsChecked(!stIsChecked);
                               formik.setFieldValue(
-                                 "secondarytech",
-                                 !stIsChecked ? "" : "- Select the Technology -"
+                                "secondarytech",
+                                !stIsChecked ? "" : "- Select the Technology -"
                               );
                               formik.setFieldValue(
                                 "secondaryskill",
-                                !stIsChecked ? "" :  "- Select the Skill -"
+                                !stIsChecked ? "" : "- Select the Skill -"
                               );
                             }}
                           />
@@ -1127,7 +1121,6 @@ const CreateDemand = (props) => {
                               type="text"
                               name="secondaryskill"
                               value={formik.values.secondaryskill}
-                              style={{ textTransform: "uppercase" }}
                               isInvalid={
                                 formik.errors.secondaryskill &&
                                 formik.touched.secondaryskill &&
@@ -1174,7 +1167,7 @@ const CreateDemand = (props) => {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
-                                      className="text-center"
+                                        className="text-center"
                                         active={formik.values.secondaryskill.includes(
                                           skill
                                         )}
@@ -1209,7 +1202,7 @@ const CreateDemand = (props) => {
                             type="checkbox"
                             label="Enter manually."
                             checked={ssIsChecked}
-                            onChange={()=>{}}
+                            onChange={() => {}}
                             onClick={() => {
                               setSecondarySkillIsChecked(!ssIsChecked);
                               formik.setFieldValue(
@@ -1246,7 +1239,8 @@ const CreateDemand = (props) => {
                         size="sm"
                         role="status"
                         aria-hidden="true"
-                      />{" "} Processing...
+                      />{" "}
+                      Processing...
                       <span className="visually-hidden">Loading...</span>
                     </Button>
                   )}
