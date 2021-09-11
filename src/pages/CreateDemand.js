@@ -46,9 +46,11 @@ const CreateDemand = (props) => {
     props.clientFlag ? false : true
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadFlag, setUploadFlag] = useState(false);
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
 
   const addSkills = (doc, data, flag, method) => {
+    setUploadFlag(true);
     if (method) {
       firestore
         .collection("Skills")
@@ -186,20 +188,7 @@ const CreateDemand = (props) => {
           }
         }
       } else {
-        if (ptIsChecked || psIsChecked) {
-          data.push(value.primaryskill);
-          if (!pre_requisite.technologies[value.primarytech]) {
-            addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
-          } else {
-            data.push(...pre_requisite.technologies[value.primarytech]);
-            addSkills(
-              value.primarytech,
-              { sets: data },
-              !props.techFlag,
-              false
-            );
-          }
-        } else if (stIsChecked || ssIsChecked) {
+        if (stIsChecked || ssIsChecked) {
           data.push(value.secondaryskill);
           if (!pre_requisite.technologies[value.secondarytech]) {
             addSkills(
@@ -209,106 +198,193 @@ const CreateDemand = (props) => {
               true
             );
           } else {
-            data.push(...pre_requisite.technologies[value.secondarytech]);
-            addSkills(
-              value.secondarytech,
-              { sets: data },
-              !props.techFlag,
-              false
-            );
+            if (
+              !(
+                pre_requisite.technologies[value.secondarytech].findIndex(
+                  (item) => item === value.secondaryskill
+                ) >= 0
+              )
+            ) {
+              data.push(...pre_requisite.technologies[value.secondarytech]);
+              addSkills(
+                value.secondarytech,
+                { sets: data },
+                !props.techFlag,
+                false
+              );
+            } else {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg:
+                    "Duplicate entry. " +
+                    value.secondaryskill +
+                    " is found already under " +
+                    value.secondarytech +
+                    " .",
+                  flag: false,
+                })
+              );
+            }
           }
         }
-      }
-      if (!props.clientFlag) {
-        firestore
-          .collection("Clients")
-          .doc(value.clientname)
-          .set({ names: [value.endclientname] })
-          .then(() => {
-            firestore.collection("Clients").doc("new").delete();
-          })
-          .catch((err) => {});
-      } else if (clientIsChecked || end_clientIsChecked) {
+        if (ptIsChecked || psIsChecked) {
+          data.push(value.primaryskill);
+          if (!pre_requisite.technologies[value.primarytech]) {
+            addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
+          } else {
+            if (
+              !(
+                pre_requisite.technologies[value.primarytech].findIndex(
+                  (item) => item === value.primaryskill
+                ) >= 0
+              )
+            ) {
+              data.push(...pre_requisite.technologies[value.primarytech]);
+              addSkills(
+                value.primarytech,
+                { sets: data },
+                !props.techFlag,
+                false
+              );
+            } else {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg:
+                    "Duplicate entry. " +
+                    value.primaryskill +
+                    " is found already under " +
+                    value.primarytech +
+                    " .",
+                  flag: false,
+                })
+              );
+            }
+          }
+        }
         data = [];
-        if (!pre_requisite.clients[value.clientname]) {
-          data = value.endclientname;
-        } else {
-          data.push(value.endclientname);
-          data.push(...pre_requisite.clients[value.clientname]);
+        if (!props.clientFlag) {
+          firestore
+            .collection("Clients")
+            .doc(value.clientname)
+            .set({ names: [value.endclientname] })
+            .then(() => {
+              firestore.collection("Clients").doc("new").delete();
+            })
+            .catch((err) => {});
+        } else if (clientIsChecked || end_clientIsChecked) {
+          if (!pre_requisite.clients[value.clientname]) {
+            data = [value.endclientname];
+            firestore
+              .collection("Clients")
+              .doc(value.clientname)
+              .set({ names: data })
+              .catch((err) => {
+                alert(String(err));
+              });
+          } else {
+            if (
+              !(
+                pre_requisite.clients[value.clientname].findIndex(
+                  (item) => item === value.endclientname
+                ) >= 0
+              )
+            ) {
+              data.push(value.endclientname);
+              data.push(...pre_requisite.clients[value.clientname]);
+              firestore
+                .collection("Clients")
+                .doc(value.clientname)
+                .update({ names: data })
+                .catch((err) => {
+                  alert(String(err));
+                });
+            } else {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg:
+                    "Duplicate entry. " +
+                    value.endclientname +
+                    " is found already under " +
+                    value.clientname +
+                    " .",
+                  flag: false,
+                })
+              );
+            }
+          }
         }
 
-        firestore
-          .collection("Clients")
-          .doc(value.clientname)
-          .update({ names: data })
-          .catch((err) => {});
-      }
-
-      firestore
-        .collection("Demands")
-        .doc(loggedUser.email)
-        .update({
-          ["F" + loggedUser.id + new Date().getTime()]: {
-            ...value,
-          },
-        })
-        .then(() => {
-          setIsLoading(false);
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Demand created successfully.",
-              flag: true,
+        if (uploadFlag) {
+          firestore
+            .collection("Demands")
+            .doc(loggedUser.email)
+            .update({
+              ["F" + loggedUser.id + new Date().getTime()]: {
+                ...value,
+              },
             })
-          );
-        })
-        .catch((err) => {
-          setIsLoading(false);
-          if (String(err).includes("No document to update")) {
-            firestore
-              .collection("Demands")
-              .doc(loggedUser.email)
-              .set({
-                ["F" + loggedUser.id + new Date().getTime()]: {
-                  ...value,
-                },
-              })
-              .then(() => {
-                dispatch(
-                  AlertActions.handleShow({
-                    msg: "Unable to create demand.",
-                    flag: true,
+            .then(() => {
+              setIsLoading(false);
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Demand created successfully.",
+                  flag: true,
+                })
+              );
+            })
+            .catch((err) => {
+              setIsLoading(false);
+              if (String(err).includes("No document to update")) {
+                firestore
+                  .collection("Demands")
+                  .doc(loggedUser.email)
+                  .set({
+                    ["F" + loggedUser.id + new Date().getTime()]: {
+                      ...value,
+                    },
                   })
-                );
-              })
-              .catch((err) => {
+                  .then(() => {
+                    dispatch(
+                      AlertActions.handleShow({
+                        msg: "Unable to create demand.",
+                        flag: true,
+                      })
+                    );
+                  })
+                  .catch((err) => {
+                    dispatch(
+                      AlertActions.handleShow({
+                        msg: "Data added failed.",
+                        flag: false,
+                      })
+                    );
+                  });
+              } else {
                 dispatch(
                   AlertActions.handleShow({
                     msg: "Data added failed.",
                     flag: false,
                   })
                 );
-              });
-          } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Data added failed.",
-                flag: false,
-              })
-            );
+              }
+            });
+          if (!isLoading) {
+            formik.resetForm();
+            setPrimaryTechIsChecked(false);
+            setPrimarySkillIsChecked(false);
+            setSecondaryTechIsChecked(false);
+            setSecondarySkillIsChecked(false);
+            setClientIsChecked(false);
+            setEndClientIsChecked(false);
           }
-        });
-      if (!isLoading) {
-        formik.resetForm();
-        setPrimaryTechIsChecked(false);
-        setPrimarySkillIsChecked(false);
-        setSecondaryTechIsChecked(false);
-        setSecondarySkillIsChecked(false);
-        setClientIsChecked(false);
-        setEndClientIsChecked(false);
+        }
       }
     },
   });
-  
+
   return (
     <Fragment>
       {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
