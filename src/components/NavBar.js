@@ -193,7 +193,7 @@ const NavBar = () => {
                   id="collasible-nav-dropdown"
                   className={`active ${sm ? "h6 mx-2 " : "h5 me-2"}`}
                 >
-                  <NavDropdown.Item className="text-primary fw-bold">
+                  <NavDropdown.Item className="text-primary fw-bold" as={Link} to='/changePassword'>
                     {" "}
                     <FaKey style={{ width: "20px", height: "20px" }} /> Password
                     Management
