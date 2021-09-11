@@ -65,7 +65,7 @@ const NavBar = () => {
               to="/focalHomePage"
               active={
                 location.pathname.includes("Home") &&
-                !(user.photoUrl.length > 0 && user.security)
+                (user.photoUrl.length > 0 && user.security)
                   ? `active`
                   : ``
               }
