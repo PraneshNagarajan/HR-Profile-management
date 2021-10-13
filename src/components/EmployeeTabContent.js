@@ -84,9 +84,6 @@ const EmployeeTabContent = (props) => {
     validate,
     onSubmit: (value) => {
       setIsLoading(true);
-      console.log(Img.name);
-      console.log(Img.length);
-      console.log(!!Img.name);
       if (!!Img.name) {
         fireStorage
           .ref()

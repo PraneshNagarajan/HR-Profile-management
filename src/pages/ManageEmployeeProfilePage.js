@@ -24,12 +24,11 @@ const ManageEmployeeProfilePage = () => {
   const queryParams = new URLSearchParams(location.search);
   const activeTab = queryParams.get("activeTab");
   const [userImg, setUserImg] = useState(undefined);
-  const [userImgFlag, setUserImgFlag] = useState(false);
   const [isSpinner, setIsSpinner] = useState(true);
 
   useEffect(() => {
     setIsSpinner(true);
-    setUserImg(undefined)
+    setUserImg(undefined);
     firestore
       .collection("Employee-Info")
       .doc("users")
@@ -78,7 +77,7 @@ const ManageEmployeeProfilePage = () => {
             } else {
               dispatch(InfoActions.getActiveTab("personal-info"));
             }
-            console.log(profile_info.img_uploaded)
+            console.log(profile_info.img_uploaded);
             if (
               profile_info.img_uploaded &&
               profile_info.employee.id !== loggedUser.id
@@ -89,14 +88,12 @@ const ManageEmployeeProfilePage = () => {
                 .getDownloadURL()
                 .then((url) => {
                   setUserImg(url);
-                  setUserImgFlag(true);
                 });
-            } else if (profile_info.img_uploaded && profile_info.employee.id === loggedUser.id) {
+            } else if (
+              profile_info.img_uploaded &&
+              profile_info.employee.id === loggedUser.id
+            ) {
               setUserImg(loggedUser.photoUrl);
-              setUserImgFlag(true);
-            } else {
-              console.log(userImg)
-              setUserImgFlag(false);
             }
             setIsSpinner(false);
           });

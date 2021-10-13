@@ -23,7 +23,6 @@ function App() {
   const [isClientPresent, setISClientPresent] = useState(false);
   const [isTechPresent, setISTechPresent] = useState(false);
   const dispatch = useDispatch();
-
   const clientRef = firestore.collection("Clients");
   const techonologyRef = firestore.collection("Skills");
   const recruiterRef = firestore.collection("Employee-Info").doc("users");
