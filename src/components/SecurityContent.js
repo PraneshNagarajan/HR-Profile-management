@@ -19,6 +19,7 @@ import { useFormik } from "formik";
 import { firestore } from "../firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
+import { AuthActions } from "../Redux/AuthenticationSlice";
 var CryptoJS = require("crypto-js");
 
 const questions = [
@@ -95,6 +96,7 @@ const SecurityContent = (props) => {
         .then(() => {
           setIsLoading(false)
           dispatch(InfoActions.getSecurityFlag(true));
+          dispatch(AuthActions.getSecurityStatus(true));
           dispatch(
             AlertActions.handleShow({
               msg: "Data added successfully.",

@@ -5,19 +5,18 @@ const initialState = {
   address: {},
   employee: {},
   activeTab: "personal-info",
-  submitted: false,
-  img_uploaded:"",
-  security: "",
+  img_uploaded: "",
+  security: false,
 };
 const EmployeeInfoSlice = createSlice({
   name: "employee-info",
   initialState,
   reducers: {
     getCompleteInfo(state, action) {
-      state.personal = action.payload.personal
-      state.address = action.payload.address
-      state.employee = action.payload.employee
-      state.security = action.payload.security
+      state.personal = action.payload.personal;
+      state.address = action.payload.address;
+      state.employee = action.payload.employee;
+      state.security = action.payload.security;
       state.activeTab = action.payload.activeTab;
     },
     getPersonalInfo(state, action) {
@@ -37,12 +36,12 @@ const EmployeeInfoSlice = createSlice({
     getSubmittedStatus(state) {
       state.submitted = false;
     },
-    getSecurityFlag(state,action){
-      state.security = action.payload
+    getSecurityFlag(state, action) {
+      state.security = action.payload;
     },
-    getImageFlag(state, action){
-      state.img_uploaded = action.payload
-    }
+    getImageFlag(state, action) {
+      state.img_uploaded = action.payload;
+    },
   },
 });
 export const InfoActions = EmployeeInfoSlice.actions;

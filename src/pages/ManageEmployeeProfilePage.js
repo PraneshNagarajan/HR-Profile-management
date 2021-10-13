@@ -77,7 +77,6 @@ const ManageEmployeeProfilePage = () => {
             } else {
               dispatch(InfoActions.getActiveTab("personal-info"));
             }
-            console.log(profile_info.img_uploaded);
             if (
               profile_info.img_uploaded &&
               profile_info.employee.id !== loggedUser.id

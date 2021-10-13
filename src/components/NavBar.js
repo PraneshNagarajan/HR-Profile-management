@@ -32,6 +32,7 @@ const NavBar = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const user = useSelector((state) => state.auth);
   const location = useLocation();
+  console.log("img : "+(user.photoUrl.length > 0) + " : "+ user.security)
   return (
     <Fragment>
       <Navbar
