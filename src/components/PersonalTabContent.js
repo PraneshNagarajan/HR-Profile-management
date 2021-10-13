@@ -24,7 +24,7 @@ const validate = (value) => {
     errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
-   if (!new RegExp("^[A-Z]+$").test(value.lastname) && value.lastname) {
+  if (!new RegExp("^[A-Z]+$").test(value.lastname) && value.lastname) {
     errors.lastname = "*Alphabets only allowed and must be in uppercase.";
   }
 
@@ -103,7 +103,6 @@ const PersonalTabContent = (props) => {
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
   const sm = useMediaQuery({ maxWidth: 768 });
-
   const initialValues = {
     firstname: "",
     lastname: "",
@@ -257,11 +256,11 @@ const PersonalTabContent = (props) => {
                     value={formik.values.dob}
                     max={
                       date.getFullYear() -
-                      21 +
+                      20 +
                       "-" +
-                      (date.getMonth() > 9
+                      (date.getMonth() >= 9
                         ? date.getMonth() + 1
-                        : "0" + (date.getMonth() + 1)) +
+                        : "0" + date.getMonth()) +
                       "-" +
                       date.getDate()
                     }
