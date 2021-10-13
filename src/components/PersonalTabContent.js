@@ -24,22 +24,20 @@ const validate = (value) => {
     errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
-  if (!value.lastname) {
-    errors.lastname = "*Required.";
-  } else if (!new RegExp("^[A-Z]+$").test(value.lasstname)) {
-    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
+   if (!new RegExp("^[A-Z]+$").test(value.lastname) && value.lastname) {
+    errors.lastname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.fathername) {
     errors.fathername = "*Required.";
   } else if (!new RegExp("^[A-Z]+$").test(value.fathername)) {
-    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
+    errors.fathername = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.mothername) {
     errors.mothername = "*Required.";
   } else if (!new RegExp("^[A-Z]+$").test(value.mothername)) {
-    errors.firstname = "*Alphabets only allowed and must be in uppercase.";
+    errors.mothername = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.dob) {
