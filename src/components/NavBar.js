@@ -62,7 +62,7 @@ const NavBar = () => {
             <Nav.Link
               disabled={!(user.photoUrl.length > 0 && user.security)}
               as={Link}
-              to="/focalHomePage"
+              to={user.role === 'Admin' ? "/focalHomePage" : "/userHomePage"}
               active={
                 location.pathname.includes("Home") &&
                 (user.photoUrl.length > 0 && user.security)
@@ -75,9 +75,11 @@ const NavBar = () => {
               </span>
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
-            <NavDropdown
+            {user.role === 'Admin' && 
+            <Fragment>
+               <NavDropdown
               disabled={!(user.photoUrl.length > 0 && user.security)}
-              active={location.pathname.includes("Employee") ? `active` : ``}
+              // active={location.pathname.includes("Employee") ? `active` : ``}
               title={
                 <span>
                   <FaUsersCog className="mb-1" /> Employees
@@ -109,18 +111,20 @@ const NavBar = () => {
               </NavDropdown.Item>
             </NavDropdown>
             {sm && <hr className="text-white line-break" />}
+            </Fragment>
+            }
 
             <NavDropdown
               disabled={!(user.photoUrl.length > 0 && user.security)}
-              active={location.pathname.includes("Demand") ? `active` : ``}
+              // active={location.pathname.includes("Demand"  || 'Supplies') ? `active` : ``}
               title={
                 <span>
-                  <FaRegListAlt className="mb-1" /> Demands
+                  <FaRegListAlt className="mb-1" /> {user.role === 'Admin' ? 'Demands' : 'Supplies'}
                 </span>
               }
               id="collasible-nav-dropdown"
               className={`${
-                location.pathname.includes("employee") ? "active" : ""
+                location.pathname.includes("Demand"  || "Supplies") ? "active" : ""
               } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
@@ -130,13 +134,13 @@ const NavBar = () => {
               >
                 {" "}
                 <FaPlusCircle style={{ width: "20px", height: "20px" }} />{" "}
-                Create Demand
+                 {user.role === 'Admin' ? 'Create Demand' : 'Create Supply'}
               </NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item className="text-warning fw-bold">
                 {" "}
-                <FaEdit style={{ width: "20px", height: "20px" }} /> Manage
-                Demands
+                <FaEdit style={{ width: "20px", height: "20px" }} /> 
+                 {user.role === 'Admin' ? 'Manage Demands' : 'Manage Supply'}
               </NavDropdown.Item>
             </NavDropdown>
             {sm && <hr className="text-white line-break" />}
