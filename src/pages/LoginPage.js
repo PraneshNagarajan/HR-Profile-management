@@ -240,7 +240,11 @@ const LoginPage = () => {
                         "auth-info.invalid_attempt_timestamp": null,
                       })
                       .catch((err) => {});
-                    history.push("/focalHomePage");
+                      if(String(profile_info.employee.role) === 'Admin') {
+                        history.push("/focalHomePage");
+                      } else {
+                        history.push("/userHomePage")
+                      }
                   } else {
                     authNotification();
                   }

@@ -15,6 +15,7 @@ import CreateDemand from "./pages/CreateDemand";
 import { firestore } from "./firebase";
 import { useDispatch } from "react-redux";
 import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
+import UserHomePage from "./pages/UserHomePage";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -94,29 +95,44 @@ function App() {
               <ChangePasswordPage />
             </AuthLayout>
           </Route>
-          <Route path="/focalHomePage">
-            <MainLayout>
-              <FocalHomePage />
-            </MainLayout>
-          </Route>
-          <Route path="/addEmployees">
-            <MainLayout>
-              <AddEmployeePage />
-            </MainLayout>
-          </Route>
-          <Route path="/manageEmployeeProfile/:id">
-            <MainLayout>
-              <ManageEmployeeProfilePage />
-            </MainLayout>
-          </Route>
-          <Route path="/createDemand">
-            <MainLayout>
-              <CreateDemand clientFlag={isClientPresent} techFlag={isTechPresent}/>
-            </MainLayout>
-          </Route>
+          {user === "Admin" && (
+            <Fragment>
+              <Route path="/focalHomePage">
+                <MainLayout>
+                  <FocalHomePage />
+                </MainLayout>
+              </Route>
+              <Route path="/addEmployees">
+                <MainLayout>
+                  <AddEmployeePage />
+                </MainLayout>
+              </Route>
+              <Route path="/manageEmployeeProfile/:id">
+                <MainLayout>
+                  <ManageEmployeeProfilePage />
+                </MainLayout>
+              </Route>
+              <Route path="/createDemand">
+                <MainLayout>
+                  <CreateDemand
+                    clientFlag={isClientPresent}
+                    techFlag={isTechPresent}
+                  />
+                </MainLayout>
+              </Route>
+            </Fragment>
+          )}
+          {user !== "Admin" && (
+            <Fragment>
+              <Route path="/userHomePage">
+                <MainLayout></MainLayout>
+              </Route>
+            </Fragment>
+          )}
         </Fragment>
       )}
-      <Route path="*">
+
+      <Route path="**">
         <Redirect to="/"></Redirect>
       </Route>
     </Switch>
