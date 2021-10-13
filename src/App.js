@@ -95,6 +95,11 @@ function App() {
               <ChangePasswordPage />
             </AuthLayout>
           </Route>
+          <Route path="/manageEmployeeProfile/:id">
+                <MainLayout>
+                  <ManageEmployeeProfilePage />
+                </MainLayout>
+          </Route>
           {user === "Admin" && (
             <Fragment>
               <Route path="/focalHomePage">
@@ -105,11 +110,6 @@ function App() {
               <Route path="/addEmployees">
                 <MainLayout>
                   <AddEmployeePage />
-                </MainLayout>
-              </Route>
-              <Route path="/manageEmployeeProfile/:id">
-                <MainLayout>
-                  <ManageEmployeeProfilePage />
                 </MainLayout>
               </Route>
               <Route path="/createDemand">
