@@ -113,7 +113,7 @@ const PersonalTabContent = (props) => {
       props.view.user || props.view.admin
         ? infos.personal.gender
         : "- Select Gender -",
-    age: 21,
+    age: 20,
     email1: "",
     email2: "",
     phone1: "",
@@ -185,6 +185,9 @@ const PersonalTabContent = (props) => {
                         formik.values.lastname.length > 0)
                     }
                   />
+                  {!formik.touched.lastname && (
+                    <div className="text-muted">optional</div>
+                  )}
                   <div className="invalid-feedback">
                     {formik.errors.lastname}
                   </div>
