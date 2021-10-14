@@ -46,11 +46,47 @@ const CreateDemand = (props) => {
     props.clientFlag ? false : true
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadFlag, setUploadFlag] = useState(false);
+  let uploadFlag = false;
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
 
+  const stateHandler = () => {
+    formik.resetForm();
+    setPrimaryTechIsChecked(false);
+    setPrimarySkillIsChecked(false);
+    setSecondaryTechIsChecked(false);
+    setSecondarySkillIsChecked(false);
+    setClientIsChecked(false);
+    setEndClientIsChecked(false);
+  };
+
+  const checkIsSkillPresentHandler = (tech, skill, data) => {
+    if (
+      !(
+        pre_requisite.technologies[tech].findIndex((item) => item === skill) >=
+        0
+      )
+    ) {
+      data.push(...pre_requisite.technologies[tech]);
+      addSkills(tech, { sets: data }, !props.techFlag, false);
+    } else {
+      setIsLoading(false);
+      dispatch(
+        AlertActions.handleShow({
+          msg:
+            "Duplicate entry. " +
+            skill +
+            " is found already under " +
+            tech +
+            " .",
+          flag: false,
+        })
+      );
+      uploadFlag = false;
+    }
+  };
+
   const addSkills = (doc, data, flag, method) => {
-    setUploadFlag(true);
+    uploadFlag = true;
     if (method) {
       firestore
         .collection("Skills")
@@ -70,7 +106,6 @@ const CreateDemand = (props) => {
       firestore.collection("Skills").doc("new").delete();
     }
   };
-
   const formik = useFormik({
     initialValues: {
       recruiter: "- Select the Recruiter -",
@@ -85,6 +120,8 @@ const CreateDemand = (props) => {
       primaryskill: props.techFlag ? "- Select the Skill -" : "",
       secondarytech: props.techFlag ? "- Select the Techonology -" : "",
       secondaryskill: props.techFlag ? "- Select the Skill -" : "",
+      status: 0,
+      file_count: 0,
     },
     validate: (value) => {
       const errors = {};
@@ -163,8 +200,13 @@ const CreateDemand = (props) => {
     },
     onSubmit: (value) => {
       setIsLoading(true);
+      uploadFlag = true;
       let data = [];
-      if (value.primarytech === value.secondarytech) {
+      if (
+        value.primarytech === value.secondarytech &&
+        ptIsChecked &&
+        stIsChecked
+      ) {
         if (!props.techFlag) {
           addSkills(
             value.primarytech,
@@ -178,12 +220,10 @@ const CreateDemand = (props) => {
           if (!pre_requisite.technologies[value.primarytech]) {
             addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
           } else {
-            data.push(...pre_requisite.technologies[value.primarytech]);
-            addSkills(
-              value.primarytech,
-              { sets: data },
-              !props.techFlag,
-              false
+            checkIsSkillPresentHandler(value.primarytech, value.primaryskill);
+            checkIsSkillPresentHandler(
+              value.secondarytech,
+              value.secondaryskill
             );
           }
         }
@@ -198,34 +238,10 @@ const CreateDemand = (props) => {
               true
             );
           } else {
-            if (
-              !(
-                pre_requisite.technologies[value.secondarytech].findIndex(
-                  (item) => item === value.secondaryskill
-                ) >= 0
-              )
-            ) {
-              data.push(...pre_requisite.technologies[value.secondarytech]);
-              addSkills(
-                value.secondarytech,
-                { sets: data },
-                !props.techFlag,
-                false
-              );
-            } else {
-              setIsLoading(false);
-              dispatch(
-                AlertActions.handleShow({
-                  msg:
-                    "Duplicate entry. " +
-                    value.secondaryskill +
-                    " is found already under " +
-                    value.secondarytech +
-                    " .",
-                  flag: false,
-                })
-              );
-            }
+            checkIsSkillPresentHandler(
+              value.secondarytech,
+              value.secondaryskill
+            );
           }
         }
         if (ptIsChecked || psIsChecked) {
@@ -233,34 +249,7 @@ const CreateDemand = (props) => {
           if (!pre_requisite.technologies[value.primarytech]) {
             addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
           } else {
-            if (
-              !(
-                pre_requisite.technologies[value.primarytech].findIndex(
-                  (item) => item === value.primaryskill
-                ) >= 0
-              )
-            ) {
-              data.push(...pre_requisite.technologies[value.primarytech]);
-              addSkills(
-                value.primarytech,
-                { sets: data },
-                !props.techFlag,
-                false
-              );
-            } else {
-              setIsLoading(false);
-              dispatch(
-                AlertActions.handleShow({
-                  msg:
-                    "Duplicate entry. " +
-                    value.primaryskill +
-                    " is found already under " +
-                    value.primarytech +
-                    " .",
-                  flag: false,
-                })
-              );
-            }
+            checkIsSkillPresentHandler(value.primarytech, value.primaryskill);
           }
         }
         data = [];
@@ -280,6 +269,9 @@ const CreateDemand = (props) => {
               .collection("Clients")
               .doc(value.clientname)
               .set({ names: data })
+              .then(() => {
+                uploadFlag = true;
+              })
               .catch((err) => {
                 alert(String(err));
               });
@@ -297,6 +289,9 @@ const CreateDemand = (props) => {
                 .collection("Clients")
                 .doc(value.clientname)
                 .update({ names: data })
+                .then(() => {
+                  uploadFlag = true;
+                })
                 .catch((err) => {
                   alert(String(err));
                 });
@@ -316,70 +311,65 @@ const CreateDemand = (props) => {
             }
           }
         }
-
-        if (uploadFlag) {
-          firestore
-            .collection("Demands")
-            .doc(loggedUser.email)
-            .update({
-              ["F" + loggedUser.id + new Date().getTime()]: {
-                ...value,
-              },
-            })
-            .then(() => {
-              setIsLoading(false);
+      }
+      if (uploadFlag) {
+        firestore
+          .collection("Demands")
+          .doc(loggedUser.email)
+          .update({
+            ["F" + loggedUser.id + new Date().getTime()]: {
+              ...value,
+            },
+          })
+          .then(() => {
+            setIsLoading(false);
+            stateHandler();
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Demand created successfully.",
+                flag: true,
+              })
+            );
+          })
+          .catch((err) => {
+            setIsLoading(false);
+            if (String(err).includes("No document to update")) {
+              firestore
+                .collection("Demands")
+                .doc(loggedUser.email)
+                .set({
+                  ["F" + loggedUser.id + new Date().getTime()]: {
+                    ...value,
+                  },
+                })
+                .then(() => {
+                  stateHandler();
+                  dispatch(
+                    AlertActions.handleShow({
+                      msg: "data added sucessfully.",
+                      flag: true,
+                    })
+                  );
+                })
+                .catch((err) => {
+                  dispatch(
+                    AlertActions.handleShow({
+                      msg: "Data added failed.",
+                      flag: false,
+                    })
+                  );
+                });
+            } else {
               dispatch(
                 AlertActions.handleShow({
-                  msg: "Demand created successfully.",
-                  flag: true,
+                  msg: "Data added failed.",
+                  flag: false,
                 })
               );
-            })
-            .catch((err) => {
-              setIsLoading(false);
-              if (String(err).includes("No document to update")) {
-                firestore
-                  .collection("Demands")
-                  .doc(loggedUser.email)
-                  .set({
-                    ["F" + loggedUser.id + new Date().getTime()]: {
-                      ...value,
-                    },
-                  })
-                  .then(() => {
-                    dispatch(
-                      AlertActions.handleShow({
-                        msg: "Unable to create demand.",
-                        flag: true,
-                      })
-                    );
-                  })
-                  .catch((err) => {
-                    dispatch(
-                      AlertActions.handleShow({
-                        msg: "Data added failed.",
-                        flag: false,
-                      })
-                    );
-                  });
-              } else {
-                dispatch(
-                  AlertActions.handleShow({
-                    msg: "Data added failed.",
-                    flag: false,
-                  })
-                );
-              }
-            });
-          if (!isLoading) {
-            formik.resetForm();
-            setPrimaryTechIsChecked(false);
-            setPrimarySkillIsChecked(false);
-            setSecondaryTechIsChecked(false);
-            setSecondarySkillIsChecked(false);
-            setClientIsChecked(false);
-            setEndClientIsChecked(false);
-          }
+            }
+          });
+        if (!isLoading) {
+          uploadFlag = true;
         }
       }
     },
