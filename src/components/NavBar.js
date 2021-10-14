@@ -88,7 +88,7 @@ const NavBar = () => {
               }
               id="collasible-nav-dropdown"
               className={`${
-                location.pathname.includes("employee") ? "active" : ""
+                location.pathname.includes("Employee") ? "active" : ""
               } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
@@ -125,13 +125,13 @@ const NavBar = () => {
               }
               id="collasible-nav-dropdown"
               className={`${
-                location.pathname.includes("Demand"  || "Supplies") ? "active" : ""
+                location.pathname.includes("Demand") ||  location.pathname.includes("Supply")? "active" : ""
               } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
                 className="text-primary fw-bold"
                 as={Link}
-                to="/createDemand"
+                to={user.role === 'Admin' ? "/createDemand" : "/createSupply"}
               >
                 {" "}
                 <FaPlusCircle style={{ width: "20px", height: "20px" }} />{" "}

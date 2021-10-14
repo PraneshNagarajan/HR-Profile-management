@@ -16,6 +16,7 @@ import { firestore } from "./firebase";
 import { useDispatch } from "react-redux";
 import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 import UserHomePage from "./pages/UserHomePage";
+import CreateSupply from "./pages/CreateSupply";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -95,9 +96,9 @@ function App() {
             </AuthLayout>
           </Route>
           <Route path="/manageEmployeeProfile/:id">
-                <MainLayout>
-                  <ManageEmployeeProfilePage />
-                </MainLayout>
+            <MainLayout>
+              <ManageEmployeeProfilePage />
+            </MainLayout>
           </Route>
           {user === "Admin" && (
             <Fragment>
@@ -122,11 +123,14 @@ function App() {
             </Fragment>
           )}
           {user !== "Admin" && (
-            <Fragment>
+            <MainLayout>
               <Route path="/userHomePage">
-                <MainLayout></MainLayout>
+                  <UserHomePage />
               </Route>
-            </Fragment>
+              <Route path="/createSupply">
+                  <CreateSupply />
+              </Route>
+              </MainLayout>
           )}
         </Fragment>
       )}
