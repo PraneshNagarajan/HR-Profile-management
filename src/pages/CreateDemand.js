@@ -487,7 +487,7 @@ const CreateDemand = (props) => {
                           />
                         </FormGroup>
                       )}
-                      {!clientIsChecked && (
+                      {!clientIsChecked && pre_requisite.clients.length > 0 &&(
                         <Dropdown className="dropbox">
                           <Dropdown.Toggle
                             name="clientname"
@@ -613,6 +613,7 @@ const CreateDemand = (props) => {
 
                           <Dropdown.Menu className="w-100">
                             {!formik.values.clientname.includes("-") &&
+                              pre_requisite.clients.length > 0 &&
                               pre_requisite.clients[
                                 formik.values.clientname
                               ].map((endclient, index) => {
@@ -1010,6 +1011,7 @@ const CreateDemand = (props) => {
 
                             <Dropdown.Menu className="w-100">
                               {!formik.values.primarytech.includes("-") &&
+                                pre_requisite.technologies.length > 0 &&
                                 pre_requisite.technologies[
                                   formik.values.primarytech
                                 ].map((skill, index) => {
@@ -1227,6 +1229,7 @@ const CreateDemand = (props) => {
 
                             <Dropdown.Menu className="w-100">
                               {!formik.values.secondarytech.includes("-") &&
+                              pre_requisite.technologies.length > 0 &&
                                 pre_requisite.technologies[
                                   formik.values.secondarytech
                                 ].map((skill, index) => {
