@@ -51,6 +51,22 @@ const CreateDemand = (props) => {
 
   const stateHandler = () => {
     formik.resetForm();
+    formik.setValues({
+      recruiter: "- Select the Recruiter -",
+      location: "",
+      panlocation: "",
+      type: "- Select the type -",
+      demand: 1,
+      demandallot: "",
+      status: 0,
+      file_count: 0,
+      clientname: "- Select the Client -",
+      endclientname: "- Select the End-Client -",
+      primarytech: "- Select the Techonology -",
+      primaryskill: "- Select the Skill -",
+      secondarytech: "- Select the Techonology -",
+      secondaryskill: "- Select the Skill -",
+    });
     setPrimaryTechIsChecked(false);
     setPrimarySkillIsChecked(false);
     setSecondaryTechIsChecked(false);
@@ -106,6 +122,7 @@ const CreateDemand = (props) => {
       firestore.collection("Skills").doc("new").delete();
     }
   };
+
   const formik = useFormik({
     initialValues: {
       recruiter: "- Select the Recruiter -",
@@ -374,7 +391,6 @@ const CreateDemand = (props) => {
       }
     },
   });
-
   return (
     <Fragment>
       {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
@@ -487,56 +503,59 @@ const CreateDemand = (props) => {
                           />
                         </FormGroup>
                       )}
-                      {!clientIsChecked && pre_requisite.clients.length > 0 &&(
-                        <Dropdown className="dropbox">
-                          <Dropdown.Toggle
-                            name="clientname"
-                            onBlur={formik.handleBlur}
-                            variant={`outline-${
-                              !formik.touched.clientname
-                                ? `primary`
-                                : !formik.values.clientname.includes("-") &&
-                                  formik.touched.clientname
-                                ? `success`
-                                : formik.values.clientname.includes("-") &&
-                                  formik.touched.clientname
-                                ? `danger`
-                                : ``
-                            }`}
-                            className="w-100"
-                          >
-                            {formik.values.clientname}
-                          </Dropdown.Toggle>
 
-                          <Dropdown.Menu className="w-100">
-                            {Object.keys(pre_requisite.clients).map(
-                              (client, index) => {
-                                return (
-                                  <Fragment key={index}>
-                                    <Dropdown.Item
-                                      className="text-center"
-                                      active={formik.values.clientname.includes(
-                                        client
-                                      )}
-                                      onClick={() => {
-                                        formik.setFieldValue(
-                                          "clientname",
+                      {!clientIsChecked &&
+                        Object.values(pre_requisite.clients).length > 0 && (
+                          <Dropdown className="dropbox">
+                            <Dropdown.Toggle
+                              name="clientname"
+                              onBlur={formik.handleBlur}
+                              variant={`outline-${
+                                !formik.touched.clientname
+                                  ? `primary`
+                                  : !formik.values.clientname.includes("-") &&
+                                    formik.touched.clientname
+                                  ? `success`
+                                  : formik.values.clientname.includes("-") &&
+                                    formik.touched.clientname
+                                  ? `danger`
+                                  : ``
+                              }`}
+                              className="w-100"
+                            >
+                              {formik.values.clientname}
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu className="w-100">
+                              {Object.keys(pre_requisite.clients).map(
+                                (client, index) => {
+                                  return (
+                                    <Fragment key={index}>
+                                      <Dropdown.Item
+                                        className="text-center"
+                                        active={formik.values.clientname.includes(
                                           client
-                                        );
-                                      }}
-                                    >
-                                      {client}
-                                    </Dropdown.Item>
-                                    {Object.keys(pre_requisite.clients).length -
-                                      1 >
-                                      index && <Dropdown.Divider />}
-                                  </Fragment>
-                                );
-                              }
-                            )}
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      )}
+                                        )}
+                                        onClick={() => {
+                                          formik.setFieldValue(
+                                            "clientname",
+                                            client
+                                          );
+                                        }}
+                                      >
+                                        {client}
+                                      </Dropdown.Item>
+                                      {Object.keys(pre_requisite.clients)
+                                        .length -
+                                        1 >
+                                        index && <Dropdown.Divider />}
+                                    </Fragment>
+                                  );
+                                }
+                              )}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        )}
                       {formik.errors.clientname &&
                         formik.touched.clientname && (
                           <div className="text-danger">
@@ -613,7 +632,7 @@ const CreateDemand = (props) => {
 
                           <Dropdown.Menu className="w-100">
                             {!formik.values.clientname.includes("-") &&
-                              pre_requisite.clients.length > 0 &&
+                              Object.values(pre_requisite.clients).length > 0 &&
                               pre_requisite.clients[
                                 formik.values.clientname
                               ].map((endclient, index) => {
@@ -1011,7 +1030,9 @@ const CreateDemand = (props) => {
 
                             <Dropdown.Menu className="w-100">
                               {!formik.values.primarytech.includes("-") &&
-                                pre_requisite.technologies.length > 0 &&
+                                (pre_requisite.technologies.length > 0 ||
+                                  Object.values(pre_requisite.technologies)
+                                    .length > 0) &&
                                 pre_requisite.technologies[
                                   formik.values.primarytech
                                 ].map((skill, index) => {
@@ -1229,7 +1250,8 @@ const CreateDemand = (props) => {
 
                             <Dropdown.Menu className="w-100">
                               {!formik.values.secondarytech.includes("-") &&
-                              pre_requisite.technologies.length > 0 &&
+                                (pre_requisite.technologies.length > 0 ||
+                                  Object.values(pre_requisite.technologies)) &&
                                 pre_requisite.technologies[
                                   formik.values.secondarytech
                                 ].map((skill, index) => {
