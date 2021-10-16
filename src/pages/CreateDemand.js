@@ -137,7 +137,7 @@ const CreateDemand = (props) => {
       primaryskill: props.techFlag ? "- Select the Skill -" : "",
       secondarytech: props.techFlag ? "- Select the Techonology -" : "",
       secondaryskill: props.techFlag ? "- Select the Skill -" : "",
-      status: 0,
+      status: "newly_created",
       file_count: 0,
     },
     validate: (value) => {
@@ -335,7 +335,8 @@ const CreateDemand = (props) => {
           .doc(loggedUser.email)
           .update({
             ["F" + loggedUser.id + new Date().getTime()]: {
-              ...value,
+              info : value,
+              profiles: []
             },
           })
           .then(() => {
@@ -353,11 +354,10 @@ const CreateDemand = (props) => {
             if (String(err).includes("No document to update")) {
               firestore
                 .collection("Demands")
-                .doc(loggedUser.email)
+                .doc("F" + loggedUser.id + new Date().getTime())
                 .set({
-                  ["F" + loggedUser.id + new Date().getTime()]: {
-                    ...value,
-                  },
+                  info : value,
+                  "profile-info": {status : 'new',profiles: []}
                 })
                 .then(() => {
                   stateHandler();
