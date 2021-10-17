@@ -99,6 +99,7 @@ const CreateSupply = (props) => {
         .doc(file.name)
         .set({
           status: "mapped",
+          demand_id: formik.values.demand_id,
         })
         .catch((err) => {
           file_error.push(file.name);
@@ -129,73 +130,80 @@ const CreateSupply = (props) => {
     });
   };
 
+  const updateDemandInfo = (data) => {
+    setUploadFlag(true);
+    firestore
+      .collection("Demands")
+      .doc(formik.values.demand_id)
+      .update({
+        "info.file_count": totalFileCount,
+        "info.status": "Still profile matching is pending",
+        "profile-info": {
+          profiles: data,
+          status: "pending",
+        },
+      });
+  };
+
   const onPreCheck = async () => {
     await setIsSaving(true);
     let presentFileList = await [];
     let excessSizeFileList = await [];
     let res = await filenames.filter((file) => addedProfiles.includes(file));
     if ((await res.length) === 0) {
+      if ((await searchProfrileDB.length) > 0 && files.length === 0) {
+        await updateDemandInfo([searchProfrileDB.concat(addedProfiles)]);
+        await dispatch(
+          AlertActions.handleShow({
+            msg:
+              "Profile has been added" +
+              (formik.values.demand === totalFileCount
+                ? ". You are good to submit."
+                : ""),
+            flag: true,
+          })
+        );
+        await setIsSaving(false);
+      }
       await files.map(async (file, index) => {
-        firestore
+        await firestore
           .collection("Profiles")
-          .doc("new")
+          .doc(file.name)
           .get()
           .then(async (doc) => {
-            if (await doc.exists) {
-              setUploadFlag(true);
-            } else {
-              await firestore
-                .collection("Profiles")
-                .doc(file.name)
-                .get()
-                .then((doc) => {
-                  if (!doc.exists) {
-                    if (!(file.size / 1024 > 300)) {
-                    } else {
-                      excessSizeFileList.push(file.name);
-                    }
-                  } else {
-                    presentFileList.push(file.name);
-                  }
-                });
-            }
-            if ((await files.length) - 1 === index) {
-              if (
-                presentFileList.length === 0 &&
-                excessSizeFileList.length === 0
-              ) {
-                if ((await formik.values.demand) === totalFileCount) {
-                  await setUploadFlag(true);
-                  await dispatch(
-                    AlertActions.handleShow({
-                      msg: "You are good to submit.",
-                      flag: true,
-                    })
-                  );
-                } else {
-                  await uploadDatasToDB(
-                    <Fragment>
-                      <p>Just mapped the profiles against this demand.</p>
-                      <p>Please upload the required profiles to submit.</p>
-                    </Fragment>
-                  );
-                }
-                await firestore
-                  .collection("Demands")
-                  .doc(formik.values.demand_id)
-                  .update({
-                    "info.file_count": totalFileCount,
-                    "info.status": "Still profile matching is pending",
-                    "profile-info": {
-                      profiles: filenames,
-                      status: "pending",
-                    },
-                  });
+            if (await !doc.exists) {
+              if (await !(file.size / 1024 > 300)) {
               } else {
-                alertMsg(presentFileList, excessSizeFileList);
+                await excessSizeFileList.push(file.name);
               }
+            } else {
+              await presentFileList.push(file.name);
             }
           });
+        if ((await files.length) - 1 === index) {
+          if (
+            (await presentFileList.length) === 0 &&
+            excessSizeFileList.length === 0
+          ) {
+            if ((await formik.values.demand) === totalFileCount) {
+              await setUploadFlag(true);
+              await uploadDatasToDB(
+                "Profiles has been saved. You are good to submit"
+              );
+            } else {
+              await uploadDatasToDB(
+                <Fragment>
+                  <p>Just mapped the profiles against this demand.</p>
+                  <p>Please upload the required profiles to submit.</p>
+                </Fragment>
+              );
+            }
+            await updateDemandInfo(filenames);
+          } else {
+            await alertMsg(presentFileList, excessSizeFileList);
+          }
+        }
+        await setIsSaving(false);
       });
     } else {
       await dispatch(
@@ -204,8 +212,8 @@ const CreateSupply = (props) => {
           flag: false,
         })
       );
+      await setIsSaving(false);
     }
-    await setIsSaving(false);
   };
 
   const formik = useFormik({
@@ -220,9 +228,61 @@ const CreateSupply = (props) => {
       }
       return errors;
     },
-    onSubmit: async (value) => {
+    onSubmit: async () => {
       await setIsLoading(true);
-      await uploadDatasToDB("Profile submitted is succesfully.");
+      let data = await [];
+      await filenames.map((file) =>
+        data.push({
+          [file]: {
+            current_status: "Profile Submitted",
+            status: {
+              "profile submitted    ": new Date().toString(),
+              "Screen Reject        ": "",
+              "Duplicate            ": "",
+              "Feedback Pending     ": "",
+              "Position Hold        ": "",
+              "Interview Scheduled  ": "",
+              "No Show              ": "",
+              "L1 Select            ": "",
+              "L1 Reject            ": "",
+              "L2 Reject            ": "",
+              "L2 Select            ": "",
+              "Client Select        ": "",
+              "Client Reject        ": "",
+              "Client Hold          ": "",
+              "Declined Before Offer": "",
+              "Offered              ": "",
+              "Declined After Offer ": "",
+              "On Boarded			  ": "",
+            },
+          },
+        })
+      );
+      await firestore
+        .collection("Demands")
+        .doc(formik.values.demand_id)
+        .update({
+          "profile-info.status": "Submitted",
+          "profile-info.comments": "",
+          "profile-info.profiles-status": { ...data },
+          "info.status": "Submitted",
+        })
+        .then(async () => {
+          await dispatch(
+            AlertActions.handleShow({
+              msg: "Profiles has been submitted successfully.",
+              flag: true,
+            })
+          );
+        })
+        .catch((err) => {
+          dispatch(
+            AlertActions.handleShow({
+              msg: "Failed. Unable to submit.",
+              flag: true,
+            })
+          );
+        });
       await setIsLoading(false);
     },
   });
@@ -232,14 +292,6 @@ const CreateSupply = (props) => {
       let data = [];
       let count = 0;
       let profile = [...e.target.files];
-      alert(
-        "--" +
-          totalFileCount +
-          " : " +
-          formik.values.file_count +
-          " : " +
-          [...e.target.files].length
-      );
       Object.values(e.target.files).map((file) => {
         if (formik.values.file_count === 0) {
           if (
@@ -269,13 +321,6 @@ const CreateSupply = (props) => {
               formik.values.demand
             )
           ) {
-            alert(
-              totalFileCount +
-                " : " +
-                formik.values.file_count +
-                " : " +
-                [...e.target.files].length
-            );
             if (filenames.includes(file.name)) {
               dispatch(
                 AlertActions.handleShow({
@@ -311,12 +356,16 @@ const CreateSupply = (props) => {
         setFileNames(data);
         setTotalFileCount(totalFileCount + count);
         formik.setFieldValue("file_count", data.length);
-        alert(totalFileCount + " : " + count);
       }
     }
   };
 
-  const removePofilehandler = (index, flag = false, name = "") => {
+  const removePofilehandler = (
+    index,
+    flag = false,
+    flag1 = false,
+    name = ""
+  ) => {
     if (flag) {
       let new_list = addedProfiles;
       new_list.splice(index, 1);
@@ -325,6 +374,7 @@ const CreateSupply = (props) => {
         .doc(formik.values.demand_id)
         .update({
           "profile-info.profiles": new_list,
+          "profile-info.profiles-status": [],
           "info.file_count": new_list.length,
         })
         .then(async () => {
@@ -347,11 +397,13 @@ const CreateSupply = (props) => {
           );
         });
     } else {
-      let new_list1 = files;
+      if (!flag1) {
+        let new_list1 = files;
+        new_list1.splice(index, 1);
+        setFiles(new_list1);
+      }
       let new_list2 = filenames;
-      new_list1.splice(index, 1);
       new_list2.splice(index, 1);
-      setFiles(new_list1);
       setFileNames(new_list2);
       formik.setFieldValue("file_count", formik.values.file_count - 1);
       setTotalFileCount(totalFileCount - 1);
@@ -359,6 +411,9 @@ const CreateSupply = (props) => {
   };
 
   const getDemandInfo = async (doc) => {
+    await formik.setFieldValue("profile_id", "");
+    await formik.setFieldTouched("profile_id", false);
+    await setFileNames([]);
     await setIsSearching(true);
     await firestore
       .collection("Demands")
@@ -374,9 +429,10 @@ const CreateSupply = (props) => {
           });
           formik.setFieldValue("status", datas.status);
           datas = await documentSnapshot.get("profile-info");
-          // await formik.setFieldValue("file_count", datas.profiles.length);
           await setTotalFileCount(datas.profiles.length);
           await setAddedProfiles(datas.profiles);
+          await setFiles([]);
+          await setSearchProfileDB([]);
         } else {
           formik.setErrors({ demand_id: "*Invalid Demand ID." });
         }
@@ -385,24 +441,25 @@ const CreateSupply = (props) => {
   };
 
   const getProfileFromDB = (profile_id) => {
+    let data = [];
     firestore
       .collection("Profiles")
       .doc(profile_id)
       .get()
       .then((doc) => {
         if (doc.exists) {
-          let data = doc.data();
+          data = doc.data();
           if (data.status === "mapped") {
             dispatch(
               AlertActions.handleShow({
                 msg:
                   "This profile already mapped to demand id : " +
                   data.demand_id +
-                  "So, you can't add it. Please add other profile.",
+                  ". So, you can't add it. Please add other profile.",
                 flag: false,
               })
             );
-          } else if (formik.values.file_count <= formik.values.demand) {
+          } else if (formik.values.file_count < formik.values.demand) {
             dispatch(
               AlertActions.handleShow({
                 msg: "Profile has been added.",
@@ -410,8 +467,11 @@ const CreateSupply = (props) => {
               })
             );
             setSearchProfileDB(profile_id);
-            data = filenames.push(profile_id);
+            data = filenames;
+            data.push(profile_id);
             setFileNames(data);
+            setTotalFileCount(totalFileCount + 1);
+            formik.setFieldValue("file_count", data.length);
           } else {
             dispatch(
               AlertActions.handleShow({
@@ -430,6 +490,49 @@ const CreateSupply = (props) => {
         }
       });
   };
+
+  const FileListTag =
+    filenames.length > 0 ? (
+      <Fragment>
+        <div
+          className="d-flex flex-wrap my-2 border border-primary border-2 mx-2"
+          style={{ maxHeight: "150px", overflowY: "scroll" }}
+        >
+          {filenames.map((file, index) => {
+            return (
+              <Card
+                key={index}
+                className={`shadow m-1 w-30 border ${
+                  searchProfrileDB.includes(file)
+                    ? `bg-warning`
+                    : filenames && files[index].size / 1024 > 300
+                    ? `bg-danger`
+                    : `bg-success`
+                }`}
+              >
+                <Card.Body className="d-flex justify-content-between text-white">
+                  <Button
+                    className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
+                    style={{ height: "8px", width: "8px" }}
+                    onClick={() =>
+                      removePofilehandler(
+                        index,
+                        false,
+                        searchProfrileDB.includes(file),
+                        ""
+                      )
+                    }
+                  ></Button>
+                  <b className="mt-1">{file}</b>
+                </Card.Body>
+              </Card>
+            );
+          })}
+        </div>
+      </Fragment>
+    ) : (
+      ""
+    );
 
   return (
     <Fragment>
@@ -738,7 +841,7 @@ const CreateSupply = (props) => {
                               className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
                               style={{ height: "8px", width: "8px" }}
                               onClick={() =>
-                                removePofilehandler(index, true, file)
+                                removePofilehandler(index, true, false, file)
                               }
                             ></Button>
                             <b className="mt-1">{file}</b>
@@ -791,36 +894,7 @@ const CreateSupply = (props) => {
                         <b>{formik.values.demand - totalFileCount}</b>
                       </p>
                     </div>
-                    {filenames.length > 0 && (
-                      <Fragment>
-                        <div
-                          className="d-flex flex-wrap my-2 border border-primary border-2 mx-2"
-                          style={{ maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                          {filenames.map((file, index) => {
-                            return (
-                              <Card
-                                key={index}
-                                className={`shadow m-1 w-30 border ${
-                                  files[index].size / 1024 > 300
-                                    ? `bg-danger`
-                                    : `bg-success`
-                                }`}
-                              >
-                                <Card.Body className="d-flex justify-content-between text-white">
-                                  <Button
-                                    className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
-                                    style={{ height: "8px", width: "8px" }}
-                                    onClick={() => removePofilehandler(index)}
-                                  ></Button>
-                                  <b className="mt-1">{file}</b>
-                                </Card.Body>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </Fragment>
-                    )}
+                    {FileListTag}
                   </Card>
                 </Tab>
                 <Tab
@@ -841,12 +915,13 @@ const CreateSupply = (props) => {
                         <FormControl
                           placeholder="Enter profile ID"
                           name="profile_id"
+                          value={formik.values.profile_id}
                           isInvalid={
-                            formik.errors.profile_id &&
+                            formik.values.profile_id.length > 0 &&
                             formik.touched.profile_id
                           }
                           isValid={
-                            !formik.errors.profile_id &&
+                            formik.values.profile_id.length > 0 &&
                             formik.touched.profile_id
                           }
                           onChange={formik.handleChange}
@@ -881,6 +956,7 @@ const CreateSupply = (props) => {
                         )}
                       </InputGroup>
                       {formik.touched.profile_id &&
+                        formik.touched.profile_id &&
                         !formik.values.profile_id.length > 0 && (
                           <div className="text-danger">
                             {formik.errors.profile_id}
@@ -896,36 +972,7 @@ const CreateSupply = (props) => {
                         <b>{formik.values.demand - totalFileCount}</b>
                       </p>
                     </div>
-                    {filenames.length > 0 && (
-                      <Fragment>
-                        <div
-                          className="d-flex flex-wrap my-2 border border-primary border-2 mx-2"
-                          style={{ maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                          {filenames.map((file, index) => {
-                            return (
-                              <Card
-                                key={index}
-                                className={`shadow m-1 w-30 border ${
-                                  files[index].size / 1024 > 300
-                                    ? `bg-danger`
-                                    : `bg-success`
-                                }`}
-                              >
-                                <Card.Body className="d-flex justify-content-between text-white">
-                                  <Button
-                                    className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
-                                    style={{ height: "8px", width: "8px" }}
-                                    onClick={() => removePofilehandler(index)}
-                                  ></Button>
-                                  <b className="mt-1">{file}</b>
-                                </Card.Body>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </Fragment>
-                    )}
+                    {FileListTag}
                   </Card>
                 </Tab>
               </Tabs>
@@ -936,7 +983,11 @@ const CreateSupply = (props) => {
                       <Button
                         variant="primary"
                         className={`my-3`}
-                        disabled={files.length > 0 ? false : true}
+                        disabled={
+                          filenames.length > 0 || files.length > 0
+                            ? false
+                            : true
+                        }
                         style={{ width: sm ? "100%" : "45%" }}
                         onClick={onPreCheck}
                       >
