@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Navbar,
   Nav,
@@ -32,11 +32,13 @@ const NavBar = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const user = useSelector((state) => state.auth);
   const location = useLocation();
+  const [isExpanded, setExpanded] = useState(false)
   return (
     <Fragment>
       <Navbar
         collapseOnSelect
         expand="lg"
+        expanded = {isExpanded && sm}
         bg="primary"
         variant="dark"
         sticky="top"
@@ -55,13 +57,14 @@ const NavBar = () => {
           />{" "}
           <b className="h4">EnterpriseName</b>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" onClick={() => setExpanded(!isExpanded)}/>
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto mt-2">
             {sm && <hr className="text-white my-1 line-break" />}
             <Nav.Link
               disabled={!(user.photoUrl.length > 0 && user.security)}
               as={Link}
+              onClick={() => setExpanded(!isExpanded)}
               to={user.role === 'Admin' ? "/focalHomePage" : "/userHomePage"}
               active={
                 location.pathname.includes("Home") &&
@@ -92,6 +95,7 @@ const NavBar = () => {
             >
               <NavDropdown.Item
                 as={Link}
+                onClick={() => setExpanded(!isExpanded)}
                 to="/addEmployees"
                 className="text-primary fw-bold"
               >
@@ -103,6 +107,7 @@ const NavBar = () => {
               <NavDropdown.Item
                 className="text-warning fw-bold"
                 as={Link}
+                onClick={() => setExpanded(!isExpanded)}
                 to="/manageEmployeeProfile/159635?activeTab=personal-info"
               >
                 {" "}
@@ -130,6 +135,7 @@ const NavBar = () => {
               <NavDropdown.Item
                 className="text-primary fw-bold"
                 as={Link}
+                onClick={() => setExpanded(!isExpanded)}
                 to={user.role === 'Admin' ? "/createDemand" : "/createSupply"}
               >
                 {" "}
@@ -175,6 +181,7 @@ const NavBar = () => {
               <Nav.Link
                 disabled={!(user.photoUrl.length > 0 && user.security)}
                 as={Link}
+                onClick={() => setExpanded(!isExpanded)}
                 to="\"
               >
                 <span
@@ -224,6 +231,7 @@ const NavBar = () => {
                   <NavDropdown.Item
                     className="text-primary fw-bold"
                     as={Link}
+                    onClick={() => setExpanded(!isExpanded)}
                     to="/changePassword"
                   >
                     {" "}
@@ -234,6 +242,7 @@ const NavBar = () => {
                   <NavDropdown.Item
                     className="text-warning fw-bold"
                     as={Link}
+                    onClick={() => setExpanded(!isExpanded)}
                     to={
                       "/manageEmployeeProfile/" +
                       user.id +
