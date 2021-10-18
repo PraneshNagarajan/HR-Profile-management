@@ -336,7 +336,11 @@ const CreateDemand = (props) => {
           .update({
             ["F" + loggedUser.id + new Date().getTime()]: {
               info : value,
-              profiles: []
+              profile_info:{
+                comments : "",
+                profiles:[],
+                profiles_status:{}
+              }
             },
           })
           .then(() => {
@@ -357,7 +361,11 @@ const CreateDemand = (props) => {
                 .doc("F" + loggedUser.id + new Date().getTime())
                 .set({
                   info : value,
-                  "profile-info": {status : 'new',profiles: []}
+                  profile_info:{
+                    comments : "",
+                    profiles:[],
+                    profiles_status:{}
+                  }
                 })
                 .then(() => {
                   stateHandler();

@@ -17,7 +17,6 @@ import {
 import { Fragment, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateSupply.css";
-import Spinners from "../components/Spinners";
 import Alerts from "../components/Alert";
 import { useSelector } from "react-redux";
 import { useFormik } from "formik";
@@ -46,6 +45,7 @@ const initialValues = {
 
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
+  const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,10 +53,23 @@ const CreateSupply = (props) => {
   const [files, setFiles] = useState([]);
   const [filenames, setFileNames] = useState([]);
   const [uploadType, setUploadType] = useState("PC");
-  const [uploadFlag, setUploadFlag] = useState(false);
   const [addedProfiles, setAddedProfiles] = useState([]);
   const [totalFileCount, setTotalFileCount] = useState([]);
   const [searchProfrileDB, setSearchProfileDB] = useState([]);
+
+  const formik = useFormik({
+    initialValues,
+    validate: (value) => {
+      const errors = {};
+      if (!value.demand_id) {
+        errors.demand_id = "*Required.";
+      }
+      if (!value.profile_id) {
+        errors.profile_id = "*Required";
+      }
+      return errors;
+    },
+  });
 
   const alertMsg = (present, size) => {
     let msg1 =
@@ -90,36 +103,116 @@ const CreateSupply = (props) => {
     );
   };
 
-  const uploadDatasToDB = (alertMsg) => {
-    let file_error = [];
-    let res_error = [];
-    files.map(async (file, index) => {
+  const updateDemandInfo = async (datas) => {
+    let data = await {};
+    await datas.map(async (file) => {
       await firestore
         .collection("Profiles")
-        .doc(file.name)
+        .doc(file)
         .set({
           status: "mapped",
           demand_id: formik.values.demand_id,
         })
-        .catch((err) => {
-          file_error.push(file.name);
-        });
+        .catch((err) => {});
+
+      data[file] = await {
+        current_status: "Profile Submitted",
+        status: {
+          "profile submitted    ": new Date().toString(),
+          "Screen Reject        ": "",
+          "Duplicate            ": "",
+          "Feedback Pending     ": "",
+          "Position Hold        ": "",
+          "Interview Scheduled  ": "",
+          "No Show              ": "",
+          "L1 Select            ": "",
+          "L1 Reject            ": "",
+          "L2 Reject            ": "",
+          "L2 Select            ": "",
+          "Client Select        ": "",
+          "Client Reject        ": "",
+          "Client Hold          ": "",
+          "Declined Before Offer": "",
+          "Offered              ": "",
+          "Declined After Offer ": "",
+          "On Boarded			  ": "",
+        },
+      };
+    });
+
+    await firestore
+      .collection("Demands")
+      .doc(formik.values.demand_id)
+      .update({
+        "info.file_count": totalFileCount,
+        "profile_info.profiles": datas,
+        "profile_info.status":
+          totalFileCount === formik.values.demand ? "Submitted" : "Pending",
+        "profile_info.status": "Submitted",
+        "profile_info.comments": "",
+        "profile_info.profiles_status": { ...data },
+        "info.status":
+          totalFileCount == formik.values.demand
+            ? "Submitted"
+            : "Still profile matching is pending",
+      })
+      .then(async () => {
+        await dispatch(
+          AlertActions.handleShow({
+            msg: (
+              <Fragment>
+                <p>Profile has been added sucessfully.</p>
+                {formik.values.demand === totalFileCount && (
+                  <Fragment>
+                    <b className="text-warning">
+                      <u> Note</u>
+                    </b>
+                    <p>
+                      " You are good to submit." Please ensure before the
+                      profiles that you added correctly. You can't modify once
+                      submitted.
+                    </p>
+                  </Fragment>
+                )}
+              </Fragment>
+            ),
+            flag: true,
+          })
+        );
+      })
+      .catch((err) => {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Failed. Unable to submit.",
+            flag: true,
+          })
+        );
+      });
+    await setIsSaving(false);
+  };
+
+  const uploadDatasToDB = async () => {
+    let res_error = await [];
+    await files.map(async (file, index) => {
+      let filename = await String(String(file.name).replaceAll(" ", "-")).split(
+        "."
+      )[0];
       await fireStorage
-        .ref("profiles/resumes/" + file.name)
+        .ref("profiles/resumes/" + filename)
         .put(file)
         .catch((err) => {
-          res_error.push(file.name);
+          res_error.push(filename);
         });
       if ((await files.length) - 1 === index) {
-        if (file_error.length === 0 && res_error.length === 0) {
-          dispatch(
-            AlertActions.handleShow({
-              msg: alertMsg,
-              flag: true,
-            })
-          );
+        if ((await res_error.length) === 0) {
+          let new_data = addedProfiles.concat(filenames);
+          await setAddedProfiles(new_data);
+          await setFileNames([]);
+          await setFiles([]);
+          formik.setFieldValue("file_count", 0);
+          await updateDemandInfo(new_data);
         } else {
-          dispatch(
+          await dispatch(
             AlertActions.handleShow({
               msg: "Profile submitted is Failed.",
               flag: false,
@@ -130,54 +223,58 @@ const CreateSupply = (props) => {
     });
   };
 
-  const updateDemandInfo = (data) => {
-    setUploadFlag(true);
-    firestore
-      .collection("Demands")
-      .doc(formik.values.demand_id)
-      .update({
-        "info.file_count": totalFileCount,
-        "info.status": "Still profile matching is pending",
-        "profile-info": {
-          profiles: data,
-          status: "pending",
-        },
-      });
-  };
-
-  const onPreCheck = async () => {
+  const onSave = async () => {
     await setIsSaving(true);
     let presentFileList = await [];
     let excessSizeFileList = await [];
     let res = await filenames.filter((file) => addedProfiles.includes(file));
     if ((await res.length) === 0) {
       if ((await searchProfrileDB.length) > 0 && files.length === 0) {
-        await updateDemandInfo([searchProfrileDB.concat(addedProfiles)]);
+        let new_data = addedProfiles.concat(searchProfrileDB);
+        await setAddedProfiles(new_data);
+        await setFileNames([]);
+        await setFiles([]);
+        formik.setFieldValue("file_count", 0);
+        await updateDemandInfo(new_data);
         await dispatch(
           AlertActions.handleShow({
-            msg:
-              "Profile has been added" +
-              (formik.values.demand === totalFileCount
-                ? ". You are good to submit."
-                : ""),
+            msg: (
+              <Fragment>
+                <p>Profile has been added sucessfully.</p>
+                {formik.values.demand === totalFileCount && (
+                  <Fragment>
+                    <b className="text-warning">
+                      <u> Note</u>
+                    </b>
+                    <p>
+                      " You are good to submit." Please ensure before the
+                      profiles that you added correctly. You can't modify once
+                      submitted.
+                    </p>
+                  </Fragment>
+                )}
+              </Fragment>
+            ),
             flag: true,
           })
         );
-        await setIsSaving(false);
       }
       await files.map(async (file, index) => {
+        let filename = String(String(file.name).replaceAll(" ", "-")).split(
+          "."
+        )[0];
         await firestore
           .collection("Profiles")
-          .doc(file.name)
+          .doc(filename)
           .get()
           .then(async (doc) => {
             if (await !doc.exists) {
               if (await !(file.size / 1024 > 300)) {
               } else {
-                await excessSizeFileList.push(file.name);
+                await excessSizeFileList.push(filename);
               }
             } else {
-              await presentFileList.push(file.name);
+              await presentFileList.push(filename);
             }
           });
         if ((await files.length) - 1 === index) {
@@ -185,25 +282,12 @@ const CreateSupply = (props) => {
             (await presentFileList.length) === 0 &&
             excessSizeFileList.length === 0
           ) {
-            if ((await formik.values.demand) === totalFileCount) {
-              await setUploadFlag(true);
-              await uploadDatasToDB(
-                "Profiles has been saved. You are good to submit"
-              );
-            } else {
-              await uploadDatasToDB(
-                <Fragment>
-                  <p>Just mapped the profiles against this demand.</p>
-                  <p>Please upload the required profiles to submit.</p>
-                </Fragment>
-              );
-            }
-            await updateDemandInfo(filenames);
+            await uploadDatasToDB(true);
           } else {
             await alertMsg(presentFileList, excessSizeFileList);
+            await setIsSaving(false);
           }
         }
-        await setIsSaving(false);
       });
     } else {
       await dispatch(
@@ -216,76 +300,37 @@ const CreateSupply = (props) => {
     }
   };
 
-  const formik = useFormik({
-    initialValues,
-    validate: (value) => {
-      const errors = {};
-      if (!value.demand_id) {
-        errors.demand_id = "*Required.";
-      }
-      if (!value.profile_id) {
-        errors.profile_id = "*Required";
-      }
-      return errors;
-    },
-    onSubmit: async () => {
-      await setIsLoading(true);
-      let data = await [];
-      await filenames.map((file) =>
-        data.push({
-          [file]: {
-            current_status: "Profile Submitted",
-            status: {
-              "profile submitted    ": new Date().toString(),
-              "Screen Reject        ": "",
-              "Duplicate            ": "",
-              "Feedback Pending     ": "",
-              "Position Hold        ": "",
-              "Interview Scheduled  ": "",
-              "No Show              ": "",
-              "L1 Select            ": "",
-              "L1 Reject            ": "",
-              "L2 Reject            ": "",
-              "L2 Select            ": "",
-              "Client Select        ": "",
-              "Client Reject        ": "",
-              "Client Hold          ": "",
-              "Declined Before Offer": "",
-              "Offered              ": "",
-              "Declined After Offer ": "",
-              "On Boarded			  ": "",
-            },
-          },
-        })
-      );
-      await firestore
-        .collection("Demands")
-        .doc(formik.values.demand_id)
-        .update({
-          "profile-info.status": "Submitted",
-          "profile-info.comments": "",
-          "profile-info.profiles-status": { ...data },
-          "info.status": "Submitted",
-        })
-        .then(async () => {
-          await dispatch(
-            AlertActions.handleShow({
-              msg: "Profiles has been submitted successfully.",
-              flag: true,
-            })
-          );
-        })
-        .catch((err) => {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Failed. Unable to submit.",
-              flag: true,
-            })
-          );
-        });
-      await setIsLoading(false);
-    },
-  });
+  const onSubmit = async () => {
+    await setIsLoading(true);
+    await firestore
+      .collection("Demands")
+      .doc(formik.values.demand_id)
+      .update({
+        "info.status": "Submitted",
+        "profile_info.status": "Submitted",
+      })
+      .then(async () => {
+        await dispatch(
+          AlertActions.handleShow({
+            msg: "Demand submitted suucessfully.",
+            flag: false,
+          })
+        );
+      })
+      .catch((err) => {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Failed.Unable to submit.",
+            flag: false,
+          })
+        );
+      });
+    await setIsLoading(false);
+    await setAddedProfiles([]);
+    await setFileNames([]);
+    await setFiles([]);
+    await formik.resetForm();
+  };
 
   const handleChange = (e) => {
     if (e.target.files) {
@@ -293,6 +338,9 @@ const CreateSupply = (props) => {
       let count = 0;
       let profile = [...e.target.files];
       Object.values(e.target.files).map((file) => {
+        let filename = String(String(file.name).replaceAll(" ", "-")).split(
+          "."
+        )[0];
         if (formik.values.file_count === 0) {
           if (
             !(
@@ -300,7 +348,7 @@ const CreateSupply = (props) => {
               formik.values.demand
             )
           ) {
-            data.push(file.name);
+            data.push(filename);
             count = data.length;
           } else {
             dispatch(
@@ -321,7 +369,7 @@ const CreateSupply = (props) => {
               formik.values.demand
             )
           ) {
-            if (filenames.includes(file.name)) {
+            if (filenames.includes(filename)) {
               dispatch(
                 AlertActions.handleShow({
                   msg: "Anyone of the files that you selected that was added already. Duplicate profile entry.",
@@ -332,7 +380,7 @@ const CreateSupply = (props) => {
             } else {
               data = filenames;
               profile = files;
-              data.push(file.name);
+              data.push(filename);
               profile.push(file);
               count += 1;
             }
@@ -360,53 +408,72 @@ const CreateSupply = (props) => {
     }
   };
 
-  const removePofilehandler = (
+  const removePofilehandler = async (
     index,
     flag = false,
     flag1 = false,
     name = ""
   ) => {
-    if (flag) {
-      let new_list = addedProfiles;
-      new_list.splice(index, 1);
-      firestore
-        .collection("Demands")
-        .doc(formik.values.demand_id)
-        .update({
-          "profile-info.profiles": new_list,
-          "profile-info.profiles-status": [],
-          "info.file_count": new_list.length,
-        })
-        .then(async () => {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Removed profile : " + name,
-              flag: true,
-            })
-          );
-          setAddedProfiles(new_list);
-          formik.setFieldValue("file_count", formik.values.file_count - 1);
-          setTotalFileCount(totalFileCount - 1);
-        })
-        .catch((err) => {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Unable to remove profile : " + name,
-              flag: false,
-            })
-          );
-        });
-    } else {
-      if (!flag1) {
-        let new_list1 = files;
-        new_list1.splice(index, 1);
-        setFiles(new_list1);
+    if(formik.values.status.includes('pending')){
+      if (await flag) {
+        let new_list = await addedProfiles;
+        let profile_status = {};
+        await firestore
+          .collection("Demands")
+          .doc(formik.values.demand_id)
+          .get()
+          .then(async (doc) => {
+            let profile_status1 = await doc.data();
+            profile_status = await profile_status1.profile_info.profiles_status;
+          });
+  
+        firestore
+          .collection("Profiles")
+          .doc(addedProfiles[index])
+          .update({
+            demand_id: "",
+            status: "unmapped",
+          })
+          .catch((err) => String(err));
+        delete profile_status[addedProfiles[index]];
+        await new_list.splice(index, 1);
+        firestore
+          .collection("Demands")
+          .doc(formik.values.demand_id)
+          .update({
+            "profile_info.profiles": new_list,
+            "info.file_count": new_list.length,
+            "profile_info.profiles_status": profile_status,
+          })
+          .then(async () => {
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Removed profile : " + name,
+                flag: true,
+              })
+            );
+            setAddedProfiles(new_list);
+            setTotalFileCount(totalFileCount - 1);
+          })
+          .catch((err) => {
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Unable to remove profile : " + name,
+                flag: false,
+              })
+            );
+          });
+      } else {
+        if (!flag1) {
+          let new_list1 = files;
+          new_list1.splice(index, 1);
+          setFiles(new_list1);
+        }
+        let new_list2 = filenames;
+        new_list2.splice(index, 1);
+        setFileNames(new_list2);
+        setTotalFileCount(totalFileCount - 1);
       }
-      let new_list2 = filenames;
-      new_list2.splice(index, 1);
-      setFileNames(new_list2);
-      formik.setFieldValue("file_count", formik.values.file_count - 1);
-      setTotalFileCount(totalFileCount - 1);
     }
   };
 
@@ -422,17 +489,28 @@ const CreateSupply = (props) => {
       .then(async (documentSnapshot) => {
         if (await documentSnapshot.exists) {
           let datas = await documentSnapshot.get("info");
-          await formik.setValues({
-            demand_id: formik.values.demand_id,
-            profile_id: "",
-            ...datas,
-          });
-          formik.setFieldValue("status", datas.status);
-          datas = await documentSnapshot.get("profile-info");
-          await setTotalFileCount(datas.profiles.length);
-          await setAddedProfiles(datas.profiles);
-          await setFiles([]);
-          await setSearchProfileDB([]);
+          if (
+            datas.assignee === loggedUser.id ||
+            datas.owner === loggedUser.id
+          ) {
+            await formik.setValues({
+              demand_id: formik.values.demand_id,
+              profile_id: "",
+              ...datas,
+            });
+            datas = await documentSnapshot.get("profile_info");
+            await setTotalFileCount(datas.profiles.length);
+            await setAddedProfiles(datas.profiles);
+            await setFiles([]);
+            await setSearchProfileDB([]);
+          } else {
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Access Denied !. You are not part of this demand.",
+                flag: false,
+              })
+            );
+          }
         } else {
           formik.setErrors({ demand_id: "*Invalid Demand ID." });
         }
@@ -441,6 +519,8 @@ const CreateSupply = (props) => {
   };
 
   const getProfileFromDB = (profile_id) => {
+    formik.setFieldValue("profile_id", "");
+    formik.setFieldTouched("profile_id", false);
     let data = [];
     firestore
       .collection("Profiles")
@@ -543,12 +623,7 @@ const CreateSupply = (props) => {
             <h4>Create Supply</h4>
           </Card.Header>
           <Card.Body className="mb-4">
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-              }}
-            >
+            <Form>
               <Col md={{ span: 12 }}>
                 <FormGroup className="my-2">
                   <Row>
@@ -600,7 +675,8 @@ const CreateSupply = (props) => {
                       </InputGroup>
 
                       {formik.touched.demand_id &&
-                        !formik.values.demand_id.length > 0 && (
+                        (!formik.values.demand_id.length > 0 ||
+                          formik.errors.demand_id) && (
                           <div className="text-danger">
                             {formik.errors.demand_id}
                           </div>
@@ -876,7 +952,7 @@ const CreateSupply = (props) => {
                       <FormControl
                         type="file"
                         multiple
-                        accept=".pdf,.docx"
+                        accept=".pdf"
                         onChange={handleChange}
                         value=""
                         disabled={
@@ -917,7 +993,7 @@ const CreateSupply = (props) => {
                           name="profile_id"
                           value={formik.values.profile_id}
                           isInvalid={
-                            formik.values.profile_id.length > 0 &&
+                            !formik.values.profile_id.length > 0 &&
                             formik.touched.profile_id
                           }
                           isValid={
@@ -935,10 +1011,13 @@ const CreateSupply = (props) => {
                             }
                             disabled={
                               isSearching ||
-                              !formik.values.profile_id.length > 0
+                              !formik.values.profile_id.length > 0 ||
+                              formik.values.demand !== totalFileCount ||
+                              formik.values.status === "Submitted" ||
+                              formik.values.status === "Completed"
                             }
                           >
-                            Search
+                            Add
                           </Button>
                         )}
                         {isSearching && (
@@ -950,13 +1029,12 @@ const CreateSupply = (props) => {
                               role="status"
                               aria-hidden="true"
                             />{" "}
-                            Searching...
+                            Adding...
                             <span className="visually-hidden">Loading...</span>
                           </Button>
                         )}
                       </InputGroup>
                       {formik.touched.profile_id &&
-                        formik.touched.profile_id &&
                         !formik.values.profile_id.length > 0 && (
                           <div className="text-danger">
                             {formik.errors.profile_id}
@@ -977,19 +1055,19 @@ const CreateSupply = (props) => {
                 </Tab>
               </Tabs>
               <Col className="text-center">
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between flex-wrap">
                   <Fragment>
                     {!isSaving && (
                       <Button
                         variant="primary"
-                        className={`my-3`}
+                        className={sm ? `mt-3` : `my-3`}
                         disabled={
                           filenames.length > 0 || files.length > 0
                             ? false
                             : true
                         }
                         style={{ width: sm ? "100%" : "45%" }}
-                        onClick={onPreCheck}
+                        onClick={onSave}
                       >
                         Save
                       </Button>
@@ -1035,10 +1113,14 @@ const CreateSupply = (props) => {
                     {!isLoading && (
                       <Button
                         variant="primary"
-                        type="submit"
                         className={`my-3`}
                         style={{ width: sm ? "100%" : "45%" }}
-                        disabled={!uploadFlag}
+                        disabled={
+                          formik.values.demand !== totalFileCount ||
+                          formik.values.status === "Submitted" ||
+                          formik.values.status === "Completed"
+                        }
+                        onClick={onSubmit}
                       >
                         Submit
                       </Button>
