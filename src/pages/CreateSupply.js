@@ -320,7 +320,7 @@ const CreateSupply = (props) => {
         await dispatch(
           AlertActions.handleShow({
             msg: "Demand submitted suucessfully.",
-            flag: false,
+            flag: true,
           })
         );
       })
@@ -644,7 +644,7 @@ const CreateSupply = (props) => {
                         <FormControl
                           placeholder="Enter demand ID"
                           name="demand_id"
-                          valuue={formik.values.demand_id}
+                          value={formik.values.demand_id}
                           isInvalid={
                             formik.errors.demand_id && formik.touched.demand_id
                           }
