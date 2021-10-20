@@ -898,7 +898,9 @@ const CreateSupply = (props) => {
                   }
                 />
               </FormGroup>
-              <hr className="my-4" />
+              {formik.values.status === "new" || formik.values.status.includes('pending') &&
+                <Fragment>
+                  <hr className="my-4" />
               {addedProfiles.length > 0 && (
                 <Fragment>
                   <b className="my-1">Added profiles</b>
@@ -1012,9 +1014,7 @@ const CreateSupply = (props) => {
                             disabled={
                               isSearching ||
                               !formik.values.profile_id.length > 0 ||
-                              formik.values.demand !== totalFileCount ||
-                              formik.values.status === "Submitted" ||
-                              formik.values.status === "Completed"
+                              formik.values.demand !== totalFileCount
                             }
                           >
                             Add
@@ -1054,7 +1054,7 @@ const CreateSupply = (props) => {
                   </Card>
                 </Tab>
               </Tabs>
-              <Col className="text-center">
+              <div className="text-center">
                 <div className="d-flex justify-content-between flex-wrap">
                   <Fragment>
                     {!isSaving && (
@@ -1115,11 +1115,7 @@ const CreateSupply = (props) => {
                         variant="primary"
                         className={`my-3`}
                         style={{ width: sm ? "100%" : "45%" }}
-                        disabled={
-                          formik.values.demand !== totalFileCount ||
-                          formik.values.status === "Submitted" ||
-                          formik.values.status === "Completed"
-                        }
+                        disabled={formik.values.demand !== totalFileCount}
                         onClick={onSubmit}
                       >
                         Submit
@@ -1127,7 +1123,9 @@ const CreateSupply = (props) => {
                     )}
                   </Fragment>
                 </div>
-              </Col>
+              </div>
+                </Fragment>
+              }
             </Form>
           </Card.Body>
         </Card>

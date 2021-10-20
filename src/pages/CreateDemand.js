@@ -75,14 +75,19 @@ const CreateDemand = (props) => {
     setEndClientIsChecked(false);
   };
 
-  const checkIsSkillPresentHandler = (tech, skill, data) => {
+  const checkIsSkillPresentHandler = (tech, skill) => {
+    let data = []
+    console.log("data : "+data)
+    console.log(tech)
+    console.log(pre_requisite.technologies[tech].findIndex((item) => item === skill))
+    console.log("if-loop : "+ (!pre_requisite.technologies[tech].findIndex((item) => item === skill) >=0 ))
+    console.log( pre_requisite.technologies[tech])
     if (
       !(
-        pre_requisite.technologies[tech].findIndex((item) => item === skill) >=
-        0
+        pre_requisite.technologies[tech].findIndex((item) => item === skill) >=0
       )
     ) {
-      data.push(...pre_requisite.technologies[tech]);
+      data.push(skill)
       addSkills(tech, { sets: data }, !props.techFlag, false);
     } else {
       setIsLoading(false);
@@ -103,21 +108,24 @@ const CreateDemand = (props) => {
 
   const addSkills = (doc, data, flag, method) => {
     uploadFlag = true;
-    if (method) {
-      firestore
-        .collection("Skills")
-        .doc(doc)
-        .set(data)
-        .catch((err) => {
-          console.log(String(err));
-        });
-    } else {
-      firestore
-        .collection("Skills")
-        .doc(doc)
-        .update(data)
-        .catch((err) => {});
-    }
+    console.log("upflag : "+uploadFlag)
+    console.log(doc)
+    console.log(data)
+    // if (method) {
+    //   firestore
+    //     .collection("Skills")
+    //     .doc(doc)
+    //     .set(data)
+    //     .catch((err) => {
+    //       console.log(String(err));
+    //     });
+    // } else {
+    //   firestore
+    //     .collection("Skills")
+    //     .doc(doc)
+    //     .update(data)
+    //     .catch((err) => {});
+    // }
     if (flag) {
       firestore.collection("Skills").doc("new").delete();
     }
@@ -261,6 +269,7 @@ const CreateDemand = (props) => {
             );
           }
         }
+        data= []
         if (ptIsChecked || psIsChecked) {
           data.push(value.primaryskill);
           if (!pre_requisite.technologies[value.primarytech]) {
@@ -399,6 +408,7 @@ const CreateDemand = (props) => {
       }
     },
   });
+
   return (
     <Fragment>
       {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
