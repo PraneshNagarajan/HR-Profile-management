@@ -18,6 +18,7 @@ import { useMediaQuery } from "react-responsive";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import { useDispatch } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
+import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
 const formValidation = (field) => {
   const errors = {};
@@ -161,19 +162,21 @@ const LoginPage = () => {
       setIsLoading(true);
       setAuthMsg("");
       let doc = await "";
-      if (await value.username.includes("@")) {
-        doc = value.username;
+      if (await String(value.username).toLocaleLowerCase().includes("@")) {
+        doc = String(value.username).toLocaleLowerCase();
       } else {
         await firestore
           .collection("Employee-Info")
           .doc("users")
           .get()
           .then((documentSnapshot) => {
-            if (!documentSnapshot.get(value.username)) {
+            if (!documentSnapshot.get(String(value.username).toUpperCase())) {
               setAuthStatus(false);
               setAuthMsg("Username is invalid.");
             } else {
-              const data = documentSnapshot.get(value.username);
+              const data = documentSnapshot.get(
+                String(value.username).toUpperCase()
+              );
               doc = data.email;
             }
           });
@@ -206,7 +209,7 @@ const LoginPage = () => {
                     admin: profile_info.employee.admin_permission,
                     name: fireAuth.currentUser.displayName,
                     photoUrl: "",
-                    security: false
+                    security: false,
                   })
                 );
                 // get img url from firebase-Storage
@@ -217,6 +220,7 @@ const LoginPage = () => {
                     .getDownloadURL()
                     .then((url) => {
                       dispatch(AuthActions.getPhoto(url));
+                      dispatch(InfoActions.getImageFlag(true));
                     });
                 }
                 if (
@@ -226,7 +230,7 @@ const LoginPage = () => {
                     password_info.status)
                 ) {
                   if ((await auth_info.locked) === false) {
-                    dispatch(AuthActions.getSecurityStatus())
+                    dispatch(AuthActions.getSecurityStatus());
                     updateLoginStatus(doc);
                     setAuthStatus(true);
                     setAuthMsg("Login Successfully !");
@@ -240,11 +244,11 @@ const LoginPage = () => {
                         "auth-info.invalid_attempt_timestamp": null,
                       })
                       .catch((err) => {});
-                      if(String(profile_info.employee.role) === 'Admin') {
-                        history.push("/focalHomePage");
-                      } else {
-                        history.push("/userHomePage")
-                      }
+                    if (String(profile_info.employee.role) === "Admin") {
+                      history.push("/focalHomePage");
+                    } else {
+                      history.push("/userHomePage");
+                    }
                   } else {
                     authNotification();
                   }
@@ -386,8 +390,8 @@ const LoginPage = () => {
                   size="sm"
                   role="status"
                   aria-hidden="true"
-                />
-                {" "}Authenticating...
+                />{" "}
+                Authenticating...
                 <span className="visually-hidden">Loading...</span>
               </Button>
             )}

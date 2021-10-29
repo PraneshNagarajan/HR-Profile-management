@@ -144,7 +144,7 @@ const ManageEmployeeProfilePage = () => {
               >
                 <span
                   className={
-                    userImg !== undefined
+                    infos.img_uploaded
                       ? "fw-bold text-success"
                       : "fw-bold text-danger"
                   }

@@ -100,11 +100,12 @@ function App() {
               <ManageEmployeeProfilePage />
             </MainLayout>
           </Route>
-          {user === "Admin" && (
+          {(user === "Admin" || user === "Focal" ) && (
             <Fragment>
               <Route path="/focalHomePage">
                 <MainLayout>
-                  <FocalHomePage />
+                  {/* <FocalHomePage /> */}
+                  <UserHomePage/>
                 </MainLayout>
               </Route>
               <Route path="/addEmployees">
@@ -123,14 +124,18 @@ function App() {
             </Fragment>
           )}
           {user !== "Admin" && (
-            <MainLayout>
+            <Fragment>
               <Route path="/userHomePage">
+                <MainLayout>
                   <UserHomePage />
+                </MainLayout>
               </Route>
               <Route path="/createSupply">
+                <MainLayout>
                   <CreateSupply />
+                </MainLayout>
               </Route>
-              </MainLayout>
+            </Fragment>
           )}
         </Fragment>
       )}

@@ -20,15 +20,10 @@ import { AlertActions } from "../Redux/AlertSlice";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import noUserImg from "../images/noUserFound.jpg";
+import { Fragment } from "react";
 
 const validate = (value) => {
   const errors = {};
-  if (!value.id) {
-    errors.id = "*Required.";
-  } else if (value.id.length < 6) {
-    errors.id = "*ID must be greater than 5 characters.";
-  }
-
   if (!value.email) {
     errors.email = "*Required.";
   } else if (
@@ -50,17 +45,16 @@ const EmployeeTabContent = (props) => {
   const [errorsID, setErrorsID] = useState("");
   const [errorsEmail, setErrorsEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const empnoRef = firestore.collection("Employee-No");
 
   const initialValues = {
     id: "",
     email: "",
-    role: props.view ? infos.employee.role : "- Select Role -",
-    admin_permission: props.view
-      ? infos.employee.admin_permission
-        ? "View && Edit"
-        : "View Only"
-      : "- Select Permission -",
+    role: "- Select Role -",
+    admin_permission: "- Select Permission -",
   };
+
+  const roles = ["Junior Recruiter", "Senior Recruiter", "Focal", "Admin"];
 
   useEffect(() => {
     firestore
@@ -82,23 +76,37 @@ const EmployeeTabContent = (props) => {
         }
       : initialValues,
     validate,
-    onSubmit: (value) => {
-      setIsLoading(true);
-      if (!!Img.name) {
-        fireStorage
+    onSubmit: async (value) => {
+      let email = await String(value.email).toLowerCase();
+      await setIsLoading(true);
+      if (await !!Img.name) {
+        await fireStorage
           .ref()
-          .child("employee-img/" + value.email)
+          .child("employee-img/" + email)
           .put(Img)
-          .then(() => {
-            if (!loggedUser.admin || value.email === loggedUser.email) {
-              firestore.collection("Employee-Info").doc(value.email).update({
-                "profile.img_uploaded": true,
-              });
-              dispatch(InfoActions.getImageFlag(true));
-              if (infos.employee_status) {
-                dispatch(
+          .then(async () => {
+            if (await (!loggedUser.admin || email === loggedUser.email)) {
+              firestore
+                .collection("Employee-Info")
+                .doc(email)
+                .update({
+                  "profile.img_uploaded": true,
+                })
+                .then(async () => {
+                  if (await props.view.user) {
+                    await dispatch(
+                      AlertActions.handleShow({
+                        msg: "Image uploaded successfully.",
+                        flag: true,
+                      })
+                    );
+                  }
+                });
+              await dispatch(InfoActions.getImageFlag(true));
+              if (await infos.employee_status) {
+                await dispatch(
                   AuthActions.getAuthStatus({
-                    id: value.email,
+                    id: email,
                     flag: true,
                     role: infos.employee.role,
                     admin: infos.employee.admin_permission,
@@ -107,23 +115,22 @@ const EmployeeTabContent = (props) => {
                   })
                 );
               } else {
-                dispatch(AuthActions.getPhoto(URL.createObjectURL(Img)));
+                await dispatch(AuthActions.getPhoto(URL.createObjectURL(Img)));
               }
             }
           })
           .catch(() => {});
       }
-      if (props.view.user) {
-        firestore
+      if (await props.view.user) {
+        await firestore
           .collection("Employee-Info")
-          .doc(formik.values.email)
+          .doc(email)
           .update({
             "profile.personal": infos.personal,
             "profile.address": infos.address,
           })
-          .then(() => {
-            setIsLoading(false);
-            dispatch(
+          .then(async () => {
+            await dispatch(
               AlertActions.handleShow({
                 msg: "Data added successfully.",
                 flag: true,
@@ -132,21 +139,21 @@ const EmployeeTabContent = (props) => {
           })
           .catch(() => {});
       } else {
-        if (props.view.admin) {
-          firestore
+        if (await props.view.admin) {
+          await firestore
             .collection("Employee-Info")
-            .doc(formik.values.email)
+            .doc(email)
             .update({
               "profile.employee": {
                 ...formik.values,
+                email,
                 admin_permission: formik.values.admin_permission.includes("&&")
                   ? true
                   : false,
               },
             })
-            .then(() => {
-              setIsLoading(false);
-              dispatch(
+            .then(async () => {
+              await dispatch(
                 AlertActions.handleShow({
                   msg: "Data added successfully.",
                   flag: true,
@@ -155,9 +162,9 @@ const EmployeeTabContent = (props) => {
             })
             .catch(() => {});
         } else {
-          firestore
+          await firestore
             .collection("Employee-Info")
-            .doc(formik.values.email)
+            .doc(email)
             .set({
               "auth-info": {
                 attempts: 0,
@@ -180,11 +187,12 @@ const EmployeeTabContent = (props) => {
                 last_changed: null,
               },
               profile: {
-                img_uploaded: Img.name.length > 0 ? true : false,
+                img_uploaded: !!Img.name ? true : false,
                 personal: infos.personal,
                 address: infos.address,
                 employee: {
                   ...formik.values,
+                  email,
                   admin_permission: formik.values.admin_permission.includes(
                     "&&"
                   )
@@ -197,53 +205,72 @@ const EmployeeTabContent = (props) => {
                 date: new Date(),
               },
             })
-            .then(() => {
+            .then(async () => {
               //pass value for key+ from variable
-              firestore
+              await firestore
                 .collection("Employee-Info")
                 .doc("users")
                 .update({
                   [value.id]: {
-                    email: value.email,
+                    email,
                     name: infos.personal.firstname,
                     role: formik.values.role,
                   },
                 });
-              fireAuth
+              await firestore
+                .collection("Employee-No")
+                .doc("info")
+                .update({
+                  ["values." + value.id.split("-")[0]]: formik.values.id,
+                })
+                .catch(async (err) => {
+                  if (await String(err).includes("No document to update")) {
+                    await empnoRef.doc("new").delete();
+                    await firestore
+                      .collection("Employee-No")
+                      .doc("info")
+                      .set({
+                        values: {
+                          [value.id.split("-")[0]]: value.id.split("-")[1],
+                        },
+                      });
+                  } else {
+                    //error
+                  }
+                });
+              await fireAuth
                 .createUserWithEmailAndPassword(
                   formik.values.email,
                   formik.values.id
                 )
-                .then((res) => {
+                .then(async (res) => {
                   res.user.updateProfile({
                     displayName: infos.personal.firstname,
                   });
-                  setIsLoading(false);
-                  dispatch(InfoActions.resetForm());
-                  dispatch(
+                  await dispatch(InfoActions.resetForm());
+                  await dispatch(
                     AlertActions.handleShow({
                       msg: "Data added successfully.",
                       flag: true,
                     })
                   );
                 })
-                .catch((err) => {
-                  setIsLoading(false);
-                  dispatch(
-                    AlertActions.handleShow({
+                .catch(async (err) => {
+                  await dispatch(
+                    await AlertActions.handleShow({
                       msg: "Data added failed.",
                       flag: false,
                     })
                   );
-                  firestore
+                  await firestore
                     .collection("Employee-Info")
-                    .doc(formik.values.email)
+                    .doc(email)
                     .delete();
                 });
             })
-            .catch(() => {
-              setIsLoading(false);
-              dispatch(
+            .catch(async () => {
+              await setIsLoading(false);
+              await dispatch(
                 AlertActions.handleShow({
                   msg: "Data added failed.",
                   flag: false,
@@ -252,8 +279,45 @@ const EmployeeTabContent = (props) => {
             });
         }
       }
+      await setIsLoading(false);
     },
   });
+
+  useEffect(() => {
+    if (!formik.values.role.includes("-") && !props.view) {
+      empnoRef.onSnapshot((querySnapshot) => {
+        querySnapshot.docs.map((doc) => {
+          let no = formik.values.role.includes(" ")
+            ? formik.values.role[0] + formik.values.role.split(" ")[1][0]
+            : String(formik.values.role).slice(0, 2);
+          if (doc.id === "new") {
+            formik.setFieldValue("id", no + "-111111");
+          } else {
+            empnoRef
+              .doc("info")
+              .get()
+              .then((res) => {
+                if (res.id === "info") {
+                  let index = Object.keys(res.data().values).findIndex(
+                    (id) => id === no
+                  );
+                  if (index >= 0) {
+                    let data = Object.values(res.data().values)[index];
+                    formik.setFieldValue("id", no + "-" + (data + 1));
+                  } else {
+                    formik.setFieldValue("id", no + "-111111");
+                  }
+                }
+              })
+              .catch((err) => {
+                alert(String(err));
+              });
+          }
+        });
+      });
+    }
+  }, [formik.values.role]);
+
   useEffect(() => {
     if (infos.submitted) {
       formik.resetForm();
@@ -275,29 +339,17 @@ const EmployeeTabContent = (props) => {
   };
 
   useEffect(() => {
+    let profile = Object.values(users).filter(
+      (user) => user.email === String(formik.values.email).toLowerCase()
+    );
     if (!props.view) {
       const timeout = setTimeout(() => {
-        if (Object.keys(users).includes(formik.values.id)) {
-          setErrorsID("*Already this ID has been taken.");
-        } else {
-          setErrorsID("");
-        }
-      }, 1500);
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, [formik.values.id]);
-
-  useEffect(() => {
-    if (!props.view) {
-      const timeout = setTimeout(() => {
-        if (Object.values(users).includes(formik.values.email)) {
+        if (profile.length > 0) {
           setErrorsEmail("*Already this Email has been taken.");
         } else {
           setErrorsEmail("");
         }
-      }, 1500);
+      }, 500);
       return () => {
         clearTimeout(timeout);
       };
@@ -351,23 +403,10 @@ const EmployeeTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="id"
-                    readOnly={props.view}
+                    readOnly={true}
                     value={formik.values.id}
                     onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    isInvalid={
-                      (formik.errors.id &&
-                        (formik.touched.id || formik.values.id.length > 0)) ||
-                      errorsID.length !== 0
-                    }
-                    isValid={
-                      !formik.errors.id &&
-                      (formik.touched.id || formik.values.id.length > 0)
-                    }
                   />
-                  <div className="invalid-feedback">
-                    {formik.errors.id ? formik.errors.id : errorsID}
-                  </div>
                 </FormGroup>
               </Col>
               <Col md="5">
@@ -395,40 +434,25 @@ const EmployeeTabContent = (props) => {
                     {formik.values.role}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="w-100 text-center">
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        formik.setFieldValue("role", "Recruiter");
-                        formik.setFieldValue(
-                          "admin_permission",
-                          "- Select Permission -"
-                        );
-                      }}
-                      active={formik.values.role.includes("Junior")}
-                    >
-                      Recruiter
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      onClick={() => {
-                        formik.setFieldValue("role", "Senior Recruiter");
-                        formik.setFieldValue(
-                          "admin_permission",
-                          "- Select Permission -"
-                        );
-                      }}
-                      active={formik.values.role.includes("Senior")}
-                    >
-                      Senior Recruiter
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      onClick={() => {
-                        formik.setFieldValue("role", "Admin");
-                      }}
-                      active={formik.values.role.includes("Admin")}
-                    >
-                      Admin
-                    </Dropdown.Item>
+                    {roles.map((role, index) => {
+                      return (
+                        <Fragment key={index}>
+                          <Dropdown.Item
+                            onClick={(e) => {
+                              formik.setFieldValue("role", role);
+                              formik.setFieldValue(
+                                "admin_permission",
+                                "- Select Permission -"
+                              );
+                            }}
+                            active={formik.values.role.includes(role)}
+                          >
+                            {role}
+                          </Dropdown.Item>
+                          {role.length - 2 > index && <Dropdown.Divider />}
+                        </Fragment>
+                      );
+                    })}
                   </Dropdown.Menu>
                 </Dropdown>
                 {formik.touched.role && formik.errors.role && (

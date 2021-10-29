@@ -38,7 +38,7 @@ const NavBar = () => {
       <Navbar
         collapseOnSelect
         expand="lg"
-        expanded = {isExpanded && sm}
+        expanded = {isExpanded}
         bg="primary"
         variant="dark"
         sticky="top"
