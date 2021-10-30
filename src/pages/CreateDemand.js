@@ -52,7 +52,7 @@ const CreateDemand = (props) => {
   const stateHandler = () => {
     formik.resetForm();
     formik.setValues({
-      recruiter: "- Select the Recruiter -",
+      assignee: "- Select the Recruiter -",
       location: "",
       panlocation: "",
       type: "- Select the type -",
@@ -126,7 +126,7 @@ const CreateDemand = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      recruiter: "- Select the Recruiter -",
+      assignee: "- Select the Recruiter -",
       clientname: props.clientFlag ? "- Select the Client -" : "",
       endclientname: props.clientFlag ? "- Select the End-Client -" : "",
       location: "",
@@ -143,8 +143,8 @@ const CreateDemand = (props) => {
     },
     validate: (value) => {
       const errors = {};
-      if (value.recruiter.includes("-")) {
-        errors.recruiter = "*Required.";
+      if (value.assignee.includes("-")) {
+        errors.assignee = "*Required.";
       }
 
       if (value.clientname.includes("-") || !value.clientname) {
@@ -362,7 +362,7 @@ const CreateDemand = (props) => {
                 .collection("Demands")
                 .doc("F" + loggedUser.id + new Date().getTime())
                 .set({
-                  info: value,
+                  info: { ...value, owner: loggedUser.id },
                   profile_info: {
                     comments: "",
                     profiles: [],
@@ -430,40 +430,43 @@ const CreateDemand = (props) => {
                       <Col md="8">
                         <Dropdown className="dropbox">
                           <Dropdown.Toggle
-                            name="recruiter"
+                            name="assignee"
                             variant={`outline-${
-                              !formik.touched.recruiter
+                              !formik.touched.assignee
                                 ? `primary`
-                                : !formik.values.recruiter.includes("-") &&
-                                  formik.touched.recruiter
+                                : !formik.values.assignee.includes("-") &&
+                                  formik.touched.assignee
                                 ? `success`
-                                : formik.values.recruiter.includes("-") &&
-                                  formik.touched.recruiter
+                                : formik.values.assignee.includes("-") &&
+                                  formik.touched.assignee
                                 ? `danger`
                                 : ``
                             }`}
                             onBlur={formik.handleBlur}
                             className="w-100"
                           >
-                            {formik.values.recruiter}
+                            {formik.values.assignee}
                           </Dropdown.Toggle>
 
                           <Dropdown.Menu className="w-100">
                             {pre_requisite.recruiters.map(
                               (recruiter, index) => {
-                                if (recruiter.role !== "Admin") {
+                                if (recruiter.role.includes("Recruiter")) {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
                                         className="text-center"
                                         onClick={() => {
                                           formik.setFieldValue(
-                                            "recruiter",
-                                            recruiter.name
+                                            "assignee",
+                                            recruiter.id +
+                                              "(" +
+                                              recruiter.name +
+                                              ")"
                                           );
                                         }}
                                       >
-                                        {recruiter.name}
+                                        {recruiter.id}({recruiter.name})
                                       </Dropdown.Item>
                                       {index <
                                         pre_requisite.recruiters.length - 1 && (
@@ -476,12 +479,11 @@ const CreateDemand = (props) => {
                             )}
                           </Dropdown.Menu>
                         </Dropdown>
-                        {formik.errors.recruiter &&
-                          formik.touched.recruiter && (
-                            <div className="text-danger">
-                              {formik.errors.recruiter}
-                            </div>
-                          )}
+                        {formik.errors.assignee && formik.touched.assignee && (
+                          <div className="text-danger">
+                            {formik.errors.assignee}
+                          </div>
+                        )}
                       </Col>
                     </Row>
                   </FormGroup>
