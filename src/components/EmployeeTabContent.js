@@ -215,6 +215,7 @@ const EmployeeTabContent = (props) => {
                     email,
                     name: infos.personal.firstname,
                     role: formik.values.role,
+                    id: formik.values.id
                   },
                 });
               await firestore
