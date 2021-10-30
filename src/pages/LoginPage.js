@@ -179,6 +179,14 @@ const LoginPage = () => {
               );
               doc = data.email;
             }
+          })
+          .catch((err) => {
+            setAuthStatus(false);
+            setAuthMsg(
+              String(err).includes("offline")
+                ? "Please check your internet connection."
+                : String(err)
+            );
           });
       }
       if ((await doc.length) > 0) {
