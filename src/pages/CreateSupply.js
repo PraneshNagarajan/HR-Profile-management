@@ -459,16 +459,25 @@ const CreateSupply = (props) => {
             datas.assignee === loggedUser.id ||
             datas.owner === loggedUser.id
           ) {
-            await formik.setValues({
-              demand_id: formik.values.demand_id,
-              profile_id: "",
-              ...datas,
-            });
-            datas = await documentSnapshot.get("profile_info");
-            await setTotalFileCount(datas.profiles.length);
-            await setAddedProfiles(datas.profiles);
-            await setFiles([]);
-            await setSearchProfileDB([]);
+            if (datas.status !== "Submitted" && datas.status !== "Completed") {
+              await formik.setValues({
+                demand_id: formik.values.demand_id,
+                profile_id: "",
+                ...datas,
+              });
+              datas = await documentSnapshot.get("profile_info");
+              await setTotalFileCount(datas.profiles.length);
+              await setAddedProfiles(datas.profiles);
+              await setFiles([]);
+              await setSearchProfileDB([]);
+            } else {
+              dispatch(
+                AlertActions.handleShow({
+                  msg: "Already this demand has been submitted. If you need to view or modify, please go to 'manage supply' page.",
+                  flag: false,
+                })
+              );
+            }
           } else {
             dispatch(
               AlertActions.handleShow({
@@ -943,8 +952,12 @@ const CreateSupply = (props) => {
                             Added file : <b>{formik.values.file_count}</b>
                           </p>
                           <p className="my-1">
-                            Remaning :{" "}
-                            <b>{formik.values.demand - totalFileCount}</b>
+                            Remaining :{" "}
+                            <b>
+                              {formik.values.demand >= totalFileCount
+                                ? formik.values.demand - totalFileCount
+                                : 0}
+                            </b>
                           </p>
                         </div>
                         {FileListTag}
@@ -986,11 +999,7 @@ const CreateSupply = (props) => {
                                 onClick={() =>
                                   getProfileFromDB(formik.values.profile_id)
                                 }
-                                disabled={
-                                  isSearching ||
-                                  !formik.values.profile_id.length > 0 ||
-                                  formik.values.demand !== totalFileCount
-                                }
+                                disabled={!formik.values.profile_id.length > 0}
                               >
                                 Add
                               </Button>
@@ -1023,8 +1032,12 @@ const CreateSupply = (props) => {
                             Added file : <b>{formik.values.file_count}</b>
                           </p>
                           <p className="my-1">
-                            Remaning :{" "}
-                            <b>{formik.values.demand - totalFileCount}</b>
+                            Remaining :{" "}
+                            <b>
+                              {formik.values.demand >= totalFileCount
+                                ? formik.values.demand - totalFileCount
+                                : 0}
+                            </b>
                           </p>
                         </div>
                         {FileListTag}
