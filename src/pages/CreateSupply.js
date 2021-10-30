@@ -349,61 +349,20 @@ const CreateSupply = (props) => {
         let filename = String(String(file.name).replaceAll(" ", "-")).split(
           "."
         )[0];
-        if (formik.values.file_count === 0) {
-          if (
-            !(
-              totalFileCount + [...e.target.files].length >
-              formik.values.demand
-            )
-          ) {
-            data.push(filename);
-            count = data.length;
-          } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg:
-                  "Selected profile is more than demand. Demand : " +
-                  formik.values.demand +
-                  ", but you have selected : " +
-                  (totalFileCount + [...e.target.files].length),
-                flag: false,
-              })
-            );
-          }
-        } else if (formik.values.file_count > 0) {
-          if (
-            !(
-              totalFileCount + [...e.target.files].length >
-              formik.values.demand
-            )
-          ) {
-            if (filenames.includes(filename)) {
-              dispatch(
-                AlertActions.handleShow({
-                  msg: "Anyone of the files that you selected that was added already. Duplicate profile entry.",
-                  flag: false,
-                })
-              );
-              return true;
-            } else {
-              data = filenames;
-              profile = files;
-              data.push(filename);
-              profile.push(file);
-              count += 1;
-            }
-          } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg:
-                  "Selected profile is more than demand. Demand : " +
-                  formik.values.demand +
-                  ", but you have selected : " +
-                  (totalFileCount + [...e.target.files].length),
-                flag: false,
-              })
-            );
-          }
+        if (filenames.includes(filename)) {
+          dispatch(
+            AlertActions.handleShow({
+              msg: "Anyone of the files that you selected that was added already. Duplicate profile entry.",
+              flag: false,
+            })
+          );
+          return true;
+        } else {
+          data = filenames;
+          profile = files;
+          data.push(filename);
+          profile.push(file);
+          count += 1;
         }
       });
 
