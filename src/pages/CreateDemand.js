@@ -76,18 +76,14 @@ const CreateDemand = (props) => {
   };
 
   const checkIsSkillPresentHandler = (tech, skill) => {
-    let data = []
-    console.log("data : "+data)
-    console.log(tech)
-    console.log(pre_requisite.technologies[tech].findIndex((item) => item === skill))
-    console.log("if-loop : "+ (!pre_requisite.technologies[tech].findIndex((item) => item === skill) >=0 ))
-    console.log( pre_requisite.technologies[tech])
+    let data = [...pre_requisite.technologies[tech]];
     if (
       !(
-        pre_requisite.technologies[tech].findIndex((item) => item === skill) >=0
+        pre_requisite.technologies[tech].findIndex((item) => item === skill) >=
+        0
       )
     ) {
-      data.push(skill)
+      data.push(skill);
       addSkills(tech, { sets: data }, !props.techFlag, false);
     } else {
       setIsLoading(false);
@@ -108,24 +104,21 @@ const CreateDemand = (props) => {
 
   const addSkills = (doc, data, flag, method) => {
     uploadFlag = true;
-    console.log("upflag : "+uploadFlag)
-    console.log(doc)
-    console.log(data)
-    // if (method) {
-    //   firestore
-    //     .collection("Skills")
-    //     .doc(doc)
-    //     .set(data)
-    //     .catch((err) => {
-    //       console.log(String(err));
-    //     });
-    // } else {
-    //   firestore
-    //     .collection("Skills")
-    //     .doc(doc)
-    //     .update(data)
-    //     .catch((err) => {});
-    // }
+    if (method) {
+      firestore
+        .collection("Skills")
+        .doc(doc)
+        .set(data)
+        .catch((err) => {
+          console.log(String(err));
+        });
+    } else {
+      firestore
+        .collection("Skills")
+        .doc(doc)
+        .update(data)
+        .catch((err) => {});
+    }
     if (flag) {
       firestore.collection("Skills").doc("new").delete();
     }
@@ -269,7 +262,7 @@ const CreateDemand = (props) => {
             );
           }
         }
-        data= []
+        data = [];
         if (ptIsChecked || psIsChecked) {
           data.push(value.primaryskill);
           if (!pre_requisite.technologies[value.primarytech]) {
@@ -344,17 +337,17 @@ const CreateDemand = (props) => {
           .doc(loggedUser.email)
           .update({
             ["F" + loggedUser.id + new Date().getTime()]: {
-              info : value,
-              profile_info:{
-                comments : "",
-                profiles:[],
-                profiles_status:{}
-              }
+              info: value,
+              profile_info: {
+                comments: "",
+                profiles: [],
+                profiles_status: {},
+              },
             },
           })
           .then(() => {
-            setIsLoading(false);
             stateHandler();
+            setIsLoading(false);
             dispatch(
               AlertActions.handleShow({
                 msg: "Demand created successfully.",
@@ -369,12 +362,12 @@ const CreateDemand = (props) => {
                 .collection("Demands")
                 .doc("F" + loggedUser.id + new Date().getTime())
                 .set({
-                  info : value,
-                  profile_info:{
-                    comments : "",
-                    profiles:[],
-                    profiles_status:{}
-                  }
+                  info: value,
+                  profile_info: {
+                    comments: "",
+                    profiles: [],
+                    profiles_status: {},
+                  },
                 })
                 .then(() => {
                   stateHandler();
