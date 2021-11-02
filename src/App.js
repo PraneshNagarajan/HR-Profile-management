@@ -136,11 +136,14 @@ function App() {
                   <CreateSupply />
                 </MainLayout>
               </Route>
+<<<<<<< HEAD
               <Route path="/manageSupplies">
                 <MainLayout>
                   <ManageSupply />
                 </MainLayout>
               </Route>
+=======
+>>>>>>> 729fa26db2f3b39cd15ebf5dbf056c9289ed1a12
               <Route path="/manageSupply/:demandId">
                 <MainLayout>
                   <ManageSupply />

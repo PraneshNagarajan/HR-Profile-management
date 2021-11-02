@@ -147,7 +147,11 @@ const NavBar = () => {
               className="text-warning fw-bold" 
               as={Link}
               onClick={() => setExpanded(!isExpanded)}
+<<<<<<< HEAD
               to={user.role === 'Admin' ? "/manageDemand" : "/manageSupplies"}
+=======
+              to={user.role === 'Admin' ? "/manageDemand" : "/manageSupply"}
+>>>>>>> 729fa26db2f3b39cd15ebf5dbf056c9289ed1a12
               >
                 {" "}
                 <FaEdit style={{ width: "20px", height: "20px" }} /> 
