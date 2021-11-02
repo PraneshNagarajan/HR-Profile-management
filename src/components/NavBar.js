@@ -32,13 +32,13 @@ const NavBar = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const user = useSelector((state) => state.auth);
   const location = useLocation();
-  const [isExpanded, setExpanded] = useState(false)
+  const [isExpanded, setExpanded] = useState(false);
   return (
     <Fragment>
       <Navbar
         collapseOnSelect
         expand="lg"
-        expanded = {isExpanded}
+        expanded={isExpanded}
         bg="primary"
         variant="dark"
         sticky="top"
@@ -57,7 +57,10 @@ const NavBar = () => {
           />{" "}
           <b className="h4">EnterpriseName</b>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" onClick={() => setExpanded(!isExpanded)}/>
+        <Navbar.Toggle
+          aria-controls="responsive-navbar-nav"
+          onClick={() => setExpanded(!isExpanded)}
+        />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto mt-2">
             {sm && <hr className="text-white my-1 line-break" />}
@@ -65,10 +68,11 @@ const NavBar = () => {
               disabled={!(user.photoUrl.length > 0 && user.security)}
               as={Link}
               onClick={() => setExpanded(!isExpanded)}
-              to={user.role === 'Admin' ? "/focalHomePage" : "/userHomePage"}
+              to={user.role === "Admin" ? "/focalHomePage" : "/userHomePage"}
               active={
                 location.pathname.includes("Home") &&
-                (user.photoUrl.length > 0 && user.security)
+                user.photoUrl.length > 0 &&
+                user.security
                   ? `active`
                   : ``
               }
@@ -78,84 +82,86 @@ const NavBar = () => {
               </span>
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
-            {user.role === 'Admin' && 
-            <Fragment>
-               <NavDropdown
-              disabled={!(user.photoUrl.length > 0 && user.security)}
-              // active={location.pathname.includes("Employee") ? `active` : ``}
-              title={
-                <span>
-                  <FaUsersCog className="mb-1" /> Employees
-                </span>
-              }
-              id="collasible-nav-dropdown"
-              className={`${
-                location.pathname.includes("Employee") ? "active" : ""
-              } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
-            >
-              <NavDropdown.Item
-                as={Link}
-                onClick={() => setExpanded(!isExpanded)}
-                to="/addEmployees"
-                className="text-primary fw-bold"
-              >
-                {" "}
-                <FaUserPlus style={{ width: "20px", height: "20px" }} /> Add
-                Employee
-              </NavDropdown.Item>
-              <NavDropdown.Divider className="text-primary" />
-              <NavDropdown.Item
-                className="text-warning fw-bold"
-                as={Link}
-                onClick={() => setExpanded(!isExpanded)}
-                to="/manageEmployeeProfile/159635?activeTab=personal-info"
-              >
-                {" "}
-                <FaUserEdit style={{ width: "20px", height: "20px" }} /> Manage
-                Employees
-              </NavDropdown.Item>
-            </NavDropdown>
-            {sm && <hr className="text-white line-break" />}
-            </Fragment>
-            }
+            {user.role === "Admin" && (
+              <Fragment>
+                <NavDropdown
+                  disabled={!(user.photoUrl.length > 0 && user.security)}
+                  // active={location.pathname.includes("Employee") ? `active` : ``}
+                  title={
+                    <span>
+                      <FaUsersCog className="mb-1" /> Employees
+                    </span>
+                  }
+                  id="collasible-nav-dropdown"
+                  className={`${
+                    location.pathname.includes("Employee") ? "active" : ""
+                  } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
+                >
+                  <NavDropdown.Item
+                    as={Link}
+                    onClick={() => setExpanded(!isExpanded)}
+                    to="/addEmployees"
+                    className="text-primary fw-bold"
+                  >
+                    {" "}
+                    <FaUserPlus style={{ width: "20px", height: "20px" }} /> Add
+                    Employee
+                  </NavDropdown.Item>
+                  <NavDropdown.Divider className="text-primary" />
+                  <NavDropdown.Item
+                    className="text-warning fw-bold"
+                    as={Link}
+                    onClick={() => setExpanded(!isExpanded)}
+                    to="/manageEmployeeProfile/159635?activeTab=personal-info"
+                  >
+                    {" "}
+                    <FaUserEdit
+                      style={{ width: "20px", height: "20px" }}
+                    />{" "}
+                    Manage Employees
+                  </NavDropdown.Item>
+                </NavDropdown>
+                {sm && <hr className="text-white line-break" />}
+              </Fragment>
+            )}
 
             <NavDropdown
               disabled={!(user.photoUrl.length > 0 && user.security)}
               // active={location.pathname.includes("Demand"  || 'Supplies') ? `active` : ``}
               title={
                 <span>
-                  <FaRegListAlt className="mb-1" /> {user.role === 'Admin' ? 'Demands' : 'Supplies'}
+                  <FaRegListAlt className="mb-1" />{" "}
+                  {user.role === "Admin" ? "Demands" : "Supplies"}
                 </span>
               }
               id="collasible-nav-dropdown"
               className={`${
-                location.pathname.includes("Demand") ||  location.pathname.includes("Supply")? "active" : ""
+                location.pathname.includes("Demand") ||
+                location.pathname.includes("Supply")
+                  ? "active"
+                  : ""
               } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
             >
               <NavDropdown.Item
                 className="text-primary fw-bold"
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
-                to={user.role === 'Admin' ? "/createDemand" : "/createSupply"}
+                to={user.role === "Admin" ? "/createDemand" : "/createSupply"}
               >
                 {" "}
                 <FaPlusCircle style={{ width: "20px", height: "20px" }} />{" "}
-                 {user.role === 'Admin' ? 'Create Demand' : 'Create Supply'}
+                {user.role === "Admin" ? "Create Demand" : "Create Supply"}
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item 
-              className="text-warning fw-bold" 
-              as={Link}
-              onClick={() => setExpanded(!isExpanded)}
-<<<<<<< HEAD
-              to={user.role === 'Admin' ? "/manageDemand" : "/manageSupplies"}
-=======
-              to={user.role === 'Admin' ? "/manageDemand" : "/manageSupply"}
->>>>>>> 729fa26db2f3b39cd15ebf5dbf056c9289ed1a12
+              <NavDropdown.Item
+                className="text-warning fw-bold"
+                as={Link}
+                onClick={() => setExpanded(!isExpanded)}
+                to={user.role === "Admin" ? "/manageDemand" : "/manageSupplies"}
               >
                 {" "}
-                <FaEdit style={{ width: "20px", height: "20px" }} /> 
-                 {user.role === 'Admin' ? 'Manage Demands' : 'Manage Supply'}
+                <FaEdit style={{ width: "20px", height: "20px" }} />
+                {user.role === "Admin" ? "Manage Demands" : "Manage Supply"}
               </NavDropdown.Item>
             </NavDropdown>
             {sm && <hr className="text-white line-break" />}
