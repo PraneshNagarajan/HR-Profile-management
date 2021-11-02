@@ -1,5 +1,5 @@
 const ManageSupply = () => {
-return()
+return(<div></div>)
 }
 
 export default ManageSupply

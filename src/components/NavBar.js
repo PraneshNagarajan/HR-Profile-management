@@ -143,7 +143,12 @@ const NavBar = () => {
                  {user.role === 'Admin' ? 'Create Demand' : 'Create Supply'}
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item className="text-warning fw-bold">
+              <NavDropdown.Item 
+              className="text-warning fw-bold" 
+              as={Link}
+              onClick={() => setExpanded(!isExpanded)}
+              to={user.role === 'Admin' ? "/manageDemand" : "/manageSupplies"}
+              >
                 {" "}
                 <FaEdit style={{ width: "20px", height: "20px" }} /> 
                  {user.role === 'Admin' ? 'Manage Demands' : 'Manage Supply'}
