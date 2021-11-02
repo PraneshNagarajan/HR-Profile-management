@@ -336,7 +336,7 @@ const CreateDemand = (props) => {
           .collection("Demands")
           .doc(loggedUser.email)
           .update({
-            ["F" + loggedUser.id + new Date().getTime()]: {
+            ["F" + loggedUser.id + new Date()]: {
               info: value,
               profile_info: {
                 comments: "",
@@ -348,12 +348,29 @@ const CreateDemand = (props) => {
           .then(() => {
             stateHandler();
             setIsLoading(false);
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Demand created successfully.",
-                flag: true,
+            firestore
+              .collection("Demands")
+              .doc("users")
+              .update({
+                [loggedUser.id]: [
+                  {
+                    [new Date().getTime()]: {
+                      demand_id: "F" + loggedUser.id + new Date().getTime(),
+                    },
+                  },
+                ],
               })
-            );
+              .then(() => {
+                dispatch(
+                  AlertActions.handleShow({
+                    msg: "Demand created successfully.",
+                    flag: true,
+                  })
+                );
+              })
+              .catch((err) => {
+                console.log("demand-user failed line-366");
+              });
           })
           .catch((err) => {
             setIsLoading(false);
@@ -370,13 +387,31 @@ const CreateDemand = (props) => {
                   },
                 })
                 .then(() => {
-                  stateHandler();
-                  dispatch(
-                    AlertActions.handleShow({
-                      msg: "data added sucessfully.",
-                      flag: true,
+                  firestore
+                    .collection("Demands")
+                    .doc("users")
+                    .set({
+                      [loggedUser.id]: [
+                        {
+                          [new Date().getTime()]: {
+                            demand_id:
+                              "F" + loggedUser.id + new Date().getTime(),
+                          },
+                        },
+                      ],
                     })
-                  );
+                    .then(() => {
+                      stateHandler();
+                      dispatch(
+                        AlertActions.handleShow({
+                          msg: "data added sucessfully.",
+                          flag: true,
+                        })
+                      );
+                    })
+                    .catch((err) => {
+                      console.log("line-400");
+                    });
                 })
                 .catch((err) => {
                   dispatch(

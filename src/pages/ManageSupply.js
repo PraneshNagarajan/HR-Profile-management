@@ -1,5 +1,7 @@
 const ManageSupply = () => {
-return(<div></div>)
+return(<div>
+    {new Date().toISOString().slice(0, 10)}
+</div>)
 }
 
 export default ManageSupply
