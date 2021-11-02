@@ -18,7 +18,7 @@ import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 import UserHomePage from "./pages/UserHomePage";
 import CreateSupply from "./pages/CreateSupply";
 import AdminHomePage from "./pages/AdminHomePage";
-import ManageSupplyHomePage from "./pages/ManageSupplyHomePage";
+import StatusTrackerPage from "./pages/StatusTrackerPage";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -148,12 +148,12 @@ function App() {
               </Route>
               <Route path="/manageSupplies">
                 <MainLayout>
-                  <ManageSupplyHomePage />
+                  <StatusTrackerPage/>
                 </MainLayout>
               </Route>
               <Route path="/manageSupply/:demandId">
                 <MainLayout>
-                  <ManageSupplyHomePage />
+                <StatusTrackerPage/>
                 </MainLayout>
               </Route>
             </Fragment>
