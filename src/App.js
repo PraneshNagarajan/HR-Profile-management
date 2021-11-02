@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 import UserHomePage from "./pages/UserHomePage";
 import CreateSupply from "./pages/CreateSupply";
+import ManageSupply from "./pages/ManageSupply";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -133,6 +134,11 @@ function App() {
               <Route path="/createSupply">
                 <MainLayout>
                   <CreateSupply />
+                </MainLayout>
+              </Route>
+              <Route path="/manageSupply/:demandId">
+                <MainLayout>
+                  <ManageSupply />
                 </MainLayout>
               </Route>
             </Fragment>
