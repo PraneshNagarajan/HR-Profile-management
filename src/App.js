@@ -17,8 +17,8 @@ import { useDispatch } from "react-redux";
 import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 import UserHomePage from "./pages/UserHomePage";
 import CreateSupply from "./pages/CreateSupply";
-import ManageSupply from "./pages/ManageSupply";
 import AdminHomePage from "./pages/AdminHomePage";
+import ManageSupplyHomePage from "./pages/ManageSupplyHomePage";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -103,18 +103,18 @@ function App() {
             </MainLayout>
           </Route>
           {user === "ADMIN" && (
-             <Fragment>
-               <Route path="/adminHomePage">
-             <MainLayout>
-               <AdminHomePage/>
-             </MainLayout>
-           </Route>
-            <Route path="/addEmployees">
-              <MainLayout>
-                <AddEmployeePage />
-              </MainLayout>
-            </Route>
-             </Fragment>
+            <Fragment>
+              <Route path="/adminHomePage">
+                <MainLayout>
+                  <AdminHomePage />
+                </MainLayout>
+              </Route>
+              <Route path="/addEmployees">
+                <MainLayout>
+                  <AddEmployeePage />
+                </MainLayout>
+              </Route>
+            </Fragment>
           )}
           {user === "FOCAL" && (
             <Fragment>
@@ -148,12 +148,12 @@ function App() {
               </Route>
               <Route path="/manageSupplies">
                 <MainLayout>
-                  <ManageSupply />
+                  <ManageSupplyHomePage />
                 </MainLayout>
               </Route>
               <Route path="/manageSupply/:demandId">
                 <MainLayout>
-                  <ManageSupply />
+                  <ManageSupplyHomePage />
                 </MainLayout>
               </Route>
             </Fragment>
