@@ -252,8 +252,10 @@ const LoginPage = () => {
                         "auth-info.invalid_attempt_timestamp": null,
                       })
                       .catch((err) => {});
-                    if (String(profile_info.employee.role) === "Admin") {
+                    if (String(profile_info.employee.role) === "FOCAL") {
                       history.push("/focalHomePage");
+                    } else if (String(profile_info.employee.role) === "ADMIN") {
+                      history.push("/adminHomePage");
                     } else {
                       history.push("/userHomePage");
                     }

@@ -54,7 +54,7 @@ const EmployeeTabContent = (props) => {
     admin_permission: "- Select Permission -",
   };
 
-  const roles = ["Junior Recruiter", "Senior Recruiter", "Focal", "Admin"];
+  const roles = ["JUNIOR RECRUITER", "SENIOR RECRUITER", "FOCAL", "Admin"];
 
   useEffect(() => {
     firestore

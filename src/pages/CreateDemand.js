@@ -143,7 +143,7 @@ const CreateDemand = (props) => {
     },
     validate: (value) => {
       const errors = {};
-      if (value.assignee.includes("-")) {
+      if (value.assignee.includes("- S")) {
         errors.assignee = "*Required.";
       }
 
@@ -336,7 +336,7 @@ const CreateDemand = (props) => {
           .collection("Demands")
           .doc(loggedUser.email)
           .update({
-            ["F" + loggedUser.id + new Date()]: {
+            [loggedUser.id + new Date().getTime() + value.assignee]: {
               info: value,
               profile_info: {
                 comments: "",
@@ -348,36 +348,19 @@ const CreateDemand = (props) => {
           .then(() => {
             stateHandler();
             setIsLoading(false);
-            firestore
-              .collection("Demands")
-              .doc("users")
-              .update({
-                [loggedUser.id]: [
-                  {
-                    [new Date().getTime()]: {
-                      demand_id: "F" + loggedUser.id + new Date().getTime(),
-                    },
-                  },
-                ],
+            dispatch(
+              AlertActions.handleShow({
+                msg: "Demand created successfully.",
+                flag: true,
               })
-              .then(() => {
-                dispatch(
-                  AlertActions.handleShow({
-                    msg: "Demand created successfully.",
-                    flag: true,
-                  })
-                );
-              })
-              .catch((err) => {
-                console.log("demand-user failed line-366");
-              });
+            );
           })
           .catch((err) => {
             setIsLoading(false);
             if (String(err).includes("No document to update")) {
               firestore
                 .collection("Demands")
-                .doc("F" + loggedUser.id + new Date().getTime())
+                .doc(loggedUser.id + new Date().getTime() + value.assignee)
                 .set({
                   info: { ...value, owner: loggedUser.id },
                   profile_info: {
@@ -387,31 +370,13 @@ const CreateDemand = (props) => {
                   },
                 })
                 .then(() => {
-                  firestore
-                    .collection("Demands")
-                    .doc("users")
-                    .set({
-                      [loggedUser.id]: [
-                        {
-                          [new Date().getTime()]: {
-                            demand_id:
-                              "F" + loggedUser.id + new Date().getTime(),
-                          },
-                        },
-                      ],
+                  stateHandler();
+                  dispatch(
+                    AlertActions.handleShow({
+                      msg: "data added sucessfully.",
+                      flag: true,
                     })
-                    .then(() => {
-                      stateHandler();
-                      dispatch(
-                        AlertActions.handleShow({
-                          msg: "data added sucessfully.",
-                          flag: true,
-                        })
-                      );
-                    })
-                    .catch((err) => {
-                      console.log("line-400");
-                    });
+                  );
                 })
                 .catch((err) => {
                   dispatch(
@@ -469,10 +434,10 @@ const CreateDemand = (props) => {
                             variant={`outline-${
                               !formik.touched.assignee
                                 ? `primary`
-                                : !formik.values.assignee.includes("-") &&
+                                : !formik.values.assignee.includes("- S") &&
                                   formik.touched.assignee
                                 ? `success`
-                                : formik.values.assignee.includes("-") &&
+                                : formik.values.assignee.includes("- S") &&
                                   formik.touched.assignee
                                 ? `danger`
                                 : ``
@@ -494,10 +459,7 @@ const CreateDemand = (props) => {
                                         onClick={() => {
                                           formik.setFieldValue(
                                             "assignee",
-                                            recruiter.id +
-                                              "(" +
-                                              recruiter.name +
-                                              ")"
+                                            recruiter.id
                                           );
                                         }}
                                       >

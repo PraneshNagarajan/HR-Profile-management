@@ -18,6 +18,7 @@ import { DemandPreRequisiteActions } from "./Redux/DemandCreationPreRequisite";
 import UserHomePage from "./pages/UserHomePage";
 import CreateSupply from "./pages/CreateSupply";
 import ManageSupply from "./pages/ManageSupply";
+import AdminHomePage from "./pages/AdminHomePage";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -31,7 +32,7 @@ function App() {
 
   useEffect(() => {
     // Get real-time data
-    if (user.includes("Admin")) {
+    if (user.includes("FOCAL")) {
       recruiterRef.onSnapshot((querySnapshot) => {
         dispatch(
           DemandPreRequisiteActions.getRecruiters(
@@ -101,17 +102,26 @@ function App() {
               <ManageEmployeeProfilePage />
             </MainLayout>
           </Route>
-          {(user === "Admin" || user === "Focal") && (
+          {user === "ADMIN" && (
+             <Fragment>
+               <Route path="/adminHomePage">
+             <MainLayout>
+               <AdminHomePage/>
+             </MainLayout>
+           </Route>
+            <Route path="/addEmployees">
+              <MainLayout>
+                <AddEmployeePage />
+              </MainLayout>
+            </Route>
+             </Fragment>
+          )}
+          {user === "FOCAL" && (
             <Fragment>
               <Route path="/focalHomePage">
                 <MainLayout>
-                  {/* <FocalHomePage /> */}
-                  <UserHomePage />
-                </MainLayout>
-              </Route>
-              <Route path="/addEmployees">
-                <MainLayout>
-                  <AddEmployeePage />
+                  <FocalHomePage />
+                  {/* <UserHomePage /> */}
                 </MainLayout>
               </Route>
               <Route path="/createDemand">
@@ -124,7 +134,7 @@ function App() {
               </Route>
             </Fragment>
           )}
-          {user !== "Admin" && (
+          {user.includes("RECRUITER") && (
             <Fragment>
               <Route path="/userHomePage">
                 <MainLayout>
