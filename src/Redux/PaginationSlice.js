@@ -7,19 +7,19 @@ const PaginationSlice = createSlice({
     initialState: {
         size: 0,
         begin: 1,
-        end: 0,
+        end: 5,
         total: 0,
         current: 1
     },
     reducers: {
        initial(state, action){
-           start = state.current - 4 >= 1 ? state.current - 4 : 1;
-           last = state.current < 5 ? 5 : state.current;
-           state.current = action.payload.current;
-           state.size = action.payload.size;
-           state.total = Math.ceil(state.size / action.payload.count)
-           state.begin = start > state.total ? state.total : start;
-           state.end = last > state.total ? state.total : last;
+        start = state.current - 4 >= 1 ? state.current - 4 : 1;
+        last = state.current < 5 ? 5 : state.current;
+        state.current = action.payload.current;
+        state.size = action.payload.size;
+        state.total = Math.ceil(state.size / action.payload.count)
+        state.begin = start > state.total ? state.total : start;
+        state.end = last > state.total ? state.total : last;
        },
 
        first(state) {
