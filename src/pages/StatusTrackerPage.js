@@ -1,6 +1,5 @@
-import { findAllByTestId } from "@testing-library/react";
 import { useEffect, useState } from "react";
-import { Col, FormControl, Card, InputGroup, DropdownButton, Dropdown } from "react-bootstrap";
+import { Col, FormControl, Card } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
@@ -10,6 +9,7 @@ import { useMediaQuery } from "react-responsive";
 import { useDispatch } from "react-redux";
 import { PaginationActions } from "../Redux/PaginationSlice";
 import { useFormik } from "formik";
+import Multiselect from "multiselect-react-dropdown";
 
 const StatusTrackerPage = () => {
   const data = [
@@ -27,13 +27,13 @@ const StatusTrackerPage = () => {
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111119", status: "pending" },
     { id: "FO-1111111635861804887JR-111111", status: "pending" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
     { id: "FO-1111111635861804887JR-111111", status: "pending" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
+    { id: "FO-1111111635861804887JR-111119", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
@@ -60,9 +60,9 @@ const StatusTrackerPage = () => {
   const demandRef = firestore.collection("Demands");
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [demand, setDemand] = useState("");
+  const [error, setError] = useState("");
   const currentPage = useSelector((state) => state.pagination.current);
-  const [selectedOptions, setSelectedOptions] = useState([])
+  const [selectedOptions, setSelectedOptions] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -70,19 +70,51 @@ const StatusTrackerPage = () => {
     },
   });
 
-  const onSelectedOptionsChange = (value) => {
-    let data = selectedOptions
-    let index = data.indexOf(value)
-    if(index >= 0) {
-      data.pop(index)
-    } else {
-      data.push(value)
-    }
-    setSelectedOptions(data)
-  }
-console.log(selectedOptions)
+  const onCatagoryFilterHandler = (dataLists, options) => {
+    let datas = options.length > 0 ? [] : dataLists;
+    dataLists.map((item, index) => {
+      if (options.includes(item.status)) {
+        datas.push(item);
+      }
+    });
+    return datas;
+  };
+
+  const onTextFilterHandler = (options) => {
+    let result = [];
+    data.map((item, index) => {
+      if (item.id.includes(formik.values.id)) {
+        result.push(item);
+      }
+      if (data.length - 1 === index && result.length > 0) {
+        let output = onCatagoryFilterHandler(
+          formik.values.id.length > 0 || options.length > 0 ? result : data,
+          options
+        );
+        result = output;
+        setSupplyList(output);
+      }
+    });
+    setError(result.length === 0 ? "No match found." : "");
+  };
+
+  const onSelectItem = (list, item) => {
+    let options = [...selectedOptions];
+    options.push(item.key);
+    onTextFilterHandler(options);
+    setSelectedOptions(options);
+  };
+
+  const onRemoveItem = (list, item) => {
+    let options = selectedOptions;
+    let index = selectedOptions.findIndex((id) => id === item.key);
+    options.splice(index, 1);
+    onTextFilterHandler(options);
+    setSelectedOptions(options);
+  };
+
   useEffect(() => {
-    if (demand.length === 0) {
+    if (formik.values.id.length === 0) {
       // demandRef.onSnapshot((querySnapshot) => {
       //   querySnapshot.docs.map((item, index) => {
       //     if (item.id.includes(loggedUser.id)) {
@@ -94,6 +126,8 @@ console.log(selectedOptions)
       //   });
       // });
       setSupplyList(data);
+    } else {
+      onTextFilterHandler(selectedOptions.length > 0 ? selectedOptions : []);
     }
   }, [formik.values.id]);
 
@@ -102,41 +136,10 @@ console.log(selectedOptions)
       PaginationActions.initial({
         size: supplyList.length,
         count: sm ? 10 : 20,
-        current : 1
+        current: 1,
       })
     );
   }, [supplyList, sm]);
-console.log(selectedOptions)
-  useEffect(() => {
-    let result = [];
-    let tmp_result = [];
-    const timeout = setTimeout(() => {
-      if (formik.values.id.length > 0 || selectedOptions.length > 0) {
-        data.map((item, index) => {
-          if (item.id.includes(formik.values.id)) {
-            result.push(item);
-          }
-          if(selectedOptions.includes(item.status) && result.filter(filterItem => filterItem.id === item.id).length === 0){
-            result.push(item)
-          }
-          if (data.length - 1 === index && result.length > 0) {
-            setSupplyList(result);
-          }
-        });
-        if (!result.length > 0) {
-          formik.setFieldError(
-            "id",
-            "*Invalid Demand id / No don't have Permission."
-          );
-        } else {
-          formik.setFieldError("id", "");
-        }
-      }
-    }, 500);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [formik.values.id, selectedOptions]);
 
   return (
     <Fragment>
@@ -147,57 +150,76 @@ console.log(selectedOptions)
             md={{ span: "6", offset: "3" }}
             className={`mt-3 ${sm ? `mx-2` : ``}`}
           >
-            <InputGroup>
             <FormControl
+              className="mb-2"
               placeholder="Enter Demand ID"
               type="text"
               name="id"
               value={formik.values.id}
               isInvalid={formik.errors.id}
               onChange={formik.handleChange}
+              autoComplete="off"
             />
-            </InputGroup>
-                     <FormControl as="select"  onChange={(e) => onSelectedOptionsChange(e.target.value)}>
-      <option key={"Completed"} value={"Completed"} >
-        {"Completed"}
-      </option>
-  </FormControl>
-            {formik.errors.id && (
-              <p className="text-danger">{formik.errors.id}</p>
-            )}
+            <Multiselect
+              displayValue="key"
+              onRemove={onRemoveItem}
+              onSelect={onSelectItem}
+              options={[
+                {
+                  key: "Unstarted",
+                },
+                {
+                  key: "Inprogress",
+                },
+                {
+                  key: "Completed",
+                },
+                {
+                  key: "Submitted",
+                },
+              ]}
+              showCheckbox
+            />
           </Col>
-          <div className="mt-3 d-flex justify-content-center flex-wrap">
-            {supplyList.map((demand, index) => {
-              if (
-                index >= (currentPage - 1) * (sm ? 10 : 20) &&
-                index < currentPage * (sm ? 10 : 20)
-              ) {
-                return (
-                  <Card
-                    className={`mx-1 my-2 text-center text-white bg-${
-                      demand.status === "Submitted"
-                        ? "primary"
-                        : demand.status === "Completed"
-                        ? "success"
-                        : String(demand.status).includes("pending")
-                        ? "warning"
-                        : "danger"
-                    }`}
-                    key={index}
-                  >
-                    <Card.Body>
-                      <p>
-                        <b> ID : </b> {demand.id}
-                      </p>
-                    </Card.Body>
-                  </Card>
-                );
-              }
-            })}
-          </div>
-          <div className="d-flex justify-content-center mt-4">
-        <PageSwitcher />
-      </div>
+          {error.length === 0 && (
+            <Fragment>
+              <div className="mt-3 d-flex justify-content-center flex-wrap">
+                {supplyList.map((demand, index) => {
+                  if (
+                    index >= (currentPage - 1) * (sm ? 10 : 20) &&
+                    index < currentPage * (sm ? 10 : 20)
+                  ) {
+                    return (
+                      <Card
+                        className={`mx-1 my-2 text-center text-white bg-${
+                          demand.status === "Submitted"
+                            ? "primary"
+                            : demand.status === "Completed"
+                            ? "success"
+                            : String(demand.status).includes("pending")
+                            ? "warning"
+                            : "danger"
+                        }`}
+                        key={index}
+                      >
+                        <Card.Body>
+                          <p>
+                            <b> ID : </b> {demand.id}
+                          </p>
+                        </Card.Body>
+                      </Card>
+                    );
+                  }
+                })}
+              </div>
+              <div className="d-flex justify-content-center mt-4">
+                <PageSwitcher />
+              </div>
+            </Fragment>
+          )}
+          {error.length > 0 && (
+            <p className="fw-bold text-center text-danger mt-5">{error}</p>
+          )}
         </Fragment>
       )}
     </Fragment>
