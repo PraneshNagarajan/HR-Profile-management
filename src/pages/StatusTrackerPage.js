@@ -1,6 +1,6 @@
 import { findAllByTestId } from "@testing-library/react";
 import { useEffect, useState } from "react";
-import { Col, FormControl, Card } from "react-bootstrap";
+import { Col, FormControl, Card, InputGroup, DropdownButton, Dropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
@@ -61,8 +61,8 @@ const StatusTrackerPage = () => {
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [demand, setDemand] = useState("");
-  const [error, setError] = useState(false);
   const currentPage = useSelector((state) => state.pagination.current);
+  const [selectedOptions, setSelectedOptions] = useState([])
 
   const formik = useFormik({
     initialValues: {
@@ -70,6 +70,17 @@ const StatusTrackerPage = () => {
     },
   });
 
+  const onSelectedOptionsChange = (value) => {
+    let data = selectedOptions
+    let index = data.indexOf(value)
+    if(index >= 0) {
+      data.pop(index)
+    } else {
+      data.push(value)
+    }
+    setSelectedOptions(data)
+  }
+console.log(selectedOptions)
   useEffect(() => {
     if (demand.length === 0) {
       // demandRef.onSnapshot((querySnapshot) => {
@@ -95,14 +106,18 @@ const StatusTrackerPage = () => {
       })
     );
   }, [supplyList, sm]);
-
+console.log(selectedOptions)
   useEffect(() => {
     let result = [];
+    let tmp_result = [];
     const timeout = setTimeout(() => {
-      if (formik.values.id.length > 0) {
+      if (formik.values.id.length > 0 || selectedOptions.length > 0) {
         data.map((item, index) => {
           if (item.id.includes(formik.values.id)) {
             result.push(item);
+          }
+          if(selectedOptions.includes(item.status) && result.filter(filterItem => filterItem.id === item.id).length === 0){
+            result.push(item)
           }
           if (data.length - 1 === index && result.length > 0) {
             setSupplyList(result);
@@ -121,7 +136,7 @@ const StatusTrackerPage = () => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [formik.values.id]);
+  }, [formik.values.id, selectedOptions]);
 
   return (
     <Fragment>
@@ -132,6 +147,7 @@ const StatusTrackerPage = () => {
             md={{ span: "6", offset: "3" }}
             className={`mt-3 ${sm ? `mx-2` : ``}`}
           >
+            <InputGroup>
             <FormControl
               placeholder="Enter Demand ID"
               type="text"
@@ -140,6 +156,12 @@ const StatusTrackerPage = () => {
               isInvalid={formik.errors.id}
               onChange={formik.handleChange}
             />
+            </InputGroup>
+                     <FormControl as="select"  onChange={(e) => onSelectedOptionsChange(e.target.value)}>
+      <option key={"Completed"} value={"Completed"} >
+        {"Completed"}
+      </option>
+  </FormControl>
             {formik.errors.id && (
               <p className="text-danger">{formik.errors.id}</p>
             )}
