@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Col, FormControl, Card } from "react-bootstrap";
+import { Col, FormControl, Card, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
@@ -13,36 +13,36 @@ import Multiselect from "multiselect-react-dropdown";
 
 const StatusTrackerPage = () => {
   const data = [
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111114", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111119", status: "pending" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111119", status: "Inprogress" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "pending" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111119", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
+    { id: "FO-1111111635861804887JR-111111", status: "Unstarted" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887SR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111114", status: "Completed" },
     { id: "FO-1111119635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
+    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
@@ -146,12 +146,12 @@ const StatusTrackerPage = () => {
       {supplyList.length === 0 && <Spinners />}
       {supplyList.length > 0 && (
         <Fragment>
+          <Row className={`mt-3 ${sm ? `mx-2` : ``}` }>
           <Col
-            md={{ span: "6", offset: "3" }}
-            className={`mt-3 ${sm ? `mx-2` : ``}`}
+            md={{ span: "6", offset: "2" }}
+            className="mb-1"
           >
             <FormControl
-              className="mb-2"
               placeholder="Enter Demand ID"
               type="text"
               name="id"
@@ -160,7 +160,9 @@ const StatusTrackerPage = () => {
               onChange={formik.handleChange}
               autoComplete="off"
             />
-            <Multiselect
+          </Col>
+          <Col md="3">
+          <Multiselect
               displayValue="key"
               onRemove={onRemoveItem}
               onSelect={onSelectItem}
@@ -181,6 +183,7 @@ const StatusTrackerPage = () => {
               showCheckbox
             />
           </Col>
+          </Row>
           {error.length === 0 && (
             <Fragment>
               <div className="mt-3 d-flex justify-content-center flex-wrap">
@@ -196,16 +199,16 @@ const StatusTrackerPage = () => {
                             ? "primary"
                             : demand.status === "Completed"
                             ? "success"
-                            : String(demand.status).includes("pending")
+                            : String(demand.status).includes("Inprogress")
                             ? "warning"
                             : "danger"
                         }`}
                         key={index}
                       >
                         <Card.Body>
-                          <p>
-                            <b> ID : </b> {demand.id}
-                          </p>
+                          <small>
+                            <b>{demand.id} </b> 
+                          </small>
                         </Card.Body>
                       </Card>
                     );
