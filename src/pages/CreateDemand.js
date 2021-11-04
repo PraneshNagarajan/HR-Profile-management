@@ -138,7 +138,7 @@ const CreateDemand = (props) => {
       primaryskill: props.techFlag ? "- Select the Skill -" : "",
       secondarytech: props.techFlag ? "- Select the Techonology -" : "",
       secondaryskill: props.techFlag ? "- Select the Skill -" : "",
-      status: "newly_created",
+      status: "Unstarted",
       file_count: 0,
     },
     validate: (value) => {

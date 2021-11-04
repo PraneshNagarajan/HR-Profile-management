@@ -147,7 +147,7 @@ const CreateSupply = (props) => {
                 "profile_info.status":
                   totalFileCount === formik.values.demand
                     ? "Submitted"
-                    : "Pending",
+                    : "Inprogress",
                 "profile_info.comments": "",
                 "profile_info.profiles_status":
                   Object.values(data).length > 0
@@ -156,7 +156,7 @@ const CreateSupply = (props) => {
                 "info.status":
                   totalFileCount == formik.values.demand
                     ? "Submitted"
-                    : "Still profile matching is pending",
+                    : "Inprogress",
               })
               .then(async () => {
                 await dispatch(
@@ -875,7 +875,7 @@ const CreateSupply = (props) => {
                 />
               </FormGroup>
               {(formik.values.status.includes("new") ||
-                formik.values.status.includes("pending")) && (
+                formik.values.status.includes("Inprogress")) && (
                 <Fragment>
                   <hr className="my-4" />
                   {addedProfiles.length > 0 && (
