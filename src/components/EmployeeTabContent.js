@@ -42,9 +42,11 @@ const EmployeeTabContent = (props) => {
   const loggedUser = useSelector((state) => state.auth);
   const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
-  const [errorsID, setErrorsID] = useState("");
+  const [errorsSupervisor, setErrorsSupervisor] = useState("");
+  const [supervisorSuggestion, setSupervisorSuggestion] = useState("");
   const [errorsEmail, setErrorsEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedSupervisorInfo, setSelectedSupervisorInfo] = useState([]);
   const empnoRef = firestore.collection("Employee-No");
 
   const initialValues = {
@@ -52,9 +54,10 @@ const EmployeeTabContent = (props) => {
     email: "",
     role: "- Select Role -",
     admin_permission: "- Select Permission -",
+    supervisor: "",
   };
 
-  const roles = ["JUNIOR RECRUITER", "SENIOR RECRUITER", "FOCAL", "Admin"];
+  const roles = ["JUNIOR RECRUITER", "SENIOR RECRUITER", "FOCAL", "ADMIN"];
 
   useEffect(() => {
     firestore
@@ -78,6 +81,8 @@ const EmployeeTabContent = (props) => {
     validate,
     onSubmit: async (value) => {
       let email = await String(value.email).toLowerCase();
+      let newReportees = [...selectedSupervisorInfo];
+      newReportees.push(value.supervisor);
       await setIsLoading(true);
       if (await !!Img.name) {
         await fireStorage
@@ -215,14 +220,20 @@ const EmployeeTabContent = (props) => {
                     email,
                     name: infos.personal.firstname,
                     role: formik.values.role,
-                    id: formik.values.id
+                    id: formik.values.id,
+                    supervisor: formik.values.supervisor,
                   },
-                });
+                  [value.supervisor]: {
+                    reportees: newReportees,
+                  },
+                })
+                .catch((err) => console.log(String(err)));
+
               await firestore
                 .collection("Employee-No")
                 .doc("info")
                 .update({
-                  ["values." + value.id.split("-")[0]]: formik.values.id,
+                  ["values." + value.id.split("-")[0]]: value.id.split("-")[1],
                 })
                 .catch(async (err) => {
                   if (await String(err).includes("No document to update")) {
@@ -284,8 +295,98 @@ const EmployeeTabContent = (props) => {
     },
   });
 
+  const checkUserIsPresent = () => {
+    let profile = Object.values(users).filter(
+      (user) => user.id === formik.values.supervisor
+    );
+
+    if (!props.view.user) {
+      const timeout = setTimeout(() => {
+        if (profile.length > 0) {
+          setErrorsSupervisor("");
+          if (profile.reportees) {
+            setSelectedSupervisorInfo(profile.reportees);
+          }
+        } else {
+          setErrorsSupervisor("*No user found.");
+        }
+      }, 500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  };
+
   useEffect(() => {
-    if (!formik.values.role.includes("-") && !props.view) {
+    let profile = Object.values(users).filter(
+      (user) => user.email === String(formik.values.email).toLowerCase()
+    );
+    if (!props.view) {
+      const timeout = setTimeout(() => {
+        if (profile.length > 0) {
+          setErrorsEmail("*Already this Email has been taken.");
+        } else {
+          setErrorsEmail("");
+        }
+      }, 500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [formik.values.email]);
+
+  useEffect(() => {
+    let selectedRole = formik.values.role;
+    if (infos.employee.role !== selectedRole && !props.view.user) {
+      if (!selectedRole.includes("-")) {
+        if (selectedRole === "JUNIOR RECRUITER") {
+          setSupervisorSuggestion("Senior Recruiter");
+          if (formik.values.supervisor.length > 0) {
+            if (formik.values.supervisor.includes("SR")) {
+              checkUserIsPresent();
+            } else {
+              setErrorsSupervisor("*Senior Recruiter should be a supervisor.");
+            }
+          }
+        } else if (selectedRole === "SENIOR RECRUITER") {
+          setSupervisorSuggestion("Focal");
+          if (formik.values.supervisor.length > 0) {
+            if (formik.values.supervisor.includes("FO")) {
+              checkUserIsPresent();
+            } else {
+              setErrorsSupervisor("*Focal should be a supervisor.");
+            }
+          }
+        } else if (selectedRole === "FOCAL") {
+          setSupervisorSuggestion("Admin");
+          if (formik.values.supervisor.length > 0) {
+            if (formik.values.supervisor.includes("AD")) {
+              checkUserIsPresent();
+            } else {
+              setErrorsSupervisor("*Admin should be a supervisor.");
+            }
+          }
+        } else {
+          formik.setFieldValue("supervisor", "MG-111111");
+        }
+      }
+    }
+    if (!props.view.user && infos.employee.role === formik.values.role) {
+      formik.setValues({
+        ...infos.employee,
+        admin_permission: infos.employee.admin_permission
+          ? "View && Edit"
+          : "View Only",
+      });
+    }
+  }, [formik.values.role, formik.values.supervisor]);
+
+  useEffect(() => {
+    if (
+      !formik.values.role.includes("-") &&
+      !props.view.user &&
+      infos.employee.role !== formik.values.role
+    ) {
       empnoRef.onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((doc) => {
           let no = formik.values.role.includes(" ")
@@ -317,6 +418,14 @@ const EmployeeTabContent = (props) => {
         });
       });
     }
+    if (!props.view.user && infos.employee.role === formik.values.role) {
+      formik.setValues({
+        ...infos.employee,
+        admin_permission: infos.employee.admin_permission
+          ? "View && Edit"
+          : "View Only",
+      });
+    }
   }, [formik.values.role]);
 
   useEffect(() => {
@@ -338,24 +447,6 @@ const EmployeeTabContent = (props) => {
       setImg(e.target.files[0]);
     }
   };
-
-  useEffect(() => {
-    let profile = Object.values(users).filter(
-      (user) => user.email === String(formik.values.email).toLowerCase()
-    );
-    if (!props.view) {
-      const timeout = setTimeout(() => {
-        if (profile.length > 0) {
-          setErrorsEmail("*Already this Email has been taken.");
-        } else {
-          setErrorsEmail("");
-        }
-      }, 500);
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, [formik.values.email]);
 
   return (
     <TabContent>
@@ -399,18 +490,6 @@ const EmployeeTabContent = (props) => {
             </div>
             <Row className="my-2">
               <Col md={{ span: "5", offset: "1" }}>
-                <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="employee id">Employee Id</FormLabel>
-                  <FormControl
-                    type="text"
-                    name="id"
-                    readOnly={true}
-                    value={formik.values.id}
-                    onChange={formik.handleChange}
-                  />
-                </FormGroup>
-              </Col>
-              <Col md="5">
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
@@ -459,6 +538,18 @@ const EmployeeTabContent = (props) => {
                 {formik.touched.role && formik.errors.role && (
                   <div className="text-danger">{formik.errors.role}</div>
                 )}
+              </Col>
+              <Col md="5">
+                <FormGroup className={sm ? "my-1" : ""}>
+                  <FormLabel htmlFor="employee id">Employee Id</FormLabel>
+                  <FormControl
+                    type="text"
+                    name="id"
+                    readOnly={true}
+                    value={formik.values.id}
+                    onChange={formik.handleChange}
+                  />
+                </FormGroup>
               </Col>
             </Row>
             <Row className={sm ? "" : "my-5"}>
@@ -542,6 +633,44 @@ const EmployeeTabContent = (props) => {
                   )}
               </Col>
             </Row>
+            {formik.values.role !== "ADMIN" && (
+              <Col md={{ span: "5", offset: "1" }}>
+                <FormGroup className={sm ? "my-1" : ""}>
+                  <FormLabel htmlFor="supervisor id">Supervisor Id</FormLabel>
+                  <FormControl
+                    type="text"
+                    name="supervisor"
+                    readOnly={
+                      props.view.user || formik.values.role.includes("-")
+                    }
+                    value={formik.values.supervisor}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    isInvalid={
+                      (formik.errors.supervisor &&
+                        (formik.touched.supervisor ||
+                          formik.values.supervisor.length > 0)) ||
+                      errorsSupervisor.length !== 0
+                    }
+                    isValid={
+                      !formik.errors.supervisor &&
+                      (formik.touched.supervisor ||
+                        formik.values.supervisor.length > 0)
+                    }
+                  />
+                  {!formik.values.role.includes("-") && (
+                    <p className="text-muted">
+                      Please select {supervisorSuggestion} as supervisor.
+                    </p>
+                  )}
+                  <div className="invalid-feedback">
+                    {formik.errors.supervisor
+                      ? formik.errors.supervisor
+                      : errorsSupervisor}
+                  </div>
+                </FormGroup>
+              </Col>
+            )}
             <div className={sm ? "mt-5" : "float-end"}>
               {!isLoading && (
                 <Button
