@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const onCatagoryFilterHandler =() => {
+const onCatagoryFilterHandler = (dataLists, options) => {
     let datas = options.length > 0 ? [] : dataLists;
     dataLists.map((item, index) => {
       if (options.includes(item.status)) {
@@ -10,26 +10,35 @@ const onCatagoryFilterHandler =() => {
     return datas;
 }
 
+const initialState = {
+    result: [],
+    errors: "",
+    flag: false
+}
+
 const FilterSlice =  createSlice({
 name: "Filter",
-initialState: {
-    result: [],
-    errors: ""
-},
+initialState,
 reducers: {
+    onSetInitial(state){
+        state.result = []
+        state.errors = ""
+        state.flag = false
+    },
     onTextFilterHandler(state, action) {
+        state.flag = true
         let result = [];
-        action.payload.datas.map((item, index) => {
-          if (item.id.includes(formik.values.id)) {
+        action.payload.data.map((item, index) => {
+          if (item.id.includes(action.payload.id)) {
             result.push(item);
           }
-          if (data.length - 1 === index && result.length > 0) {
+          if (action.payload.data.length - 1 === index && result.length > 0) {
             let output = onCatagoryFilterHandler(
-              formik.values.id.length > 0 || options.length > 0 ? result : data,
-              options
+                action.payload.id.length > 0 || action.payload.length > 0 ? result : action.payload.data,
+              action.payload.options
             );
             result = output;
-            setSupplyList(output);
+            state.result = output
           }
         });
         state.errors = result.length === 0 ? "No match found." : ""

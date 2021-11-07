@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { PaginationActions } from "../Redux/PaginationSlice";
 import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
+import { FilterActions } from "../Redux/FilterSlice";
 
 const StatusTrackerPage = () => {
   const data = [
@@ -56,11 +57,12 @@ const StatusTrackerPage = () => {
   ];
 
   const sm = useMediaQuery({ maxWidth: 768 });
+  const filter = useSelector((state) => state.filter);
   const [supplyList, setSupplyList] = useState([]);
   const demandRef = firestore.collection("Demands");
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [error, setError] = useState("");
+  const error = useSelector((state) => state.filter.errors);
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
 
@@ -70,38 +72,12 @@ const StatusTrackerPage = () => {
     },
   });
 
-  const onCatagoryFilterHandler = (dataLists, options) => {
-    let datas = options.length > 0 ? [] : dataLists;
-    dataLists.map((item, index) => {
-      if (options.includes(item.status)) {
-        datas.push(item);
-      }
-    });
-    return datas;
-  };
-
-  const onTextFilterHandler = (options) => {
-    let result = [];
-    data.map((item, index) => {
-      if (item.id.includes(formik.values.id)) {
-        result.push(item);
-      }
-      if (data.length - 1 === index && result.length > 0) {
-        let output = onCatagoryFilterHandler(
-          formik.values.id.length > 0 || options.length > 0 ? result : data,
-          options
-        );
-        result = output;
-        setSupplyList(output);
-      }
-    });
-    setError(result.length === 0 ? "No match found." : "");
-  };
-
   const onSelectItem = (list, item) => {
     let options = [...selectedOptions];
     options.push(item.key);
-    onTextFilterHandler(options);
+    dispatch(
+      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+    );
     setSelectedOptions(options);
   };
 
@@ -109,7 +85,9 @@ const StatusTrackerPage = () => {
     let options = selectedOptions;
     let index = selectedOptions.findIndex((id) => id === item.key);
     options.splice(index, 1);
-    onTextFilterHandler(options);
+    dispatch(
+      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+    );
     setSelectedOptions(options);
   };
 
@@ -126,11 +104,17 @@ const StatusTrackerPage = () => {
       //   });
       // });
       setSupplyList(data);
+      dispatch(FilterActions.onSetInitial());
     } else {
-      onTextFilterHandler(selectedOptions.length > 0 ? selectedOptions : []);
+      dispatch(
+        FilterActions.onTextFilterHandler({
+          data,
+          options: selectedOptions.length > 0 ? selectedOptions : [],
+          id: formik.values.id,
+        })
+      );
     }
-  }, [formik.values.id]);
-
+  }, [formik.values.id, filter.flag]);
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
@@ -141,16 +125,18 @@ const StatusTrackerPage = () => {
     );
   }, [supplyList, sm]);
 
+  useEffect(() => {
+    if (filter.flag) {
+      setSupplyList(filter.result);
+    }
+  }, [filter.result]);
+
   return (
     <Fragment>
-      {supplyList.length === 0 && <Spinners />}
-      {supplyList.length > 0 && (
-        <Fragment>
-          <Row className={`mt-3 ${sm ? `mx-2` : ``}` }>
-          <Col
-            md={{ span: "6", offset: "2" }}
-            className="mb-1"
-          >
+      {supplyList.length === 0 && error.length === 0 && <Spinners />}
+      <Fragment>
+        <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
+          <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
               placeholder="Enter Demand ID"
               type="text"
@@ -162,7 +148,7 @@ const StatusTrackerPage = () => {
             />
           </Col>
           <Col md="3">
-          <Multiselect
+            <Multiselect
               displayValue="key"
               onRemove={onRemoveItem}
               onSelect={onSelectItem}
@@ -183,48 +169,47 @@ const StatusTrackerPage = () => {
               showCheckbox
             />
           </Col>
-          </Row>
-          {error.length === 0 && (
-            <Fragment>
-              <div className="mt-3 d-flex justify-content-center flex-wrap">
-                {supplyList.map((demand, index) => {
-                  if (
-                    index >= (currentPage - 1) * (sm ? 10 : 20) &&
-                    index < currentPage * (sm ? 10 : 20)
-                  ) {
-                    return (
-                      <Card
-                        className={`mx-1 my-2 text-center text-white bg-${
-                          demand.status === "Submitted"
-                            ? "primary"
-                            : demand.status === "Completed"
-                            ? "success"
-                            : String(demand.status).includes("Inprogress")
-                            ? "warning"
-                            : "danger"
-                        }`}
-                        key={index}
-                      >
-                        <Card.Body>
-                          <small>
-                            <b>{demand.id} </b> 
-                          </small>
-                        </Card.Body>
-                      </Card>
-                    );
-                  }
-                })}
-              </div>
-              <div className="d-flex justify-content-center mt-4">
-                <PageSwitcher />
-              </div>
-            </Fragment>
-          )}
-          {error.length > 0 && (
-            <p className="fw-bold text-center text-danger mt-5">{error}</p>
-          )}
-        </Fragment>
-      )}
+        </Row>
+        {error.length === 0 && supplyList.length > 0 && (
+          <Fragment>
+            <div className="mt-3 d-flex justify-content-center flex-wrap">
+              {supplyList.map((demand, index) => {
+                if (
+                  index >= (currentPage - 1) * (sm ? 10 : 20) &&
+                  index < currentPage * (sm ? 10 : 20)
+                ) {
+                  return (
+                    <Card
+                      className={`mx-1 my-2 text-center text-white bg-${
+                        demand.status === "Submitted"
+                          ? "primary"
+                          : demand.status === "Completed"
+                          ? "success"
+                          : String(demand.status).includes("Inprogress")
+                          ? "warning"
+                          : "danger"
+                      }`}
+                      key={index}
+                    >
+                      <Card.Body>
+                        <small>
+                          <b>{demand.id} </b>
+                        </small>
+                      </Card.Body>
+                    </Card>
+                  );
+                }
+              })}
+            </div>
+            <div className="d-flex justify-content-center mt-4">
+              <PageSwitcher />
+            </div>
+          </Fragment>
+        )}
+        {error.length > 0 && (
+          <p className="fw-bold text-center text-danger mt-5">{error}</p>
+        )}
+      </Fragment>
     </Fragment>
   );
 };
