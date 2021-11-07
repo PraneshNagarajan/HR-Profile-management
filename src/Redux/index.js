@@ -3,6 +3,7 @@ import AlertReducer from "./AlertSlice";
 import AuthReducer from "./AuthenticationSlice";
 import DemandPreRequisiteReducer from "./DemandCreationPreRequisite";
 import InfoReducer from "./EmployeeInfoSlice";
+import FilterReducer from "./FilterSlice";
 import PaginationRedcer from "./PaginationSlice";
 
 const store = configureStore({
@@ -11,7 +12,8 @@ const store = configureStore({
         info: InfoReducer,
         alert: AlertReducer,
         demandPreRequisite: DemandPreRequisiteReducer,
-        pagination: PaginationRedcer
+        pagination: PaginationRedcer,
+        filter: FilterReducer
     }
 })
 
