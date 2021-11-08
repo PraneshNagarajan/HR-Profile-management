@@ -16,12 +16,15 @@ import man from "../images/man.png";
 import women from "../images/women.png";
 import male from "../images/male.jpg";
 import female from "../images/female.jpg";
+import successCheck from "../images/success_check.png";
+import Stepper from "react-stepper-horizontal";
 
 const ManageSupply = () => {
   const params = useParams();
   const [supplyList, setSupplyList] = useState({});
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
+  const md = useMediaQuery({ maxWidth: 992 });
   const filter = useSelector((state) => state.filter);
   const error = useSelector((state) => state.filter.errors);
   const currentPage = useSelector((state) => state.pagination.current);
@@ -104,7 +107,9 @@ const ManageSupply = () => {
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
-        size:  supplyList.profile_info ? Object.keys(supplyList.profile_info.profiles_status.data).length : 0,
+        size: supplyList.profile_info
+          ? Object.keys(supplyList.profile_info.profiles_status.data).length
+          : 0,
         count: sm ? 10 : 20,
         current: 1,
       })
@@ -233,10 +238,10 @@ const ManageSupply = () => {
                       <Card
                         className={`mx-1 my-2 text-center`}
                         key={index}
-                        style={{ width: "48%" }}
+                        style={{ width: sm ? '98%' : '48%' }}
                       >
                         <Card.Body>
-                          <Row>
+                          <Row >
                             <Col md="3">
                               <Card.Img
                                 src={index % 2 === 0 ? man : male}
@@ -244,7 +249,7 @@ const ManageSupply = () => {
                             </Col>
                             <Col
                               md={{ span: "8", offset: "1" }}
-                              className="position-absolute top-50 start-50 translate-middle"
+                              className="text-center mt-5"
                             >
                               <div>
                                 <small>
@@ -262,6 +267,23 @@ const ManageSupply = () => {
                                 </small>
                               </div>
                             </Col>
+                          </Row>
+                          <Row>
+                            <Stepper
+                              steps={[
+                                { title: "Step One" ,icon: successCheck},
+                                { title: "Step Two"  ,icon: successCheck},
+                                { title: "Step Three" ,icon: successCheck},
+                                { title: "Step Four"  ,icon: successCheck},
+                              ]}
+                              activeStep={1}
+                              circleTop={30}
+                              circleFontSize={1}
+                              completeColor="#FFFFFF"
+                              defaultColor="#FFFFFF"
+                              activeColor="#FFFFFF"
+                              completeBarColor ="#33cc33"
+                            />
                           </Row>
                         </Card.Body>
                       </Card>
