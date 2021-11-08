@@ -104,7 +104,7 @@ const ManageSupply = () => {
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
-        size: Object.keys(supplyList.profile_info.profiles_status.data).length,
+        size:  supplyList.profile_info ? Object.keys(supplyList.profile_info.profiles_status.data).length : 0,
         count: sm ? 10 : 20,
         current: 1,
       })
@@ -138,7 +138,7 @@ const ManageSupply = () => {
           </Col>
           <Col md="3">
             <Multiselect
-              displayValue="key"
+              displayValue="value"
               onRemove={onRemoveItem}
               onSelect={onSelectItem}
               options={[
