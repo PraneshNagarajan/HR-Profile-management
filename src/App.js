@@ -19,6 +19,7 @@ import UserHomePage from "./pages/UserHomePage";
 import CreateSupply from "./pages/CreateSupply";
 import AdminHomePage from "./pages/AdminHomePage";
 import StatusTrackerPage from "./pages/StatusTrackerPage";
+import ManageSupply from "./pages/ManageSupply";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -153,7 +154,7 @@ function App() {
               </Route>
               <Route path="/manageSupply/:demandId">
                 <MainLayout>
-                <StatusTrackerPage/>
+                <ManageSupply/>
                 </MainLayout>
               </Route>
             </Fragment>

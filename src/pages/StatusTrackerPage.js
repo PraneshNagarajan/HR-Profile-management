@@ -11,10 +11,11 @@ import { PaginationActions } from "../Redux/PaginationSlice";
 import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
 import { FilterActions } from "../Redux/FilterSlice";
+import { Link } from "react-router-dom";
 
 const StatusTrackerPage = () => {
   const data = [
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
+    { id: "F1234561634653213828", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111114", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
@@ -190,6 +191,8 @@ const StatusTrackerPage = () => {
                           : "danger"
                       }`}
                       key={index}
+                      as={Link}
+                      to={"/manageSupply/"+demand.id}
                     >
                       <Card.Body>
                         <small>
