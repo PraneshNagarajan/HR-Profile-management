@@ -27,7 +27,7 @@ import { AlertActions } from "../Redux/AlertSlice";
 const initialValues = {
   demand_id: "",
   profile_id: "",
-  recruiter: "",
+  assignee: "",
   clientname: "",
   endclientname: "",
   location: "",
@@ -117,24 +117,24 @@ const CreateSupply = (props) => {
           data[file] = await {
             current_status: "Profile Submitted",
             status: {
-              "profile submitted    ": new Date().toString(),
-              "Screen Reject        ": "",
-              "Duplicate            ": "",
-              "Feedback Pending     ": "",
-              "Position Hold        ": "",
-              "Interview Scheduled  ": "",
-              "No Show              ": "",
-              "L1 Select            ": "",
-              "L1 Reject            ": "",
-              "L2 Reject            ": "",
-              "L2 Select            ": "",
-              "Client Select        ": "",
-              "Client Reject        ": "",
-              "Client Hold          ": "",
+              "profile submitted": new Date().toString(),
+              "Screen Reject": "",
+              "Duplicate": "",
+              "Feedback Pending": "",
+              "Position Hold": "",
+              "Interview Scheduled": "",
+              "L1 Select": "",
+              "No Show": "",
+              "L1 Reject": "",
+              "L2 Reject": "",
+              "L2 Select": "",
+              "Client Select": "",
+              "Client Reject": "",
+              "Client Hold": "",
               "Declined Before Offer": "",
-              "Offered              ": "",
-              "Declined After Offer ": "",
-              "On Boarded			  ": "",
+              "Offered": "",
+              "Declined After Offer": "",
+              "On Boarded": "",
             },
           };
           if ((await Object.values(data).length) - 1 === index) {
@@ -672,9 +672,9 @@ const CreateSupply = (props) => {
                     </Col>
                     <Col md="8">
                       <FormControl
-                        name="recruiter"
+                        name="assignee"
                         readOnly
-                        value={formik.values.recruiter}
+                        value={formik.values.assignee}
                       />
                     </Col>
                   </Row>
@@ -874,7 +874,7 @@ const CreateSupply = (props) => {
                   }
                 />
               </FormGroup>
-              {(formik.values.status.includes("new") ||
+              {(formik.values.status.includes("Unstarted") ||
                 formik.values.status.includes("Inprogress")) && (
                 <Fragment>
                   <hr className="my-4" />

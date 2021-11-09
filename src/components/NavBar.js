@@ -125,7 +125,7 @@ const NavBar = () => {
               </Fragment>
             )}
 
-            {user.role.includes('RECRUITER') &&
+            {(user.role.includes('RECRUITER') || user.role.includes('FOCAL'))  &&
             <NavDropdown
               disabled={!(user.photoUrl.length > 0 && user.security)}
               // active={location.pathname.includes("Demand"  || 'Supplies') ? `active` : ``}

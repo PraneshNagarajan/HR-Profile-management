@@ -16,8 +16,87 @@ import man from "../images/man.png";
 import women from "../images/women.png";
 import male from "../images/male.jpg";
 import female from "../images/female.jpg";
-import successCheck from "../images/success_check.png";
+import successIcon from "../images/successIcon.png";
+import holdIcon from "../images/holdIcon.png";
+import failedIcon from "../images/failedIcon.png";
 import Stepper from "react-stepper-horizontal";
+
+const steps1 = [
+  {
+    icon: failedIcon,
+    title: "Screen Reject",
+  },
+  {
+    icon: failedIcon,
+    title: "Duplicate",
+  },
+  {
+    icon: holdIcon,
+    title: "Feedback Pending",
+  },
+  {
+    icon: holdIcon,
+    title: "Position Hold",
+  },
+];
+const steps2 = [
+  {
+    icon: successIcon,
+    title: "Interview Scheduled",
+  },
+  {
+    icon: failedIcon,
+    title: "No Show",
+  },
+  {
+    icon: holdIcon,
+    title: "Feedback Pending",
+  },
+  {
+    icon: successIcon,
+    title: "L1 Select",
+  },
+  {
+    icon: failedIcon,
+    title: "L1 Reject",
+  },
+  {
+    icon: successIcon,
+    title: "L2 Select",
+  },
+  {
+    icon: failedIcon,
+    title: "L2 Reject",
+  },
+  {
+    icon: successIcon,
+    title: "Client Select",
+  },
+  {
+    icon: failedIcon,
+    title: "Client Reject",
+  },
+  {
+    icon: holdIcon,
+    title: "Client Hold",
+  },
+  {
+    icon: failedIcon,
+    title: "Declined Before Offer",
+  },
+  {
+    icon: successIcon,
+    title: "Offered",
+  },
+  {
+    icon: failedIcon,
+    title: "Declined After Offer",
+  },
+  {
+    icon: successIcon,
+    title: "On Boarded",
+  },
+];
 
 const ManageSupply = () => {
   const params = useParams();
@@ -31,7 +110,7 @@ const ManageSupply = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [data, setData] = useState([]);
 
-  console.log(params.demandId);
+  // console.log(supplyList);
   //   useEffect(() => {
   //     firestore
   //       .collection("Demands")
@@ -75,6 +154,9 @@ const ManageSupply = () => {
     setSelectedOptions(options);
   };
 
+  const onChangeStatus = (key, step) => {
+    alert(key + " : " + step);
+  };
   useEffect(() => {
     if (formik.values.id.length === 0) {
       firestore
@@ -82,15 +164,87 @@ const ManageSupply = () => {
         .doc(params.demandId)
         .get()
         .then((response) => {
-          setSupplyList(response.data());
-          setData(response.data());
-          dispatch(
-            PaginationActions.initial({
-              size: data.profiles.length,
-              count: sm ? 10 : 20,
-              current: 1,
-            })
-          );
+          // setSupplyList(response.data());
+          let responseData = response.data();
+          let statusValues = responseData.profile_info.profiles_status.data;
+          // console.log(statusValues["60544_Invoice---Copy-(2)"]["status"])
+          let keys = Object.keys(statusValues);
+          keys.map((key, index) => {
+            console.log(key);
+            let activeStep1 = -1;
+            let activeStep2 = 0;
+            let status1 = [];
+            let status2 = [];
+            steps1.map((step) => {
+              if (statusValues[key]["status"][step.title].length > 0) {
+                status1.push({
+                  ...step,
+                  title:
+                    step.title +
+                    "(" +
+                    statusValues[key]["status"][step.title] +
+                    ")",
+                  onClick: () => onChangeStatus(key, steps1.title),
+                });
+                activeStep1 += 1;
+              }
+            });
+            steps2.map((step, index) => {
+              if (statusValues[key]["status"][step.title].length > 0) {
+                status2.push({
+                  ...step,
+                  title:
+                    step.title +
+                    "(" +
+                    statusValues[key]["status"][step.title] +
+                    ")",
+                  onClick: () =>
+                    onChangeStatus(
+                      key,
+                      steps2[index + 1 < steps2.length ? index + 1 : index]
+                        .title
+                    ),
+                });
+                activeStep2 += 1;
+              } else {
+                status2.push({
+                  ...step,
+                  onClick: () =>
+                    onChangeStatus(
+                      key,
+                      steps2[index + 1 < steps2.length ? index + 1 : index]
+                        .title
+                    ),
+                });
+              }
+            });
+            if (activeStep1 === -1) {
+              status2.unshift({
+                title: "Submitted",
+                icon: successIcon,
+                onClick: () => onChangeStatus(key, "Interview Scheduled"),
+              });
+            }
+            let combinedStatus =
+              status1.length > 0
+                ? [...status1].concat([...status2])
+                : [...status2];
+            statusValues[key]["status"] = combinedStatus;
+            statusValues[key]["activeStep"] =
+              activeStep1 === -1 ? activeStep2 : 0;
+            console.log(statusValues);
+            if (keys.length - 1 === index) {
+              setData(statusValues);
+              setSupplyList(statusValues);
+            }
+          });
+          // dispatch(
+          //   PaginationActions.initial({
+          //     size: data.profiles.length,
+          //     count: sm ? 10 : 20,
+          //     current: 1,
+          //   })
+          // );
         })
         .catch((err) => console.log(String(err)));
       dispatch(FilterActions.onSetInitial());
@@ -227,70 +381,70 @@ const ManageSupply = () => {
         {error.length === 0 && Object.keys(supplyList).length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {Object.keys(supplyList.profile_info.profiles_status.data).map(
-                (demand, index) => {
-                  console.log(demand);
-                  if (
-                    index >= (currentPage - 1) * (sm ? 10 : 20) &&
-                    index < currentPage * (sm ? 10 : 20)
-                  ) {
-                    return (
-                      <Card
-                        className={`mx-1 my-2 text-center`}
-                        key={index}
-                        style={{ width: sm ? '98%' : '48%' }}
-                      >
-                        <Card.Body>
-                          <Row >
-                            <Col md="3">
-                              <Card.Img
-                                src={index % 2 === 0 ? man : male}
-                              ></Card.Img>
-                            </Col>
-                            <Col
-                              md={{ span: "8", offset: "1" }}
-                              className="text-center mt-5"
-                            >
-                              <div>
-                                <small>
-                                  <b>Profile Name : </b>
-                                  {demand}
-                                </small>
-                              </div>
-                              <div>
-                                <small>
-                                  <b>Current Status : </b>
-                                  {
-                                    supplyList.profile_info.profiles_status
-                                      .data[demand].current_status
-                                  }
-                                </small>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Stepper
-                              steps={[
-                                { title: "Step One" ,icon: successCheck},
-                                { title: "Step Two"  ,icon: successCheck},
-                                { title: "Step Three" ,icon: successCheck},
-                                { title: "Step Four"  ,icon: successCheck},
-                              ]}
-                              activeStep={1}
-                              circleTop={30}
-                              circleFontSize={1}
-                              completeColor="#FFFFFF"
-                              defaultColor="#FFFFFF"
-                              activeColor="#FFFFFF"
-                              completeBarColor ="#33cc33"
-                            />
-                          </Row>
-                        </Card.Body>
-                      </Card>
-                    );
-                  }
+              {Object.keys(supplyList).map((demand, index) => {
+                if (
+                  index >= (currentPage - 1) * (sm ? 10 : 20) &&
+                  index < currentPage * (sm ? 10 : 20)
+                ) {
+                  return (
+                    <Card
+                      className={`mx-1 my-2 text-center`}
+                      key={index}
+                      style={{ width: sm ? "98%" : "99%" }}
+                    >
+                      <Card.Body>
+                        <Row>
+                          <Col md="2">
+                            <Card.Img
+                              src={
+                                demand.slice(-1).toLowerCase() === "m"
+                                  ? index % 2 === 0
+                                    ? male
+                                    : man
+                                  : index % 2 === 0
+                                  ? women
+                                  : female
+                              }
+                              className="w-75"
+                            ></Card.Img>
+                          </Col>
+                          <Col
+                            md={{ span: "8", offset: "1" }}
+                            className="text-center mt-5"
+                          >
+                            <div>
+                              <small>
+                                <b>Profile Name : </b>
+                                {demand}
+                              </small>
+                            </div>
+                            <div>
+                              <small>
+                                <b>Current Status : </b>
+                                {supplyList[demand].current_status}
+                              </small>
+                            </div>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Stepper
+                            steps={[...supplyList[demand].status]}
+                            activeStep={supplyList[demand].activeStep}
+                            circleTop={30}
+                            circleFontSize={0}
+                            completeColor="#FFFFFF"
+                            defaultColor="#FFFFFF"
+                            activeColor="#FFFFFF"
+                            defaultBorderWidth={10}
+                            // activeTitleColor="#3333ff"
+                            defaultOpacity="0.2"
+                          />
+                        </Row>
+                      </Card.Body>
+                    </Card>
+                  );
                 }
-              )}
+              })}
             </div>
             <div className="d-flex justify-content-center mt-4">
               <PageSwitcher />

@@ -451,7 +451,7 @@ const CreateDemand = (props) => {
                           <Dropdown.Menu className="w-100">
                             {pre_requisite.recruiters.map(
                               (recruiter, index) => {
-                                if (recruiter.role.includes("Recruiter")) {
+                                if (recruiter.role.includes("RECRUITER")) {
                                   return (
                                     <Fragment key={index}>
                                       <Dropdown.Item
