@@ -5,7 +5,8 @@ name: 'Alert',
 initialState: {
     show: false,
     msg:'',
-    msgFlag: ''
+    msgFlag: '',
+    accept: false
 },
 reducers: {
     handleShow(state, action) {
@@ -15,7 +16,11 @@ reducers: {
     },
     handleClose(state) {
         state.show = false
+    },
+    acceptSubmit(state,action){
+        state.accept = action.payload.flag
     }
+
 }
 })
 
