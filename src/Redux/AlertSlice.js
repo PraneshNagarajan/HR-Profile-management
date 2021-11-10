@@ -6,7 +6,8 @@ initialState: {
     show: false,
     msg:'',
     msgFlag: '',
-    accept: false
+    accept: false,
+    data: []
 },
 reducers: {
     handleShow(state, action) {
@@ -18,7 +19,11 @@ reducers: {
         state.show = false
     },
     acceptSubmit(state,action){
-        state.accept = action.payload.flag
+        state.accept = true
+        state.data = action.payload.data
+    },
+    cancelSubmit(state){
+        state.accept = false
     }
 
 }
