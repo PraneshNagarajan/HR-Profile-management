@@ -67,25 +67,25 @@ let options1 = {
 };
 
 let options2 = {
-  0: [
+  "Interview Scheduled": [
     { status: "No Show", color: "danger" },
     { status: "L1 Select", color: "primary" },
     { status: "L1 Reject", color: "danger" },
   ],
-  3: [
+  "L1 Select": [
     { status: "L2 Reject", color: "danger" },
     { status: "L2 Select", color: "primary" },
   ],
-  5: [
+  "L2 Select": [
     { status: "Client Select", color: "primary" },
     { status: "Client Reject", color: "danger" },
     { status: "Client Hold", color: "warning" },
   ],
-  8: [
+  "Client Select": [
     { status: "Declined Before Offer", color: "danger" },
     { status: "Offered", color: "primary" },
   ],
-  10: [
+  Offered: [
     { status: "Declined After Offer", color: "danger" },
     { status: "On Boarded", color: "primary" },
   ],
@@ -94,13 +94,14 @@ let options2 = {
 let profileKey = "";
 let getData = [];
 let date = new Date();
-let dateFormat = "(" +
-date.getDate() +
-"/" +
-(date.getMonth() + 1) +
-"/" +
-date.getFullYear() +
-")";
+let dateFormat =
+  "(" +
+  date.getDate() +
+  "/" +
+  (date.getMonth() + 1) +
+  "/" +
+  date.getFullYear() +
+  ")";
 
 const ManageSupply = () => {
   const params = useParams();
@@ -114,25 +115,6 @@ const ManageSupply = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [data, setData] = useState([]);
   const [stepOptions, setStepOptions] = useState([]);
-
-  // console.log(supplyList);
-  //   useEffect(() => {
-  //     firestore
-  //       .collection("Demands")
-  //       .doc(params.demandId)
-  //       .get()
-  //       .then((data) => {
-  //         setDemandData(data);
-  //         dispatch(
-  //           PaginationActions.initial({
-  //             size: data.profiles.length,
-  //             count: sm ? 10 : 20,
-  //             current: 1,
-  //           })
-  //         );
-  //       })
-  //       .catch((err) => console.log(String(err)));
-  //   }, [params.demandId]);
 
   const formik = useFormik({
     initialValues: {
@@ -173,10 +155,30 @@ const ManageSupply = () => {
     setStepOptions(step);
   };
 
+  //update the status db
   const onUpdateChangesToDB = (step) => {
-    let dir = "profile_info.profiles_status.data."+profileKey
-    firestore.collection('Demands').doc(params.demandId).update({[dir+".status."+step] : dateFormat.slice(1,dateFormat.length-1), [dir+".current_status"] : step}).catch(err => console.log(String(err)))
-  }
+    let dir = "profile_info.profiles_status.data." + profileKey;
+    let finalStatus = {};
+    Object.values(supplyList[profileKey].status).map((item, idx) => {
+      let title = item.title.includes("(")
+        ? item.title.split("(")[0]
+        : item.title;
+      let value = item.title.includes("(")
+        ? item.title.split("(")[1].split(")")[0]
+        : "";
+      finalStatus[title] = value;
+      if (supplyList[profileKey].status.length - 1 === idx) {
+        firestore
+          .collection("Demands")
+          .doc(params.demandId)
+          .update({
+            [dir + ".status"]: finalStatus,
+            [dir + ".current_status"]: step,
+          })
+          .catch((err) => console.log(String(err)));
+      }
+    });
+  };
 
   // if user confirm to update the status eg( L1 -> L2 lvl) change
   useEffect(() => {
@@ -193,7 +195,7 @@ const ManageSupply = () => {
         tmp_data[profileKey]["status"][0].title.includes("Interview Scheduled")
       ) {
         tmp_data[profileKey]["status"][index].title =
-          alertData.data +dateFormat
+          alertData.data + dateFormat;
 
         tmp_data[profileKey].activeStep = index;
 
@@ -231,24 +233,24 @@ const ManageSupply = () => {
             };
             tmp_data[profileKey]["status"][0] = {
               ...tmp,
-              title:
-                alertData.data + dateFormat
+              title: alertData.data + dateFormat,
             };
           }
         }
         //delete first step
         if (Object.values(tmp).length === 0) {
           tmp_data[profileKey]["status"].splice(0, 1);
-          tmp_data[profileKey]["status"][0].title =
-            alertData.data +dateFormat
+          tmp_data[profileKey]["status"][0].title = alertData.data + dateFormat;
         }
       }
-      onUpdateChangesToDB(alertData.data)
+      onUpdateChangesToDB(alertData.data);
       setSupplyList(tmp_data);
       dispatch(AlertActions.cancelSubmit());
     }
   }, [alertData.accept]);
 
+  //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
+  //and disable previous step status options.
   const onProcessData = (statusValues) => {
     let keys = Object.keys(statusValues);
     keys.map((key, index) => {
@@ -257,53 +259,63 @@ const ManageSupply = () => {
       let status1 = [];
       let status2 = [];
       steps1.map((step, index) => {
-        if (statusValues[key]["status"][step.title].length > 0) {
-          status2.push({
+        if (statusValues[key]["status"][step.title] !== undefined) {
+          if (statusValues[key]["status"][step.title].length > 0) {
+            status2.push({
+              ...step,
+              title:
+                step.title +
+                "(" +
+                statusValues[key]["status"][step.title] +
+                ")",
+              onClick: () => {
+                if (options1[index]) {
+                  onChangeStatus(key, options1[index]);
+                }
+              },
+            });
+            activeStep1 += 1;
+          }
+
+          status1.push({
             ...step,
-            title:
-              step.title + "(" + statusValues[key]["status"][step.title] + ")",
             onClick: () => {
-              if (options1[index]) {
-                onChangeStatus(key, options1[index]);
-              }
+              profileKey = key;
+              onSelectFirstStatus(steps1[index].title);
             },
           });
-          activeStep1 += 1;
         }
-
-        status1.push({
-          ...step,
-          onClick: () => {
-            profileKey = key;
-            onSelectFirstStatus(steps1[index].title);
-          },
-        });
       });
       steps2.map((step, index) => {
-        if (statusValues[key]["status"][step.title].length > 0) {
-          status2.push({
-            ...step,
-            title:
-              step.title + "(" + statusValues[key]["status"][step.title] + ")",
-            onClick: () => {
-              if (options2[index]) {
-                onChangeStatus(key, options2[index]);
-              }
-            },
-          });
-          activeStep2 += 1;
-        } else {
-          status2.push({
-            ...step,
-            onClick: () => {
-              if (options2[index]) {
-                onChangeStatus(key, options2[index]);
-              }
-            },
-          });
+        if (statusValues[key]["status"][step.title] !== undefined) {
+          if (statusValues[key]["status"][step.title].length > 0) {
+            status2.push({
+              ...step,
+              title:
+                step.title +
+                "(" +
+                statusValues[key]["status"][step.title] +
+                ")",
+              onClick: () => {
+                if (Object.keys(options2).includes(step.title)) {
+                  onChangeStatus(key, options2[step.title]);
+                }
+              },
+            });
+            activeStep2 += 1;
+          } else {
+            status2.push({
+              ...step,
+              onClick: () => {
+                if (Object.keys(options2).includes(step.title)) {
+                  alert("true");
+                  onChangeStatus(key, options2[step.title]);
+                }
+              },
+            });
+          }
         }
       });
-
       if (activeStep1 === -1 && activeStep2 === -1) {
         status1.unshift({
           title: "Submitted",
@@ -334,12 +346,12 @@ const ManageSupply = () => {
     });
   };
 
+  //call this funcion if no step had choosen
   const onSelectFirstStatus = (step) => {
-    let statusValues = getData; 
-    statusValues[profileKey]["status"][step] =
-    alertData.data +dateFormat
+    let statusValues = getData;
+    statusValues[profileKey]["status"][step] = alertData.data + dateFormat;
     onProcessData(statusValues);
-    onUpdateChangesToDB(step)
+    onUpdateChangesToDB(step);
   };
 
   useEffect(() => {
@@ -351,7 +363,6 @@ const ManageSupply = () => {
         .then((response) => {
           getData = response.data().profile_info.profiles_status.data;
           let statusValues = response.data().profile_info.profiles_status.data;
-          console.log(getData);
           onProcessData(statusValues);
           dispatch(
             PaginationActions.initial({
@@ -372,7 +383,7 @@ const ManageSupply = () => {
         })
       );
     }
-  }, [formik.values.id, filter.flag]);
+  }, [formik.values.id, filter.flag, params.demandId]);
 
   useEffect(() => {
     dispatch(
