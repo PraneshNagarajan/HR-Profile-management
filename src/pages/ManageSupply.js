@@ -11,7 +11,7 @@ import { PaginationActions } from "../Redux/PaginationSlice";
 import { useMediaQuery } from "react-responsive";
 import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
-import { FilterActions } from "../Redux/FilterSlice";
+import { FilterActions } from "../Redux/FilterDemandSlice";
 import man from "../images/man.png";
 import women from "../images/women.png";
 import male from "../images/male.jpg";

@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { PaginationActions } from "../Redux/PaginationSlice";
 import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
-import { FilterActions } from "../Redux/FilterSlice";
+import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
 
 const StatusTrackerPage = () => {
@@ -58,7 +58,7 @@ const StatusTrackerPage = () => {
   ];
 
   const sm = useMediaQuery({ maxWidth: 768 });
-  const filter = useSelector((state) => state.filter);
+  const filter = useSelector((state) => state.filterDemand);
   const [supplyList, setSupplyList] = useState([]);
   const demandRef = firestore.collection("Demands");
   const loggedUser = useSelector((state) => state.auth);
@@ -77,7 +77,7 @@ const StatusTrackerPage = () => {
     let options = [...selectedOptions];
     options.push(item.key);
     dispatch(
-      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterDemandActions.onTextFilterHandler({ data, options, id: formik.values.id })
     );
     setSelectedOptions(options);
   };
@@ -87,7 +87,7 @@ const StatusTrackerPage = () => {
     let index = selectedOptions.findIndex((id) => id === item.key);
     options.splice(index, 1);
     dispatch(
-      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterDemandActions.onTextFilterHandler({ data, options, id: formik.values.id })
     );
     setSelectedOptions(options);
   };
@@ -105,10 +105,10 @@ const StatusTrackerPage = () => {
       //   });
       // });
       setSupplyList(data);
-      dispatch(FilterActions.onSetInitial());
+      dispatch(FilterDemandActions.onSetInitial());
     } else {
       dispatch(
-        FilterActions.onTextFilterHandler({
+        FilterDemandActions.onTextFilterHandler({
           data,
           options: selectedOptions.length > 0 ? selectedOptions : [],
           id: formik.values.id,
