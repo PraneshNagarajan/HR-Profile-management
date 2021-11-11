@@ -11,7 +11,7 @@ import { PaginationActions } from "../Redux/PaginationSlice";
 import { useMediaQuery } from "react-responsive";
 import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
-import { FilterActions } from "../Redux/FilterDemandSlice";
+import { FilterProfileActions } from "../Redux/FilterProfileSlice";
 import man from "../images/man.png";
 import women from "../images/women.png";
 import male from "../images/male.jpg";
@@ -108,9 +108,9 @@ const ManageSupply = () => {
   const [supplyList, setSupplyList] = useState({});
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
-  const filter = useSelector((state) => state.filter);
+  const filter = useSelector((state) => state.filterProfile);
   const alertData = useSelector((state) => state.alert);
-  const error = useSelector((state) => state.filter.errors);
+  const error = useSelector((state) => state.filterProfile.errors);
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [data, setData] = useState([]);
@@ -125,9 +125,13 @@ const ManageSupply = () => {
   // filter profiles based on single or multi catagory
   const onSelectItem = (list, item) => {
     let options = [...selectedOptions];
-    options.push(item.key);
+    options.push(item.value);
     dispatch(
-      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterProfileActions.onTextFilterHandler({
+        data,
+        options,
+        id: formik.values.id,
+      })
     );
     setSelectedOptions(options);
   };
@@ -138,7 +142,11 @@ const ManageSupply = () => {
     let index = selectedOptions.findIndex((id) => id === item.key);
     options.splice(index, 1);
     dispatch(
-      FilterActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterProfileActions.onTextFilterHandler({
+        data,
+        options,
+        id: formik.values.id,
+      })
     );
     setSelectedOptions(options);
   };
@@ -355,7 +363,7 @@ const ManageSupply = () => {
   };
 
   useEffect(() => {
-    if (formik.values.id.length === 0) {
+    if (formik.values.id.length === 0 && selectedOptions.length === 0) {
       firestore
         .collection("Demands")
         .doc(params.demandId)
@@ -373,17 +381,17 @@ const ManageSupply = () => {
           );
         })
         .catch((err) => console.log(String(err)));
-      dispatch(FilterActions.onSetInitial());
+      dispatch(FilterProfileActions.onSetInitial());
     } else {
       dispatch(
-        FilterActions.onTextFilterHandler({
+        FilterProfileActions.onTextFilterHandler({
           data,
           options: selectedOptions.length > 0 ? selectedOptions : [],
           id: formik.values.id,
         })
       );
     }
-  }, []);
+  }, [formik.values.id, filter.flag]);
 
   useEffect(() => {
     dispatch(

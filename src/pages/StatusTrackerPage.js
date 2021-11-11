@@ -63,7 +63,7 @@ const StatusTrackerPage = () => {
   const demandRef = firestore.collection("Demands");
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const error = useSelector((state) => state.filter.errors);
+  const error = useSelector((state) => state.filterDemand.errors);
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
 
