@@ -4,6 +4,7 @@ import AuthReducer from "./AuthenticationSlice";
 import DemandPreRequisiteReducer from "./DemandCreationPreRequisite";
 import InfoReducer from "./EmployeeInfoSlice";
 import FilterDemandReducer from "./FilterDemandSlice";
+import FilterProfileReducer from "./FilterProfileSlice";
 import PaginationRedcer from "./PaginationSlice";
 
 const store = configureStore({
@@ -13,7 +14,8 @@ const store = configureStore({
         alert: AlertReducer,
         demandPreRequisite: DemandPreRequisiteReducer,
         pagination: PaginationRedcer,
-        filterDemand: FilterDemandReducer
+        filterDemand: FilterDemandReducer,
+        filterProfile: FilterProfileReducer
     }
 })
 
