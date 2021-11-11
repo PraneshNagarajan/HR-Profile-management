@@ -375,7 +375,7 @@ const ManageSupply = () => {
           dispatch(
             PaginationActions.initial({
               size: data.profiles.length,
-              count: sm ? 10 : 20,
+              count: sm ? 5 : 10,
               current: 1,
             })
           );
@@ -399,7 +399,7 @@ const ManageSupply = () => {
         size: supplyList.profile_info
           ? Object.keys(supplyList.profile_info.profiles_status.data).length
           : 0,
-        count: sm ? 10 : 20,
+        count: sm ? 5 : 10,
         current: 1,
       })
     );
@@ -521,8 +521,8 @@ const ManageSupply = () => {
             <div className="mt-3 d-flex justify-content-center flex-wrap">
               {Object.keys(supplyList).map((demand, index) => {
                 if (
-                  index >= (currentPage - 1) * (sm ? 10 : 20) &&
-                  index < currentPage * (sm ? 10 : 20)
+                  index >= (currentPage - 1) * (sm ? 5 : 10) &&
+                  index < currentPage * (sm ? 5 : 10)
                 ) {
                   return (
                     <Card
