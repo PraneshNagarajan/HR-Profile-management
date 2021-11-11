@@ -383,7 +383,7 @@ const ManageSupply = () => {
         })
       );
     }
-  }, [formik.values.id, filter.flag, params.demandId]);
+  }, []);
 
   useEffect(() => {
     dispatch(
