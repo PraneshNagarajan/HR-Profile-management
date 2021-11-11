@@ -20,7 +20,7 @@ reducers: {
     },
     acceptSubmit(state,action){
         state.accept = true
-        state.data = action.payload.data
+        state.data = action.payload
     },
     cancelSubmit(state){
         state.accept = false
