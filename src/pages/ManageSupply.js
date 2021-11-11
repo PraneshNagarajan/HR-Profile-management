@@ -526,7 +526,13 @@ const ManageSupply = () => {
                 ) {
                   return (
                     <Card
-                      className={`mx-1 my-2 text-center`}
+                      className={`mx-1 my-2 text-center shadow border border-2 border-${
+                        supplyList[demand].current_status.includes("Hold")
+                          ? `warning`
+                          : supplyList[demand].current_status.includes("ed")
+                          ? `primary`
+                          : `danger`
+                      }`}
                       key={index}
                       style={{ width: sm ? "98%" : "99%" }}
                     >

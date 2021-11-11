@@ -32,9 +32,9 @@ reducers: {
           if (item.id.includes(action.payload.id)) {
             result.push(item);
           }
-          if (action.payload.data.length - 1 === index && result.length > 0) {
+          if (action.payload.data.length - 1 === index) {
             let output = onCatagoryFilterHandler(
-                action.payload.id.length > 0 || action.payload.length > 0 ? result : action.payload.data,
+                action.payload.id.length > 0 && result.length > 0 ? result : action.payload.data,
               action.payload.options
             );
             result = output;

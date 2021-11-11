@@ -93,7 +93,7 @@ const StatusTrackerPage = () => {
   };
 
   useEffect(() => {
-    if (formik.values.id.length === 0) {
+    if (formik.values.id.length === 0 && selectedOptions.length === 0) {
       // demandRef.onSnapshot((querySnapshot) => {
       //   querySnapshot.docs.map((item, index) => {
       //     if (item.id.includes(loggedUser.id)) {
@@ -116,6 +116,7 @@ const StatusTrackerPage = () => {
       );
     }
   }, [formik.values.id, filter.flag]);
+  
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
