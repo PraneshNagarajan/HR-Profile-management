@@ -404,9 +404,9 @@ const CreateDemand = (props) => {
 
   return (
     <Fragment>
-      {!Object.values(pre_requisite.recruiters).length > 0 && <Spinners />}
+      {!Object.values(pre_requisite.users).length > 0 && <Spinners />}
       <Alerts />
-      {Object.values(pre_requisite.recruiters).length > 0 && (
+      {Object.values(pre_requisite.users).length > 0 && (
         <Container className="d-flex justify-content-center ">
           <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
             <Card.Header className="bg-primary text-center text-white">
@@ -449,7 +449,7 @@ const CreateDemand = (props) => {
                           </Dropdown.Toggle>
 
                           <Dropdown.Menu className="w-100">
-                            {pre_requisite.recruiters.map(
+                            {pre_requisite.users.map(
                               (recruiter, index) => {
                                 if (recruiter.role.includes("RECRUITER")) {
                                   return (
@@ -466,7 +466,7 @@ const CreateDemand = (props) => {
                                         {recruiter.id}({recruiter.name})
                                       </Dropdown.Item>
                                       {index <
-                                        pre_requisite.recruiters.length - 1 && (
+                                        pre_requisite.users.length - 1 && (
                                         <Dropdown.Divider />
                                       )}
                                     </Fragment>

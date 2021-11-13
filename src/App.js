@@ -29,19 +29,18 @@ function App() {
   const dispatch = useDispatch();
   const clientRef = firestore.collection("Clients");
   const techonologyRef = firestore.collection("Skills");
-  const recruiterRef = firestore.collection("Employee-Info").doc("users");
+  const usersRef = firestore.collection("Employee-Info").doc("users");
 
   useEffect(() => {
     // Get real-time data
+    usersRef.onSnapshot((querySnapshot) => {
+      dispatch(
+        DemandPreRequisiteActions.getUsers(
+          Object.values(querySnapshot.data())
+        )
+      );
+    });
     if (user.includes("FOCAL")) {
-      recruiterRef.onSnapshot((querySnapshot) => {
-        dispatch(
-          DemandPreRequisiteActions.getRecruiters(
-            Object.values(querySnapshot.data())
-          )
-        );
-      });
-
       techonologyRef.onSnapshot((querySnapshot) => {
         let technologies = {};
         querySnapshot.docs.map((doc, index) => {
@@ -71,7 +70,7 @@ function App() {
         });
       });
     }
-  }, [user, clientRef, techonologyRef, recruiterRef]);
+  }, [user, clientRef, techonologyRef, usersRef]);
 
   return (
     <Switch>
@@ -103,7 +102,7 @@ function App() {
               <ManageEmployeeProfilePage />
             </MainLayout>
           </Route>
-          {user === "ADMIN" && (
+          {(user === "ADMIN" || user === 'SUPERADMIN')&& (
             <Fragment>
               <Route path="/adminHomePage">
                 <MainLayout>

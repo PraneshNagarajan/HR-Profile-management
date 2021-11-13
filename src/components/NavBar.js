@@ -82,7 +82,7 @@ const NavBar = () => {
               </span>
             </Nav.Link>
             {sm && <hr className="text-white line-break mt-1" />}
-            {user.role === "ADMIN" && (
+            {(user.role === "ADMIN" || user.role === "SUPERADMIN") && (
               <Fragment>
                 <NavDropdown
                   disabled={!(user.photoUrl.length > 0 && user.security)}

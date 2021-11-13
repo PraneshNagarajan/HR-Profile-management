@@ -3,13 +3,13 @@ import { createSlice } from "@reduxjs/toolkit";
 const DemandCreationPreRequisite= createSlice({
     name: 'PreRequisite',
     initialState: {
-        recruiters: [],
+        users: [],
         technologies: [],
         clients:[]
     },
     reducers: {
-        getRecruiters(state, action) {
-            state.recruiters = action.payload
+        getUsers(state, action) {
+            state.users = action.payload
         },
         getTechnology(state, action) {
             state.technologies = action.payload

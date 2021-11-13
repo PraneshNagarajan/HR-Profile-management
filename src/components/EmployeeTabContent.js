@@ -40,6 +40,7 @@ const EmployeeTabContent = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
   const loggedUser = useSelector((state) => state.auth);
+  const pre_requisite = useSelector((state) => state.demandPreRequisite);
   const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
   const [errorsSupervisor, setErrorsSupervisor] = useState("");
@@ -48,16 +49,19 @@ const EmployeeTabContent = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSupervisorInfo, setSelectedSupervisorInfo] = useState([]);
   const empnoRef = firestore.collection("Employee-No");
+  const [roles, setRoles] = useState([
+    "JUNIOR RECRUITER",
+    "SENIOR RECRUITER",
+    "FOCAL",
+  ]);
 
   const initialValues = {
     id: "",
     email: "",
     role: "- Select Role -",
     admin_permission: "- Select Permission -",
-    supervisor: "",
+    supervisor: "- Select Supervisor -",
   };
-
-  const roles = ["JUNIOR RECRUITER", "SENIOR RECRUITER", "FOCAL", "ADMIN"];
 
   useEffect(() => {
     firestore
@@ -67,6 +71,12 @@ const EmployeeTabContent = (props) => {
       .then((res) => {
         setUsers(res.data());
       });
+    //if logged user is Superadmin add ADMIN Options.
+    if (loggedUser.role === "SUPERADMIN") {
+      let newRoles = roles;
+      newRoles.push("ADMIN");
+      setRoles(newRoles);
+    }
   }, []);
 
   const formik = useFormik({
@@ -223,27 +233,21 @@ const EmployeeTabContent = (props) => {
                     id: formik.values.id,
                     supervisor: formik.values.supervisor,
                   },
-                  [value.supervisor+".reportees"]: newReportees,
+                  [value.supervisor + ".reportees"]: newReportees,
                 })
                 .catch((err) => console.log(String(err)));
 
               await firestore
                 .collection("Employee-No")
                 .doc("info")
-                .update({
-                  ["values." + value.id.split("-")[0]]: Number(value.id.split("-")[1]),
-                })
+                .update({ id: Number(value.id) })
                 .catch(async (err) => {
                   if (await String(err).includes("No document to update")) {
                     await empnoRef.doc("new").delete();
                     await firestore
                       .collection("Employee-No")
                       .doc("info")
-                      .set({
-                        values: {
-                          [value.id.split("-")[0]]: Number(value.id.split("-")[1]),
-                        },
-                      });
+                      .set({ id: Number(value.id) });
                   } else {
                     //error
                   }
@@ -338,32 +342,11 @@ const EmployeeTabContent = (props) => {
     if (infos.employee.role !== selectedRole && !props.view.user) {
       if (!selectedRole.includes("-")) {
         if (selectedRole === "JUNIOR RECRUITER") {
-          setSupervisorSuggestion("Senior Recruiter");
-          if (formik.values.supervisor.length > 0) {
-            if (formik.values.supervisor.includes("SR")) {
-              checkUserIsPresent();
-            } else {
-              setErrorsSupervisor("*Senior Recruiter should be a supervisor.");
-            }
-          }
+          setSupervisorSuggestion("SENIOR RECRUITER");
         } else if (selectedRole === "SENIOR RECRUITER") {
-          setSupervisorSuggestion("Focal");
-          if (formik.values.supervisor.length > 0) {
-            if (formik.values.supervisor.includes("FO")) {
-              checkUserIsPresent();
-            } else {
-              setErrorsSupervisor("*Focal should be a supervisor.");
-            }
-          }
+          setSupervisorSuggestion("FOCAL");
         } else if (selectedRole === "FOCAL") {
-          setSupervisorSuggestion("Admin");
-          if (formik.values.supervisor.length > 0) {
-            if (formik.values.supervisor.includes("AD")) {
-              checkUserIsPresent();
-            } else {
-              setErrorsSupervisor("*Admin should be a supervisor.");
-            }
-          }
+          setSupervisorSuggestion("ADMIN");
         } else {
           formik.setFieldValue("supervisor", "MG-111111");
         }
@@ -377,37 +360,20 @@ const EmployeeTabContent = (props) => {
           : "View Only",
       });
     }
-  }, [formik.values.role, formik.values.supervisor]);
+  }, [formik.values.role]);
 
   useEffect(() => {
-    if (
-      !formik.values.role.includes("-") &&
-      !props.view.user &&
-      infos.employee.role !== formik.values.role
-    ) {
+    if (!props.view) {
       empnoRef.onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((doc) => {
-          let no = formik.values.role.includes(" ")
-            ? formik.values.role[0] + formik.values.role.split(" ")[1][0]
-            : String(formik.values.role).slice(0, 2);
           if (doc.id === "new") {
-            formik.setFieldValue("id", no + "-111111");
+            formik.setFieldValue("id", 111111);
           } else {
             empnoRef
               .doc("info")
               .get()
               .then((res) => {
-                if (res.id === "info") {
-                  let index = Object.keys(res.data().values).findIndex(
-                    (id) => id === no
-                  );
-                  if (index >= 0) {
-                    let data = Object.values(res.data().values)[index];
-                    formik.setFieldValue("id", no + "-" + (data + 1));
-                  } else {
-                    formik.setFieldValue("id", no + "-111111");
-                  }
-                }
+                formik.setFieldValue("id", res.data().id + 1);
               })
               .catch((err) => {
                 alert(String(err));
@@ -416,15 +382,7 @@ const EmployeeTabContent = (props) => {
         });
       });
     }
-    if (!props.view.user && infos.employee.role === formik.values.role) {
-      formik.setValues({
-        ...infos.employee,
-        admin_permission: infos.employee.admin_permission
-          ? "View && Edit"
-          : "View Only",
-      });
-    }
-  }, [formik.values.role]);
+  }, [empnoRef]);
 
   useEffect(() => {
     if (infos.submitted) {
@@ -488,6 +446,18 @@ const EmployeeTabContent = (props) => {
             </div>
             <Row className="my-2">
               <Col md={{ span: "5", offset: "1" }}>
+                <FormGroup className={sm ? "my-1" : ""}>
+                  <FormLabel htmlFor="employee id">Employee ID</FormLabel>
+                  <FormControl
+                    type="text"
+                    name="id"
+                    readOnly={true}
+                    value={formik.values.id}
+                    onChange={formik.handleChange}
+                  />
+                </FormGroup>
+              </Col>
+              <Col md="5">
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
@@ -519,6 +489,10 @@ const EmployeeTabContent = (props) => {
                             onClick={(e) => {
                               formik.setFieldValue("role", role);
                               formik.setFieldValue(
+                                "supervisor",
+                                "- Select Supervisor -"
+                              );
+                              formik.setFieldValue(
                                 "admin_permission",
                                 "- Select Permission -"
                               );
@@ -536,18 +510,6 @@ const EmployeeTabContent = (props) => {
                 {formik.touched.role && formik.errors.role && (
                   <div className="text-danger">{formik.errors.role}</div>
                 )}
-              </Col>
-              <Col md="5">
-                <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="employee id">Employee ID</FormLabel>
-                  <FormControl
-                    type="text"
-                    name="id"
-                    readOnly={true}
-                    value={formik.values.id}
-                    onChange={formik.handleChange}
-                  />
-                </FormGroup>
               </Col>
             </Row>
             <Row className={sm ? "" : "my-5"}>
@@ -577,98 +539,118 @@ const EmployeeTabContent = (props) => {
                   </div>
                 </FormGroup>
               </Col>
-              <Col md="5">
-                <FormLabel>Permissions</FormLabel>
-                <Dropdown>
-                  <Dropdown.Toggle
-                    disabled={
-                      !formik.values.role.includes("Admin") || props.view.user
-                    }
-                    variant={`outline-${
-                      !formik.values.role.includes("Admin") || props.view
-                        ? props.view.user
-                          ? `secondary`
-                          : `primary`
-                        : !formik.values.admin_permission.includes("-") &&
-                          formik.touched.admin_permission
-                        ? `success`
-                        : formik.values.admin_permission.includes("-")
-                        ? `danger`
-                        : ``
-                    }`}
-                    name="admin_permission"
-                    className="w-100"
-                    onBlur={formik.handleBlur}
-                  >
-                    {formik.values.admin_permission}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className="w-100 text-center">
-                    <Dropdown.Item
-                      onClick={() => {
-                        formik.setFieldValue(
-                          "admin_permission",
-                          "View && Edit"
-                        );
-                      }}
-                      active={formik.values.admin_permission.includes("View")}
+              {formik.values.role === "ADMIN" && (
+                <Col md="5">
+                  <FormLabel>Permissions</FormLabel>
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      disabled={
+                        !formik.values.role.includes("ADMIN") || props.view.user
+                      }
+                      variant={`outline-${
+                        !formik.values.role.includes("ADMIN") || props.view
+                          ? props.view.user
+                            ? `secondary`
+                            : `primary`
+                          : !formik.values.admin_permission.includes("-") &&
+                            formik.touched.admin_permission
+                          ? `success`
+                          : formik.values.admin_permission.includes("-")
+                          ? `danger`
+                          : ``
+                      }`}
+                      name="admin_permission"
+                      className="w-100"
+                      onBlur={formik.handleBlur}
                     >
-                      View && Edit
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      onClick={() => {
-                        formik.setFieldValue("admin_permission", "View Only");
-                      }}
-                      active={formik.values.admin_permission.includes("Only")}
-                    >
-                      View Only
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-                {formik.values.role.includes("Admin") &&
-                  formik.values.admin_permission.includes("-") && (
-                    <div className="text-danger">*Required.</div>
-                  )}
-              </Col>
+                      {formik.values.admin_permission}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="w-100 text-center">
+                      <Dropdown.Item
+                        onClick={() => {
+                          formik.setFieldValue(
+                            "admin_permission",
+                            "View && Edit"
+                          );
+                        }}
+                        active={formik.values.admin_permission.includes("View")}
+                      >
+                        View && Edit
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        onClick={() => {
+                          formik.setFieldValue("admin_permission", "View Only");
+                        }}
+                        active={formik.values.admin_permission.includes("Only")}
+                      >
+                        View Only
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                  {formik.values.role.includes("ADMIN") &&
+                    formik.values.admin_permission.includes("-") && (
+                      <div className="text-danger">*Required.</div>
+                    )}
+                </Col>
+              )}
+              {formik.values.role !== "ADMIN" &&
+                !formik.values.role.includes("-") && (
+                  <Col md={{ span: "5" }}>
+                    <FormLabel>Supervisor ID</FormLabel>
+                    <Dropdown className="dropbox">
+                      <Dropdown.Toggle
+                        name="supervisor"
+                        variant={`outline-${
+                          !formik.touched.supervisor
+                            ? `primary`
+                            : !formik.values.supervisor.includes("-") &&
+                              formik.touched.supervisor
+                            ? `success`
+                            : formik.values.supervisor.includes("-") &&
+                              formik.touched.supervisor
+                            ? `danger`
+                            : ``
+                        }`}
+                        onBlur={formik.handleBlur}
+                        className="w-100"
+                      >
+                        {formik.values.supervisor}
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu className="w-100">
+                        {pre_requisite.users.map((recruiter, index) => {
+                          if (recruiter.role.includes(supervisorSuggestion)) {
+                            return (
+                              <Fragment key={index}>
+                                <Dropdown.Item
+                                  className="text-center"
+                                  onClick={() => {
+                                    formik.setFieldValue(
+                                      "supervisor",
+                                      recruiter.id
+                                    );
+                                  }}
+                                >
+                                  {recruiter.id}({recruiter.name})
+                                </Dropdown.Item>
+                                {index < pre_requisite.users.length - 1 && (
+                                  <Dropdown.Divider />
+                                )}
+                              </Fragment>
+                            );
+                          }
+                        })}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                    {formik.errors.supervisor && formik.touched.supervisor && (
+                      <div className="text-danger">
+                        {formik.errors.supervisor}
+                      </div>
+                    )}
+                  </Col>
+                )}
             </Row>
-            {formik.values.role !== "ADMIN" && (
-              <Col md={{ span: "5", offset: "1" }}>
-                <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="supervisor id">Supervisor ID</FormLabel>
-                  <FormControl
-                    type="text"
-                    name="supervisor"
-                    readOnly={
-                      props.view.user || formik.values.role.includes("-")
-                    }
-                    value={formik.values.supervisor}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    isInvalid={
-                      (formik.errors.supervisor &&
-                        (formik.touched.supervisor ||
-                          formik.values.supervisor.length > 0)) ||
-                      errorsSupervisor.length !== 0
-                    }
-                    isValid={
-                      !formik.errors.supervisor &&
-                      (formik.touched.supervisor ||
-                        formik.values.supervisor.length > 0)
-                    }
-                  />
-                  {!formik.values.role.includes("-") && (
-                    <p className="text-muted">
-                      Please select {supervisorSuggestion} as supervisor.
-                    </p>
-                  )}
-                  <div className="invalid-feedback">
-                    {formik.errors.supervisor
-                      ? formik.errors.supervisor
-                      : errorsSupervisor}
-                  </div>
-                </FormGroup>
-              </Col>
-            )}
             <div className={sm ? "mt-5" : "float-end"}>
               {!isLoading && (
                 <Button
@@ -676,7 +658,7 @@ const EmployeeTabContent = (props) => {
                   disabled={
                     !(formik.dirty && formik.isValid) ||
                     formik.values.role.includes("Role") ||
-                    formik.values.role.includes("Admin")
+                    formik.values.role.includes("ADMIN")
                       ? formik.values.admin_permission.includes("-")
                       : false ||
                         !Object.keys(infos.personal).length > 0 ||

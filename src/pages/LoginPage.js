@@ -254,7 +254,7 @@ const LoginPage = () => {
                       .catch((err) => {});
                     if (String(profile_info.employee.role) === "FOCAL") {
                       history.push("/focalHomePage");
-                    } else if (String(profile_info.employee.role) === "ADMIN") {
+                    } else if (String(profile_info.employee.role) === "ADMIN" || String(profile_info.employee.role) === "SUPERADMIN") {
                       history.push("/adminHomePage");
                     } else {
                       history.push("/userHomePage");
