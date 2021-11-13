@@ -228,7 +228,7 @@ const AddressTabContent = (props) => {
             <Row>
               <Col md="6">
                 <FormGroup className="my-2">
-                  <FormLabel>district</FormLabel>
+                  <FormLabel>District</FormLabel>
                   <FormControl
                     type="text"
                     name="district"
@@ -483,7 +483,7 @@ const AddressTabContent = (props) => {
             <Row>
               <Col md="6">
                 <FormGroup className="my-2">
-                  <FormLabel>district</FormLabel>
+                  <FormLabel>District</FormLabel>
                   <FormControl
                     type="text"
                     name="district"

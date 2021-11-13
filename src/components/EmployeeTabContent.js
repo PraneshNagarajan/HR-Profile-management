@@ -82,7 +82,7 @@ const EmployeeTabContent = (props) => {
     onSubmit: async (value) => {
       let email = await String(value.email).toLowerCase();
       let newReportees = [...selectedSupervisorInfo];
-      newReportees.push(value.supervisor);
+      newReportees.push(value.id);
       await setIsLoading(true);
       if (await !!Img.name) {
         await fireStorage
@@ -223,9 +223,7 @@ const EmployeeTabContent = (props) => {
                     id: formik.values.id,
                     supervisor: formik.values.supervisor,
                   },
-                  [value.supervisor]: {
-                    reportees: newReportees,
-                  },
+                  [value.supervisor+".reportees"]: newReportees,
                 })
                 .catch((err) => console.log(String(err)));
 
@@ -233,7 +231,7 @@ const EmployeeTabContent = (props) => {
                 .collection("Employee-No")
                 .doc("info")
                 .update({
-                  ["values." + value.id.split("-")[0]]: value.id.split("-")[1],
+                  ["values." + value.id.split("-")[0]]: Number(value.id.split("-")[1]),
                 })
                 .catch(async (err) => {
                   if (await String(err).includes("No document to update")) {
@@ -243,7 +241,7 @@ const EmployeeTabContent = (props) => {
                       .doc("info")
                       .set({
                         values: {
-                          [value.id.split("-")[0]]: value.id.split("-")[1],
+                          [value.id.split("-")[0]]: Number(value.id.split("-")[1]),
                         },
                       });
                   } else {
@@ -541,7 +539,7 @@ const EmployeeTabContent = (props) => {
               </Col>
               <Col md="5">
                 <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="employee id">Employee Id</FormLabel>
+                  <FormLabel htmlFor="employee id">Employee ID</FormLabel>
                   <FormControl
                     type="text"
                     name="id"
@@ -555,7 +553,7 @@ const EmployeeTabContent = (props) => {
             <Row className={sm ? "" : "my-5"}>
               <Col md={{ span: "5", offset: "1" }}>
                 <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="employee id">Employee email Id</FormLabel>
+                  <FormLabel htmlFor="employee id">Employee Email ID</FormLabel>
                   <FormControl
                     type="text"
                     name="email"
@@ -636,7 +634,7 @@ const EmployeeTabContent = (props) => {
             {formik.values.role !== "ADMIN" && (
               <Col md={{ span: "5", offset: "1" }}>
                 <FormGroup className={sm ? "my-1" : ""}>
-                  <FormLabel htmlFor="supervisor id">Supervisor Id</FormLabel>
+                  <FormLabel htmlFor="supervisor id">Supervisor ID</FormLabel>
                   <FormControl
                     type="text"
                     name="supervisor"
