@@ -218,7 +218,9 @@ const LoginPage = () => {
                     name: fireAuth.currentUser.displayName,
                     photoUrl: "",
                     security: false,
-                  })
+                    supervisor:  profile_info.employee.role !== "SUPERADMIN" ? profile_info.employee.supervisor : "",
+                    manager:  (profile_info.employee.role !== "SUPERADMIN" && profile_info.employee.role !== "ADMIN") ? profile_info.employee.manager: "",
+                  })  
                 );
                 // get img url from firebase-Storage
                 if (await profile_info.img_uploaded) {

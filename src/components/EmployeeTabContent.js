@@ -49,10 +49,11 @@ const EmployeeTabContent = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSupervisorInfo, setSelectedSupervisorInfo] = useState([]);
   const empnoRef = firestore.collection("Employee-No");
+
   const [roles, setRoles] = useState([
     "JUNIOR RECRUITER",
     "SENIOR RECRUITER",
-    "FOCAL",
+    "FOCAL"   
   ]);
 
   const initialValues = {
@@ -91,8 +92,6 @@ const EmployeeTabContent = (props) => {
     validate,
     onSubmit: async (value) => {
       let email = await String(value.email).toLowerCase();
-      let newReportees = [...selectedSupervisorInfo];
-      newReportees.push(value.id);
       await setIsLoading(true);
       if (await !!Img.name) {
         await fireStorage
@@ -127,6 +126,8 @@ const EmployeeTabContent = (props) => {
                     admin: infos.employee.admin_permission,
                     name: fireAuth.currentUser.displayName,
                     photoUrl: URL.createObjectURL(Img),
+                    supervisor: infos.employee.supervisor,
+                    manager: infos.employee.manager,
                   })
                 );
               } else {
@@ -222,6 +223,19 @@ const EmployeeTabContent = (props) => {
             })
             .then(async () => {
               //pass value for key+ from variable
+              let position = pre_requisite.users.findIndex(
+                (item) => item.id === value.supervisor
+              );
+              let newSupervisorReportees = pre_requisite.users[position].repotees ?
+                pre_requisite.users[position].repotees : []
+              let supervisorManager = pre_requisite.users[position].manager;
+              newSupervisorReportees.push(value.id);
+              position = pre_requisite.users.findIndex(
+                (item) => item.id === supervisorManager
+              );
+              let newManagerReportees = pre_requisite.users[position].repotees;
+              newManagerReportees.push(value.id);
+
               await firestore
                 .collection("Employee-Info")
                 .doc("users")
@@ -232,8 +246,10 @@ const EmployeeTabContent = (props) => {
                     role: formik.values.role,
                     id: formik.values.id,
                     supervisor: formik.values.supervisor,
+                    manager: supervisorManager,
                   },
-                  [value.supervisor + ".reportees"]: newReportees,
+                  [value.supervisor + ".reportees"]: newSupervisorReportees,
+                  [supervisorManager + ".reportees"]: newManagerReportees,
                 })
                 .catch((err) => console.log(String(err)));
 
@@ -296,28 +312,6 @@ const EmployeeTabContent = (props) => {
       await setIsLoading(false);
     },
   });
-
-  const checkUserIsPresent = () => {
-    let profile = Object.values(users).filter(
-      (user) => user.id === formik.values.supervisor
-    );
-
-    if (!props.view.user) {
-      const timeout = setTimeout(() => {
-        if (profile.length > 0) {
-          setErrorsSupervisor("");
-          if (profile.reportees) {
-            setSelectedSupervisorInfo(profile.reportees);
-          }
-        } else {
-          setErrorsSupervisor("*No user found.");
-        }
-      }, 500);
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  };
 
   useEffect(() => {
     let profile = Object.values(users).filter(
@@ -501,7 +495,7 @@ const EmployeeTabContent = (props) => {
                           >
                             {role}
                           </Dropdown.Item>
-                          {role.length - 2 > index && <Dropdown.Divider />}
+                          {roles.length - 1 > index && <Dropdown.Divider />}
                         </Fragment>
                       );
                     })}
@@ -620,7 +614,7 @@ const EmployeeTabContent = (props) => {
 
                       <Dropdown.Menu className="w-100">
                         {pre_requisite.users.map((recruiter, index) => {
-                          if (recruiter.role.includes(supervisorSuggestion)) {
+                          if (recruiter.role === supervisorSuggestion) {
                             return (
                               <Fragment key={index}>
                                 <Dropdown.Item

@@ -464,6 +464,7 @@ const CreateSupply = (props) => {
                 demand_id: formik.values.demand_id,
                 profile_id: "",
                 ...datas,
+                assignee: datas.assignee.join(", ")
               });
               datas = await documentSnapshot.get("profile_info");
               await setTotalFileCount(datas.profiles.length);

@@ -12,11 +12,12 @@ import {
   FormCheck,
   Spinner,
 } from "react-bootstrap";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateDemand.css";
 import Spinners from "../components/Spinners";
 import Alerts from "../components/Alert";
+import Multiselect from "multiselect-react-dropdown";
 import { useSelector } from "react-redux";
 import { useFormik } from "formik";
 import { firestore } from "../firebase";
@@ -48,11 +49,12 @@ const CreateDemand = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   let uploadFlag = false;
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [users, setUsers] = useState([])
 
   const stateHandler = () => {
     formik.resetForm();
     formik.setValues({
-      assignee: "- Select the Recruiter -",
       location: "",
       panlocation: "",
       type: "- Select the type -",
@@ -126,7 +128,6 @@ const CreateDemand = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      assignee: "- Select the Recruiter -",
       clientname: props.clientFlag ? "- Select the Client -" : "",
       endclientname: props.clientFlag ? "- Select the End-Client -" : "",
       location: "",
@@ -143,10 +144,6 @@ const CreateDemand = (props) => {
     },
     validate: (value) => {
       const errors = {};
-      if (value.assignee.includes("- S")) {
-        errors.assignee = "*Required.";
-      }
-
       if (value.clientname.includes("-") || !value.clientname) {
         errors.clientname = "*Required.";
       } else if (!new RegExp("^[A-Z_ ]+$").test(value.clientname)) {
@@ -402,6 +399,31 @@ const CreateDemand = (props) => {
     },
   });
 
+  useEffect(() => {
+    let recruiters = []
+    pre_requisite.users.map((recruiter,idx) =>{ 
+     if(recruiter.supervisor === loggedUser.id || recruiter.manager === loggedUser.id){
+      recruiters.push({key :recruiter.id+"("+recruiter.name+")"})
+     }
+     if(idx === pre_requisite.users.length-1){
+       setSelectedOptions(recruiters)
+     }
+  })
+  },[pre_requisite.users])
+
+  const onSelectItem = (list, item) => {
+    let options = [...selectedOptions];
+    options.push(item.key);
+    setSelectedOptions(options);
+  };
+
+  const onRemoveItem = (list, item) => {
+    let options = selectedOptions;
+    let index = selectedOptions.findIndex((id) => id === item.key);
+    options.splice(index, 1);
+    setSelectedOptions(options);
+  };
+
   return (
     <Fragment>
       {!Object.values(pre_requisite.users).length > 0 && <Spinners />}
@@ -428,59 +450,13 @@ const CreateDemand = (props) => {
                         </FormLabel>
                       </Col>
                       <Col md="8">
-                        <Dropdown className="dropbox">
-                          <Dropdown.Toggle
-                            name="assignee"
-                            variant={`outline-${
-                              !formik.touched.assignee
-                                ? `primary`
-                                : !formik.values.assignee.includes("- S") &&
-                                  formik.touched.assignee
-                                ? `success`
-                                : formik.values.assignee.includes("- S") &&
-                                  formik.touched.assignee
-                                ? `danger`
-                                : ``
-                            }`}
-                            onBlur={formik.handleBlur}
-                            className="w-100"
-                          >
-                            {formik.values.assignee}
-                          </Dropdown.Toggle>
-
-                          <Dropdown.Menu className="w-100">
-                            {pre_requisite.users.map(
-                              (recruiter, index) => {
-                                if (recruiter.role.includes("RECRUITER")) {
-                                  return (
-                                    <Fragment key={index}>
-                                      <Dropdown.Item
-                                        className="text-center"
-                                        onClick={() => {
-                                          formik.setFieldValue(
-                                            "assignee",
-                                            recruiter.id
-                                          );
-                                        }}
-                                      >
-                                        {recruiter.id}({recruiter.name})
-                                      </Dropdown.Item>
-                                      {index <
-                                        pre_requisite.users.length - 1 && (
-                                        <Dropdown.Divider />
-                                      )}
-                                    </Fragment>
-                                  );
-                                }
-                              }
-                            )}
-                          </Dropdown.Menu>
-                        </Dropdown>
-                        {formik.errors.assignee && formik.touched.assignee && (
-                          <div className="text-danger">
-                            {formik.errors.assignee}
-                          </div>
-                        )}
+                      <Multiselect
+              displayValue="key"
+              onRemove={onRemoveItem}
+              onSelect={onSelectItem}
+              options={selectedOptions}
+              showCheckbox
+            />
                       </Col>
                     </Row>
                   </FormGroup>

@@ -11,7 +11,9 @@ const AuthenticationSlice = createSlice({
         admin: '',
         name: '',
         photoUrl: '',
-        security: false
+        security: false,
+        supervisor: "",
+        manager:""
     },
     reducers: {
         getMsg(state, action) {

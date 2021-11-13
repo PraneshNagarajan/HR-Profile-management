@@ -30,7 +30,7 @@ function App() {
   const clientRef = firestore.collection("Clients");
   const techonologyRef = firestore.collection("Skills");
   const usersRef = firestore.collection("Employee-Info").doc("users");
-
+  
   useEffect(() => {
     // Get real-time data
     usersRef.onSnapshot((querySnapshot) => {
