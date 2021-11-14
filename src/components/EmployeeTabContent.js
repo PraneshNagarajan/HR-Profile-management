@@ -43,17 +43,16 @@ const EmployeeTabContent = (props) => {
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
   const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
-  const [errorsSupervisor, setErrorsSupervisor] = useState("");
   const [supervisorSuggestion, setSupervisorSuggestion] = useState("");
+  const [supervisorOptions, setSupervisorOptions] = useState([]);
   const [errorsEmail, setErrorsEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedSupervisorInfo, setSelectedSupervisorInfo] = useState([]);
   const empnoRef = firestore.collection("Employee-No");
 
   const [roles, setRoles] = useState([
     "JUNIOR RECRUITER",
     "SENIOR RECRUITER",
-    "FOCAL"   
+    "FOCAL",
   ]);
 
   const initialValues = {
@@ -75,8 +74,10 @@ const EmployeeTabContent = (props) => {
     //if logged user is Superadmin add ADMIN Options.
     if (loggedUser.role === "SUPERADMIN") {
       let newRoles = roles;
-      newRoles.push("ADMIN");
-      setRoles(newRoles);
+      if (newRoles.includes("ADMIN")) {
+        newRoles.push("ADMIN");
+        setRoles(newRoles);
+      }
     }
   }, []);
 
@@ -226,15 +227,38 @@ const EmployeeTabContent = (props) => {
               let position = pre_requisite.users.findIndex(
                 (item) => item.id === value.supervisor
               );
-              let newSupervisorReportees = pre_requisite.users[position].repotees ?
-                pre_requisite.users[position].repotees : []
-              let supervisorManager = pre_requisite.users[position].manager;
-              newSupervisorReportees.push(value.id);
-              position = pre_requisite.users.findIndex(
-                (item) => item.id === supervisorManager
-              );
-              let newManagerReportees = pre_requisite.users[position].repotees;
-              newManagerReportees.push(value.id);
+              let newSupervisorReportees;
+              let supervisorManager =
+                value.role === "ADMIN"
+                  ? 123456
+                  : pre_requisite.users[position].supervisor;
+              if (
+                pre_requisite.users[position].role === "ADMIN" ||
+                pre_requisite.users[position].role === "FOCAL"
+              ) {
+                console.log(pre_requisite.users[position].reportees);
+                if (
+                  Object.keys(pre_requisite.users[position].reportees).length >
+                  0
+                ) {
+                  newSupervisorReportees = {
+                    ...pre_requisite.users[position].reportees,
+                  };
+                  newSupervisorReportees[value.id] = [];
+                } else {
+                  newSupervisorReportees = {};
+                  newSupervisorReportees[value.supervisor] = [value.id];
+                }
+              } else {
+                newSupervisorReportees = pre_requisite.users[position].repotees
+                  ? [...pre_requisite.users[position].repotees]
+                  : [];
+                console.log(newSupervisorReportees);
+                newSupervisorReportees.push(value.id);
+                console.log(newSupervisorReportees);
+              }
+              console.log(supervisorManager);
+              console.log(newSupervisorReportees);
 
               await firestore
                 .collection("Employee-Info")
@@ -244,12 +268,15 @@ const EmployeeTabContent = (props) => {
                     email,
                     name: infos.personal.firstname,
                     role: formik.values.role,
-                    id: formik.values.id,
+                    id: String(formik.values.id),
                     supervisor: formik.values.supervisor,
                     manager: supervisorManager,
                   },
                   [value.supervisor + ".reportees"]: newSupervisorReportees,
-                  [supervisorManager + ".reportees"]: newManagerReportees,
+                  [supervisorManager + ".reportees." + value.supervisor]:
+                    newSupervisorReportees[value.supervisor]
+                      ? newSupervisorReportees[value.supervisor]
+                      : newSupervisorReportees,
                 })
                 .catch((err) => console.log(String(err)));
 
@@ -271,13 +298,15 @@ const EmployeeTabContent = (props) => {
               await fireAuth
                 .createUserWithEmailAndPassword(
                   formik.values.email,
-                  formik.values.id
+                  String(formik.values.id)
                 )
                 .then(async (res) => {
                   res.user.updateProfile({
                     displayName: infos.personal.firstname,
                   });
+                  let nxtID = formik.values.id + 1;
                   await dispatch(InfoActions.resetForm());
+                  await formik.setFieldValue("id", nxtID);
                   await dispatch(
                     AlertActions.handleShow({
                       msg: "Data added successfully.",
@@ -288,7 +317,7 @@ const EmployeeTabContent = (props) => {
                 .catch(async (err) => {
                   await dispatch(
                     await AlertActions.handleShow({
-                      msg: "Data added failed.",
+                      msg: String(err) + "Data added failed.",
                       flag: false,
                     })
                   );
@@ -298,11 +327,11 @@ const EmployeeTabContent = (props) => {
                     .delete();
                 });
             })
-            .catch(async () => {
+            .catch(async (err) => {
               await setIsLoading(false);
               await dispatch(
                 AlertActions.handleShow({
-                  msg: "Data added failed.",
+                  msg: String(err) + " Data added failed.",
                   flag: false,
                 })
               );
@@ -331,18 +360,28 @@ const EmployeeTabContent = (props) => {
     }
   }, [formik.values.email]);
 
+  const onFilterSupervisor = (filter) => {
+    let filterDatas = pre_requisite.users.filter((emp) => emp.role === filter);
+    console.log(filterDatas);
+    setSupervisorOptions(filterDatas);
+  };
+
   useEffect(() => {
     let selectedRole = formik.values.role;
     if (infos.employee.role !== selectedRole && !props.view.user) {
       if (!selectedRole.includes("-")) {
         if (selectedRole === "JUNIOR RECRUITER") {
           setSupervisorSuggestion("SENIOR RECRUITER");
+          onFilterSupervisor("SENIOR RECRUITER");
         } else if (selectedRole === "SENIOR RECRUITER") {
           setSupervisorSuggestion("FOCAL");
+          onFilterSupervisor("FOCAL");
         } else if (selectedRole === "FOCAL") {
           setSupervisorSuggestion("ADMIN");
+          onFilterSupervisor("ADMIN");
         } else {
           formik.setFieldValue("supervisor", "MG-111111");
+          onFilterSupervisor([]);
         }
       }
     }
@@ -367,7 +406,10 @@ const EmployeeTabContent = (props) => {
               .doc("info")
               .get()
               .then((res) => {
-                formik.setFieldValue("id", res.data().id + 1);
+                // this check is very important to prevent app crash if not multiple request occur to down app
+                if (res.data().id !== formik.values.id - 1) {
+                  formik.setFieldValue("id", res.data().id + 1);
+                }
               })
               .catch((err) => {
                 alert(String(err));
@@ -376,7 +418,7 @@ const EmployeeTabContent = (props) => {
         });
       });
     }
-  }, [empnoRef]);
+  });
 
   useEffect(() => {
     if (infos.submitted) {
@@ -613,27 +655,26 @@ const EmployeeTabContent = (props) => {
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu className="w-100">
-                        {pre_requisite.users.map((recruiter, index) => {
-                          if (recruiter.role === supervisorSuggestion) {
-                            return (
-                              <Fragment key={index}>
-                                <Dropdown.Item
-                                  className="text-center"
-                                  onClick={() => {
-                                    formik.setFieldValue(
-                                      "supervisor",
-                                      recruiter.id
-                                    );
-                                  }}
-                                >
-                                  {recruiter.id}({recruiter.name})
-                                </Dropdown.Item>
-                                {index < pre_requisite.users.length - 1 && (
-                                  <Dropdown.Divider />
-                                )}
-                              </Fragment>
-                            );
-                          }
+                        {supervisorOptions.map((recruiter, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <Dropdown.Item
+                                className="text-center"
+                                onClick={() => {
+                                  formik.setFieldValue(
+                                    "supervisor",
+                                    recruiter.id
+                                  );
+                                }}
+                              >
+                                {recruiter.id}({recruiter.name})
+                              </Dropdown.Item>
+                              {console.log()}
+                              {index < supervisorOptions.length - 1 && (
+                                <Dropdown.Divider />
+                              )}
+                            </Fragment>
+                          );
                         })}
                       </Dropdown.Menu>
                     </Dropdown>

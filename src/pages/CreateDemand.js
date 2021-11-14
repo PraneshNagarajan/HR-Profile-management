@@ -49,8 +49,9 @@ const CreateDemand = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   let uploadFlag = false;
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const [users, setUsers] = useState([])
+  const [selectedRecruiters, setSelectedRecruiters] = useState([]);
+  const [recruiterIsChecked, setRecruiterIsChecked] = useState(false);
+  const [users, setUsers] = useState([]);
 
   const stateHandler = () => {
     formik.resetForm();
@@ -75,6 +76,7 @@ const CreateDemand = (props) => {
     setSecondarySkillIsChecked(false);
     setClientIsChecked(false);
     setEndClientIsChecked(false);
+    setSelectedRecruiters([]);
   };
 
   const checkIsSkillPresentHandler = (tech, skill) => {
@@ -124,6 +126,25 @@ const CreateDemand = (props) => {
     if (flag) {
       firestore.collection("Skills").doc("new").delete();
     }
+  };
+
+  const onMapDemandToRecruiters = (id) => {
+    selectedRecruiters.map((recruiter, idx) => {
+      let position = pre_requisite.users.findIndex(
+        (item) => item.id === recruiter
+      );
+      let newDemandList = pre_requisite.users[position].demands
+        ? [...pre_requisite.users[position].demands]
+        : [];
+      newDemandList.push(id);
+      firestore
+        .collection("Employee-Info")
+        .doc("users")
+        .update({
+          [recruiter + ".demands"]: newDemandList,
+        })
+        .catch((err) => String(err));
+    });
   };
 
   const formik = useFormik({
@@ -329,12 +350,18 @@ const CreateDemand = (props) => {
         }
       }
       if (uploadFlag) {
+        const demandID = "D" + new Date().getTime();
+        // loggedUser.id + new Date().getTime() + value.assignee
         firestore
           .collection("Demands")
-          .doc(loggedUser.email)
+          .doc(demandID)
           .update({
-            [loggedUser.id + new Date().getTime() + value.assignee]: {
-              info: value,
+            [demandID]: {
+              info: {
+                ...value,
+                owner: loggedUser.id,
+                assignees: selectedRecruiters,
+              },
               profile_info: {
                 comments: "",
                 profiles: [],
@@ -343,6 +370,7 @@ const CreateDemand = (props) => {
             },
           })
           .then(() => {
+            onMapDemandToRecruiters(demandID);
             stateHandler();
             setIsLoading(false);
             dispatch(
@@ -357,9 +385,13 @@ const CreateDemand = (props) => {
             if (String(err).includes("No document to update")) {
               firestore
                 .collection("Demands")
-                .doc(loggedUser.id + new Date().getTime() + value.assignee)
+                .doc(demandID)
                 .set({
-                  info: { ...value, owner: loggedUser.id },
+                  info: {
+                    ...value,
+                    owner: loggedUser.id,
+                    assignees: selectedRecruiters,
+                  },
                   profile_info: {
                     comments: "",
                     profiles: [],
@@ -367,6 +399,7 @@ const CreateDemand = (props) => {
                   },
                 })
                 .then(() => {
+                  onMapDemandToRecruiters(demandID);
                   stateHandler();
                   dispatch(
                     AlertActions.handleShow({
@@ -378,7 +411,7 @@ const CreateDemand = (props) => {
                 .catch((err) => {
                   dispatch(
                     AlertActions.handleShow({
-                      msg: "Data added failed.",
+                      msg: String(err) + ". Data added failed.",
                       flag: false,
                     })
                   );
@@ -400,28 +433,35 @@ const CreateDemand = (props) => {
   });
 
   useEffect(() => {
-    let recruiters = []
-    pre_requisite.users.map((recruiter,idx) =>{ 
-     if(recruiter.supervisor === loggedUser.id || recruiter.manager === loggedUser.id){
-      recruiters.push({key :recruiter.id+"("+recruiter.name+")"})
-     }
-     if(idx === pre_requisite.users.length-1){
-       setSelectedOptions(recruiters)
-     }
-  })
-  },[pre_requisite.users])
+    let recruiters = [];
+    pre_requisite.users.map((recruiter, idx) => {
+      if (
+        recruiter.supervisor === String(loggedUser.id) ||
+        recruiter.manager === String(loggedUser.id) ||
+        (recruiterIsChecked && recruiter.role.includes("RECRUITER"))
+      ) {
+        recruiters.push({
+          key: recruiter.id,
+          value: recruiter.id + "(" + recruiter.name + ")",
+        });
+      }
+      if (idx === pre_requisite.users.length - 1) {
+        setUsers(recruiters);
+      }
+    });
+  }, [pre_requisite.users, recruiterIsChecked]);
 
   const onSelectItem = (list, item) => {
-    let options = [...selectedOptions];
+    let options = [...selectedRecruiters];
     options.push(item.key);
-    setSelectedOptions(options);
+    setSelectedRecruiters(options);
   };
 
   const onRemoveItem = (list, item) => {
-    let options = selectedOptions;
-    let index = selectedOptions.findIndex((id) => id === item.key);
+    let options = selectedRecruiters;
+    let index = selectedRecruiters.findIndex((id) => id === item.key);
     options.splice(index, 1);
-    setSelectedOptions(options);
+    setSelectedRecruiters(options);
   };
 
   return (
@@ -450,16 +490,26 @@ const CreateDemand = (props) => {
                         </FormLabel>
                       </Col>
                       <Col md="8">
-                      <Multiselect
-              displayValue="key"
-              onRemove={onRemoveItem}
-              onSelect={onSelectItem}
-              options={selectedOptions}
-              showCheckbox
-            />
+                        <Multiselect
+                          displayValue="value"
+                          onRemove={onRemoveItem}
+                          onSelect={onSelectItem}
+                          options={users}
+                          showCheckbox
+                        />
                       </Col>
                     </Row>
                   </FormGroup>
+                </Col>
+                <Col md={{ span: "8", offset: "4" }}>
+                  <FormCheck
+                    type="checkbox"
+                    label="Enable to view all Recruiters"
+                    checked={recruiterIsChecked}
+                    onChange={() => {}}
+                    onClick={() => setRecruiterIsChecked(!recruiterIsChecked)}
+                    className={sm ? "" : "ms-2  "}
+                  />
                 </Col>
 
                 <Col md="12">

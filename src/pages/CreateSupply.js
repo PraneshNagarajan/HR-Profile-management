@@ -10,7 +10,6 @@ import {
   FormControl,
   FormLabel,
   Spinner,
-  ProgressBar,
   Tabs,
   Tab,
 } from "react-bootstrap";
@@ -119,7 +118,7 @@ const CreateSupply = (props) => {
             status: {
               "profile submitted": new Date().toString(),
               "Screen Reject": "",
-              "Duplicate": "",
+              Duplicate: "",
               "Feedback Pending": "",
               "Position Hold": "",
               "Interview Scheduled": "",
@@ -132,7 +131,7 @@ const CreateSupply = (props) => {
               "Client Reject": "",
               "Client Hold": "",
               "Declined Before Offer": "",
-              "Offered": "",
+              Offered: "",
               "Declined After Offer": "",
               "On Boarded": "",
             },
@@ -456,7 +455,7 @@ const CreateSupply = (props) => {
         if (await documentSnapshot.exists) {
           let datas = await documentSnapshot.get("info");
           if (
-            datas.assignee === loggedUser.id ||
+            datas.assignees.includes(String(loggedUser.id)) ||
             datas.owner === loggedUser.id
           ) {
             if (datas.status !== "Submitted" && datas.status !== "Completed") {
@@ -464,7 +463,7 @@ const CreateSupply = (props) => {
                 demand_id: formik.values.demand_id,
                 profile_id: "",
                 ...datas,
-                assignee: datas.assignee.join(", ")
+                assignee: datas.assignee.join(", "),
               });
               datas = await documentSnapshot.get("profile_info");
               await setTotalFileCount(datas.profiles.length);
@@ -854,27 +853,6 @@ const CreateSupply = (props) => {
                 </FormGroup>
               </Col>
               <hr className="my-4" />
-              <FormGroup>
-                <FormLabel>
-                  <b>Status</b>
-                </FormLabel>
-                <ProgressBar
-                  animated
-                  striped
-                  variant="primary"
-                  now={
-                    totalFileCount > 0
-                      ? (totalFileCount / formik.values.demand) * 100
-                      : 0
-                  }
-                  label={
-                    <b>
-                      {totalFileCount} / {formik.values.demand} profiles are
-                      uploaded.
-                    </b>
-                  }
-                />
-              </FormGroup>
               {(formik.values.status.includes("Unstarted") ||
                 formik.values.status.includes("Inprogress")) && (
                 <Fragment>
