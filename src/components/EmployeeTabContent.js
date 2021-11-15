@@ -43,7 +43,6 @@ const EmployeeTabContent = (props) => {
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
   const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
-  const [supervisorSuggestion, setSupervisorSuggestion] = useState("");
   const [supervisorOptions, setSupervisorOptions] = useState([]);
   const [errorsEmail, setErrorsEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -362,7 +361,6 @@ const EmployeeTabContent = (props) => {
 
   const onFilterSupervisor = (filter) => {
     let filterDatas = pre_requisite.users.filter((emp) => emp.role === filter);
-    console.log(filterDatas);
     setSupervisorOptions(filterDatas);
   };
 
@@ -371,13 +369,10 @@ const EmployeeTabContent = (props) => {
     if (infos.employee.role !== selectedRole && !props.view.user) {
       if (!selectedRole.includes("-")) {
         if (selectedRole === "JUNIOR RECRUITER") {
-          setSupervisorSuggestion("SENIOR RECRUITER");
           onFilterSupervisor("SENIOR RECRUITER");
         } else if (selectedRole === "SENIOR RECRUITER") {
-          setSupervisorSuggestion("FOCAL");
           onFilterSupervisor("FOCAL");
         } else if (selectedRole === "FOCAL") {
-          setSupervisorSuggestion("ADMIN");
           onFilterSupervisor("ADMIN");
         } else {
           formik.setFieldValue("supervisor", "MG-111111");
@@ -648,6 +643,7 @@ const EmployeeTabContent = (props) => {
                             ? `danger`
                             : ``
                         }`}
+                        disabled={props.view.user}
                         onBlur={formik.handleBlur}
                         className="w-100"
                       >

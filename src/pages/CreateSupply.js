@@ -23,25 +23,6 @@ import { fireStorage, firestore } from "../firebase";
 import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 
-const initialValues = {
-  demand_id: "",
-  profile_id: "",
-  assignee: "",
-  clientname: "",
-  endclientname: "",
-  location: "",
-  panlocation: "",
-  type: "",
-  demand: 0,
-  demandallot: "",
-  primarytech: "",
-  primaryskill: "",
-  secondarytech: "",
-  secondaryskill: "",
-  status: "",
-  file_count: 0,
-};
-
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const loggedUser = useSelector((state) => state.auth);
@@ -57,7 +38,7 @@ const CreateSupply = (props) => {
   const [searchProfrileDB, setSearchProfileDB] = useState([]);
 
   const formik = useFormik({
-    initialValues,
+    initialValues: {},
     validate: (value) => {
       const errors = {};
       if (!value.demand_id) {
@@ -69,7 +50,7 @@ const CreateSupply = (props) => {
       return errors;
     },
   });
-
+  console.log(formik.values);
   const alertMsg = (present, size) => {
     let msg1 =
       "The profile '" +
@@ -311,14 +292,17 @@ const CreateSupply = (props) => {
       .collection("Demands")
       .doc(formik.values.demand_id)
       .update({
-        "info.status": "Submitted",
-        "profile_info.status": "Submitted",
+        "info.status": "Closure Request Submitted",
+        "profile_info.status": "Closure Request Submitted",
       })
       .then(async () => {
-        formik.setFieldValue("status", "Submitted");
+        formik.setFieldValue("status", "Closure Request Submited");
         await dispatch(
           AlertActions.handleShow({
-            msg: "Demand submitted suucessfully.",
+            msg:
+              "Closer Request has been submitted to the demand owner (" +
+              formik.values.owner +
+              ") successfully.",
             flag: true,
           })
         );
@@ -463,7 +447,7 @@ const CreateSupply = (props) => {
                 demand_id: formik.values.demand_id,
                 profile_id: "",
                 ...datas,
-                assignee: datas.assignee.join(", "),
+                assignees: datas.assignees.join(", "),
               });
               datas = await documentSnapshot.get("profile_info");
               await setTotalFileCount(datas.profiles.length);
@@ -514,7 +498,9 @@ const CreateSupply = (props) => {
                 flag: false,
               })
             );
-          } else if (formik.values.file_count < formik.values.demand) {
+          } else if (false) {
+            //here need to add functionality to check already profile mapped to this demand
+          } else {
             dispatch(
               AlertActions.handleShow({
                 msg: "Profile has been added.",
@@ -527,13 +513,6 @@ const CreateSupply = (props) => {
             setFileNames(data);
             setTotalFileCount(totalFileCount + 1);
             formik.setFieldValue("file_count", data.length);
-          } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Already you have added required profiles. So, you can't add. if want add remove existing one.",
-                flag: false,
-              })
-            );
           }
         } else {
           dispatch(
@@ -559,10 +538,10 @@ const CreateSupply = (props) => {
                 key={index}
                 className={`shadow m-1 w-30 border ${
                   searchProfrileDB.includes(file)
-                    ? `bg-warning`
+                    ? `bg-info`
                     : filenames && files[index].size / 1024 > 300
                     ? `bg-danger`
-                    : `bg-success`
+                    : `bg-warning`
                 }`}
               >
                 <Card.Body className="d-flex justify-content-between text-white">
@@ -667,14 +646,14 @@ const CreateSupply = (props) => {
                   <Row>
                     <Col md="4">
                       <FormLabel>
-                        <b>Recruiter Name</b>
+                        <b>Recruiter ID'S</b>
                       </FormLabel>
                     </Col>
                     <Col md="8">
                       <FormControl
-                        name="assignee"
+                        name="assignees"
                         readOnly
-                        value={formik.values.assignee}
+                        value={formik.values.assignees}
                       />
                     </Col>
                   </Row>
@@ -852,7 +831,6 @@ const CreateSupply = (props) => {
                   </Row>
                 </FormGroup>
               </Col>
-              <hr className="my-4" />
               {(formik.values.status.includes("Unstarted") ||
                 formik.values.status.includes("Inprogress")) && (
                 <Fragment>
@@ -918,11 +896,6 @@ const CreateSupply = (props) => {
                             accept=".pdf"
                             onChange={handleChange}
                             value=""
-                            disabled={
-                              totalFileCount < formik.values.demand
-                                ? false
-                                : true
-                            }
                             placeholder="select profiles"
                           />
                         </div>
@@ -1084,10 +1057,10 @@ const CreateSupply = (props) => {
                             variant="primary"
                             className={`my-3`}
                             style={{ width: sm ? "100%" : "45%" }}
-                            disabled={formik.values.demand !== totalFileCount}
+                            disabled={addedProfiles.length <= 0}
                             onClick={onSubmit}
                           >
-                            Submit
+                            Mark as Completed
                           </Button>
                         )}
                       </Fragment>
