@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Card,
   Row,
@@ -46,10 +46,6 @@ const validate = (value) => {
 
   if (!value.gender) {
     errors.gender = "*Required.";
-  }
-
-  if (!value.age) {
-    errors.age = "*Required.";
   }
 
   if (!value.phone1) {
@@ -267,7 +263,14 @@ const PersonalTabContent = (props) => {
                       "-" +
                       date.getDate()
                     }
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      const getAge = Math.floor(
+                        (new Date() - new Date(e.target.value).getTime()) /
+                          3.15576e10
+                      );
+                      formik.setFieldValue("age", getAge);
+                      formik.setFieldValue("dob", e.target.value);
+                    }}
                     onBlur={formik.handleBlur}
                     isInvalid={formik.errors.dob && formik.touched.dob}
                     isValid={
@@ -334,22 +337,11 @@ const PersonalTabContent = (props) => {
                   <FormControl
                     name="age"
                     type="number"
-                    readOnly={props.view.user || props.view.admin}
-                    min="21"
+                    min="20"
                     max="120"
                     value={formik.values.age}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    isInvalid={
-                      formik.errors.age &&
-                      (formik.touched.age || formik.values.age >= 21)
-                    }
-                    isValid={
-                      !formik.errors.age &&
-                      (formik.touched.age || formik.values.age >= 21)
-                    }
+                    disabled
                   />
-                  <div className="invalid-feedback">{formik.errors.age}</div>
                 </FormGroup>
               </Col>
             </Row>
