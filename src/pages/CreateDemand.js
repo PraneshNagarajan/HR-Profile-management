@@ -12,7 +12,7 @@ import {
   FormCheck,
   Spinner,
 } from "react-bootstrap";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateDemand.css";
 import Spinners from "../components/Spinners";
@@ -52,6 +52,7 @@ const CreateDemand = (props) => {
   const [selectedRecruiters, setSelectedRecruiters] = useState([]);
   const [recruiterIsChecked, setRecruiterIsChecked] = useState(false);
   const [users, setUsers] = useState([]);
+  const multiselectRef = useRef();
 
   const stateHandler = () => {
     formik.resetForm();
@@ -77,6 +78,8 @@ const CreateDemand = (props) => {
     setClientIsChecked(false);
     setEndClientIsChecked(false);
     setSelectedRecruiters([]);
+    multiselectRef.current.resetSelectedValues();
+    setRecruiterIsChecked(false);
   };
 
   const checkIsSkillPresentHandler = (tech, skill) => {
@@ -129,7 +132,9 @@ const CreateDemand = (props) => {
   };
 
   const onMapDemandToRecruiters = (id) => {
-    selectedRecruiters.map((recruiter, idx) => {
+    let assignedUsers = selectedRecruiters;
+    assignedUsers.push(String(loggedUser.id));
+    assignedUsers.map((recruiter, idx) => {
       let position = pre_requisite.users.findIndex(
         (item) => item.id === recruiter
       );
@@ -369,21 +374,19 @@ const CreateDemand = (props) => {
               },
             },
           })
-          .then(() => {
-            onMapDemandToRecruiters(demandID);
-            stateHandler();
-            setIsLoading(false);
-            dispatch(
+          .then(async () => {
+            await onMapDemandToRecruiters(demandID);
+            await stateHandler();
+            await dispatch(
               AlertActions.handleShow({
                 msg: "Demand created successfully.",
                 flag: true,
               })
             );
           })
-          .catch((err) => {
-            setIsLoading(false);
-            if (String(err).includes("No document to update")) {
-              firestore
+          .catch(async (err) => {
+            if (await String(err).includes("No document to update")) {
+              await firestore
                 .collection("Demands")
                 .doc(demandID)
                 .set({
@@ -398,18 +401,18 @@ const CreateDemand = (props) => {
                     profiles_status: {},
                   },
                 })
-                .then(() => {
-                  onMapDemandToRecruiters(demandID);
-                  stateHandler();
-                  dispatch(
+                .then(async () => {
+                  await onMapDemandToRecruiters(demandID);
+                  await stateHandler();
+                  await dispatch(
                     AlertActions.handleShow({
                       msg: "data added sucessfully.",
                       flag: true,
                     })
                   );
                 })
-                .catch((err) => {
-                  dispatch(
+                .catch(async (err) => {
+                  await dispatch(
                     AlertActions.handleShow({
                       msg: String(err) + ". Data added failed.",
                       flag: false,
@@ -417,13 +420,14 @@ const CreateDemand = (props) => {
                   );
                 });
             } else {
-              dispatch(
+              await dispatch(
                 AlertActions.handleShow({
                   msg: "Data added failed.",
                   flag: false,
                 })
               );
             }
+            await setIsLoading(false);
           });
         if (!isLoading) {
           uploadFlag = true;
@@ -491,11 +495,17 @@ const CreateDemand = (props) => {
                       </Col>
                       <Col md="8">
                         <Multiselect
+                          ref={multiselectRef}
                           displayValue="value"
                           onRemove={onRemoveItem}
                           onSelect={onSelectItem}
                           options={users}
-                          showCheckbox
+                          showCheckbox="false"
+                          placeholder={
+                            selectedRecruiters.length > 0
+                              ? ""
+                              : "Select Recruiters"
+                          }
                         />
                       </Col>
                     </Row>
