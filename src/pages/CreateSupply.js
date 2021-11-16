@@ -13,7 +13,7 @@ import {
   Tabs,
   Tab,
 } from "react-bootstrap";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateSupply.css";
 import Alerts from "../components/Alert";
@@ -22,10 +22,32 @@ import { useFormik } from "formik";
 import { fireStorage, firestore } from "../firebase";
 import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
+import { ProfileActions } from "../Redux/ProfileSlice";
+
+const initialValues = {
+  demand_id: "",
+  profile_id: "",
+  assignee: "",
+  clientname: "",
+  endclientname: "",
+  location: "",
+  panlocation: "",
+  type: "",
+  demand: 0,
+  demandallot: "",
+  primarytech: "",
+  primaryskill: "",
+  secondarytech: "",
+  secondaryskill: "",
+  status: "",
+  file_count: 0,
+};
 
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const loggedUser = useSelector((state) => state.auth);
+  const profileInfo = useSelector((state) => state.profileInfo);
+  const alerts = useSelector((state) => state.alert);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -36,9 +58,10 @@ const CreateSupply = (props) => {
   const [addedProfiles, setAddedProfiles] = useState([]);
   const [totalFileCount, setTotalFileCount] = useState(0);
   const [searchProfrileDB, setSearchProfileDB] = useState([]);
+  const [profileFlag, setProfileFlag] = useState(false);
 
   const formik = useFormik({
-    initialValues: {},
+    initialValues,
     validate: (value) => {
       const errors = {};
       if (!value.demand_id) {
@@ -50,7 +73,7 @@ const CreateSupply = (props) => {
       return errors;
     },
   });
-  console.log(formik.values);
+
   const alertMsg = (present, size) => {
     let msg1 =
       "The profile '" +
@@ -144,18 +167,6 @@ const CreateSupply = (props) => {
                     msg: (
                       <Fragment>
                         <p>Profile has been added sucessfully.</p>
-                        {formik.values.demand === totalFileCount && (
-                          <Fragment>
-                            <b className="text-warning">
-                              <u> Note</u>
-                            </b>
-                            <p>
-                              You are good to submit. Please ensure before the
-                              profiles that you added correctly. You can't
-                              modify once submitted.
-                            </p>
-                          </Fragment>
-                        )}
                       </Fragment>
                     ),
                     flag: true,
@@ -227,18 +238,6 @@ const CreateSupply = (props) => {
             msg: (
               <Fragment>
                 <p>Profile has been added sucessfully.</p>
-                {formik.values.demand === totalFileCount && (
-                  <Fragment>
-                    <b className="text-warning">
-                      <u> Note</u>
-                    </b>
-                    <p>
-                      " You are good to submit." Please ensure before the
-                      profiles that you added correctly. You can't modify once
-                      submitted.
-                    </p>
-                  </Fragment>
-                )}
               </Fragment>
             ),
             flag: true,
@@ -358,7 +357,7 @@ const CreateSupply = (props) => {
     }
   };
 
-  const removePofilehandler = async (
+  const removeProfilehandler = async (
     index,
     flag = false,
     flag1 = false,
@@ -384,6 +383,8 @@ const CreateSupply = (props) => {
           status: "unmapped",
         })
         .catch((err) => String(err));
+      console.log(addedProfiles[index]);
+      dispatch(ProfileActions.handleRemove(addedProfiles[index]));
       delete profile_status[addedProfiles[index]];
       await new_list.splice(index, 1);
       firestore
@@ -419,6 +420,8 @@ const CreateSupply = (props) => {
         setFiles(new_list1);
       }
       let new_list2 = filenames;
+      console.log(new_list2[index]);
+      dispatch(ProfileActions.handleRemove(new_list2[index]));
       new_list2.splice(index, 1);
       setFileNames(new_list2);
       setTotalFileCount(totalFileCount - 1);
@@ -501,12 +504,7 @@ const CreateSupply = (props) => {
           } else if (false) {
             //here need to add functionality to check already profile mapped to this demand
           } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Profile has been added.",
-                flag: true,
-              })
-            );
+            dispatch(ProfileActions.handleAdd({ profile_id: {} }));
             setSearchProfileDB(profile_id);
             data = filenames;
             data.push(profile_id);
@@ -525,6 +523,11 @@ const CreateSupply = (props) => {
       });
   };
 
+  const onShowForm = (file) => {
+    dispatch(AlertActions.handleShow({ msg: file, msgFlag: "" }));
+    setProfileFlag(true);
+  };
+
   const FileListTag =
     filenames.length > 0 ? (
       <Fragment>
@@ -539,7 +542,11 @@ const CreateSupply = (props) => {
                 className={`shadow m-1 w-30 border ${
                   searchProfrileDB.includes(file)
                     ? `bg-info`
-                    : filenames && files[index].size / 1024 > 300
+                    : Object.keys(profileInfo.data).includes(file)
+                    ? `bg-success`
+                    : filenames &&
+                      files[index] &&
+                      files[index].size / 1024 > 300
                     ? `bg-danger`
                     : `bg-warning`
                 }`}
@@ -549,7 +556,7 @@ const CreateSupply = (props) => {
                     className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
                     style={{ height: "8px", width: "8px" }}
                     onClick={() =>
-                      removePofilehandler(
+                      removeProfilehandler(
                         index,
                         false,
                         searchProfrileDB.includes(file),
@@ -557,7 +564,13 @@ const CreateSupply = (props) => {
                       )
                     }
                   ></Button>
-                  <b className="mt-1">{file}</b>
+                  <b
+                    className="mt-1"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => onShowForm(file)}
+                  >
+                    {file}
+                  </b>
                 </Card.Body>
               </Card>
             );
@@ -568,9 +581,14 @@ const CreateSupply = (props) => {
       ""
     );
 
+  useEffect(() => {
+    if (!alerts.show) {
+      setProfileFlag(false);
+    }
+  }, [alerts.show]);
   return (
     <Fragment>
-      <Alerts />
+      <Alerts profile={profileFlag} />
       <Container className="d-flex justify-content-center ">
         <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
           <Card.Header className="bg-primary text-center text-white">
@@ -853,7 +871,7 @@ const CreateSupply = (props) => {
                                   className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
                                   style={{ height: "8px", width: "8px" }}
                                   onClick={() =>
-                                    removePofilehandler(
+                                    removeProfilehandler(
                                       index,
                                       true,
                                       false,
@@ -1005,7 +1023,10 @@ const CreateSupply = (props) => {
                             className={sm ? `mt-3` : `my-3`}
                             disabled={
                               filenames.length > 0 || files.length > 0
-                                ? false
+                                ? Object.keys(profileInfo.data).length !==
+                                  filenames.length
+                                  ? true
+                                  : false
                                 : true
                             }
                             style={{ width: sm ? "100%" : "45%" }}

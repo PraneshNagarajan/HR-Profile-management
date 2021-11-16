@@ -6,11 +6,12 @@ import {
   ModalFooter,
   ModalTitle,
   ButtonGroup,
-  ToggleButton
+  ToggleButton,
 } from "react-bootstrap";
 import ModalHeader from "react-bootstrap/esm/ModalHeader";
 import { useDispatch, useSelector } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
+import ProfileData from "./ProfileData";
 
 const Alerts = (props) => {
   const alerts = useSelector((state) => state.alert);
@@ -19,50 +20,60 @@ const Alerts = (props) => {
 
   const handleClose = () => {
     dispatch(AlertActions.handleClose());
-    dispatch(AlertActions.cancelSubmit())
+    dispatch(AlertActions.cancelSubmit());
   };
+
   const handleConfirm = () => {
     dispatch(AlertActions.handleClose());
-    dispatch(AlertActions.acceptSubmit(radioValue))
-    setRadioValue("")
-  }
+    dispatch(AlertActions.acceptSubmit(radioValue));
+    setRadioValue("");
+  };
 
   return (
-    <Modal show={alerts.show} backdrop="static" keyboard={false} centered>
+    <Modal show={alerts.show} backdrop="static" keyboard={false} centered scrollable="true">
       <ModalHeader className="bg-primary text-white">
-        <ModalTitle>Status</ModalTitle>
+        {props.profile && <ModalTitle>Profile Add Form</ModalTitle>}
+        {!props.profile && <ModalTitle>Status</ModalTitle>}
       </ModalHeader>
       <ModalBody>
-        <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
-        <b>{alerts.msg}</b>
-      </p>
-        
-        {props.flag && 
-         <ButtonGroup>
-         {props.stepOptions.map((radio, idx) => (
-           <ToggleButton
-             key={idx}
-             id={`radio-${idx}`}
-             type="radio"
-             variant={'outline-'+radio.color}
-             name="radio"
-             value={radio.status}
-            checked={radioValue === radio.status}
-            onChange={(e) => setRadioValue(e.currentTarget.value)}
-           >
-             {radio.status}
-           </ToggleButton>
-         ))}
-       </ButtonGroup>
+        {!props.profile && (
+          <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
+            <b>{alerts.msg}</b>
+          </p>
+        )}
+        {props.profile && 
+           <ProfileData view={false} file={alerts.msg} />
         }
+        {props.flag && (
+          <ButtonGroup>
+            {props.stepOptions.map((radio, idx) => (
+              <ToggleButton
+                key={idx}
+                id={`radio-${idx}`}
+                type="radio"
+                variant={"outline-" + radio.color}
+                name="radio"
+                value={radio.status}
+                checked={radioValue === radio.status}
+                onChange={(e) => setRadioValue(e.currentTarget.value)}
+              >
+                {radio.status}
+              </ToggleButton>
+            ))}
+          </ButtonGroup>
+        )}
       </ModalBody>
+     {!props.profile &&
       <ModalFooter>
-        {props.flag && 
-        <Button variant="primary" onClick={handleConfirm}>Confirm</Button>
-        }
-        <Button variant="danger" onClick={handleClose}>Close</Button>
-          {" "}
-      </ModalFooter>
+      {(props.flag) && (
+        <Button variant="primary" onClick={handleConfirm}>
+          {props.flag ? "Confirm" : "Save"}
+        </Button>
+      )}
+      <Button variant="danger" onClick={handleClose}>
+        Close
+      </Button>{" "}
+    </ModalFooter>}
     </Modal>
   );
 };
