@@ -59,6 +59,8 @@ const CreateSupply = (props) => {
   const [totalFileCount, setTotalFileCount] = useState(0);
   const [searchProfrileDB, setSearchProfileDB] = useState([]);
   const [profileFlag, setProfileFlag] = useState(false);
+  const [profileView, setProfileView] = useState(false);
+  const [profileDBDatas, setProfileDBDatas] = useState([]);
 
   const formik = useFormik({
     initialValues,
@@ -108,16 +110,17 @@ const CreateSupply = (props) => {
 
   const updateDemandInfo = async (datas) => {
     let data = await {};
-    await datas.map(async (file, index) => {
+    await datas.map(async (profile, index) => {
       await firestore
         .collection("Profiles")
-        .doc(file)
+        .doc(profile.candidateID)
         .set({
           status: "mapped",
           demand_id: formik.values.demand_id,
+          info: profile,
         })
         .then(async () => {
-          data[file] = await {
+          data[profile.id] = await {
             current_status: "Profile Submitted",
             status: {
               "profile submitted": new Date().toString(),
@@ -190,24 +193,29 @@ const CreateSupply = (props) => {
 
   const uploadDatasToDB = async () => {
     let res_error = await [];
+    let profileIDS = [];
+    let profilesList = [];
     await files.map(async (file, index) => {
-      let filename = await String(String(file.name).replaceAll(" ", "-")).split(
-        "."
-      )[0];
+      let userProfile = profileInfo.data[file.name.split(".")[0]];
+      let filename = await userProfile.candidateID;
+      await profileIDS.push(filename);
+      await profilesList.push({ [filename]: userProfile });
+      await dispatch(ProfileActions.handleRemove(file.name.split(".")[0]));
+      //dispatch(ProfileActions.handleAdd({ [filename]: profileData }));
       await fireStorage
-        .ref("profiles/resumes/" + filename)
+        .ref("profiles/resumes/" + formik.values.demand_id + "/" + filename)
         .put(file)
         .catch((err) => {
           res_error.push(filename);
         });
       if ((await files.length) - 1 === index) {
         if ((await res_error.length) === 0) {
-          let new_data = addedProfiles.concat(filenames);
+          let new_data = addedProfiles.concat(profileIDS);
           await setAddedProfiles(new_data);
           await setFileNames([]);
           await setFiles([]);
           formik.setFieldValue("file_count", 0);
-          await updateDemandInfo(new_data);
+          await updateDemandInfo(profilesList);
         } else {
           await dispatch(
             AlertActions.handleShow({
@@ -253,12 +261,15 @@ const CreateSupply = (props) => {
           .doc(filename)
           .get()
           .then(async (doc) => {
+            //check profile is already present in Database
             if (await !doc.exists) {
+              //if not found, then check file size > 300kb
               if (await !(file.size / 1024 > 300)) {
               } else {
                 await excessSizeFileList.push(filename);
               }
             } else {
+              //save tempererly the profile if it is not found in DB
               await presentFileList.push(filename);
             }
           });
@@ -267,8 +278,10 @@ const CreateSupply = (props) => {
             (await presentFileList.length) === 0 &&
             excessSizeFileList.length === 0
           ) {
+            //save the profile in DB
             await uploadDatasToDB(true);
           } else {
+            // alert if size is excess than 300kb.
             await alertMsg(presentFileList, excessSizeFileList);
             await setIsSaving(false);
           }
@@ -383,7 +396,6 @@ const CreateSupply = (props) => {
           status: "unmapped",
         })
         .catch((err) => String(err));
-      console.log(addedProfiles[index]);
       dispatch(ProfileActions.handleRemove(addedProfiles[index]));
       delete profile_status[addedProfiles[index]];
       await new_list.splice(index, 1);
@@ -420,7 +432,6 @@ const CreateSupply = (props) => {
         setFiles(new_list1);
       }
       let new_list2 = filenames;
-      console.log(new_list2[index]);
       dispatch(ProfileActions.handleRemove(new_list2[index]));
       new_list2.splice(index, 1);
       setFileNames(new_list2);
@@ -491,6 +502,9 @@ const CreateSupply = (props) => {
       .then((doc) => {
         if (doc.exists) {
           data = doc.data();
+          let profileHistory = data.history
+            ? data.history.filter((demand) => demand.id === profile_id)
+            : [];
           if (data.status === "mapped") {
             dispatch(
               AlertActions.handleShow({
@@ -501,10 +515,41 @@ const CreateSupply = (props) => {
                 flag: false,
               })
             );
-          } else if (false) {
+          } else if (profileHistory.length > 0) {
             //here need to add functionality to check already profile mapped to this demand
+            dispatch(
+              AlertActions.handleShow({
+                msg:
+                  " Duplicate Entry. This profile had mapped to demand id : " +
+                  data.demand_id +
+                  "and it is status " +
+                  profileHistory[0]["status"] +
+                  ". So, you can't add it. Please add other profile.",
+                flag: false,
+              })
+            );
           } else {
-            dispatch(ProfileActions.handleAdd({ profile_id: {} }));
+            dispatch(
+              ProfileActions.handleAdd({
+                [profile_id]: {
+                  candidateID: "P" + 1111111111,
+                  candidateName: "TEST",
+                  dob: "28-09-1996",
+                  gender: "- Selcet Gender -",
+                  contactNo: "+91-1234567899",
+                  emailID: "test@gmail.com",
+                  currentCTC: 4,
+                  expectedCTC: 7.5,
+                  primarySkill: "React",
+                  primaryExperience: 8,
+                  secondarySkill: "Java",
+                  secondaryExperience: 4,
+                  education: "MCA",
+                  mark: 98,
+                },
+              })
+            );
+            setProfileView(true);
             setSearchProfileDB(profile_id);
             data = filenames;
             data.push(profile_id);
@@ -512,6 +557,7 @@ const CreateSupply = (props) => {
             setTotalFileCount(totalFileCount + 1);
             formik.setFieldValue("file_count", data.length);
           }
+          setProfileView(true);
         } else {
           dispatch(
             AlertActions.handleShow({
@@ -526,6 +572,12 @@ const CreateSupply = (props) => {
   const onShowForm = (file) => {
     dispatch(AlertActions.handleShow({ msg: file, msgFlag: "" }));
     setProfileFlag(true);
+    let res = files.filter((item) => item.name.includes(file));
+    if (res.length > 0) {
+      setProfileView(false);
+    } else {
+      setProfileView(true);
+    }
   };
 
   const FileListTag =
@@ -581,14 +633,17 @@ const CreateSupply = (props) => {
       ""
     );
 
+  const downloadProfilesFromDB = () => {};
+
   useEffect(() => {
     if (!alerts.show) {
       setProfileFlag(false);
     }
   }, [alerts.show]);
+
   return (
     <Fragment>
-      <Alerts profile={profileFlag} />
+      <Alerts profile={{ flag: profileFlag, view: profileView }} />
       <Container className="d-flex justify-content-center ">
         <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
           <Card.Header className="bg-primary text-center text-white">

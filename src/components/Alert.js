@@ -32,17 +32,17 @@ const Alerts = (props) => {
   return (
     <Modal show={alerts.show} backdrop="static" keyboard={false} centered scrollable="true">
       <ModalHeader className="bg-primary text-white">
-        {props.profile && <ModalTitle>Profile Add Form</ModalTitle>}
-        {!props.profile && <ModalTitle>Status</ModalTitle>}
+        {props.profile.flag && <ModalTitle>Profile Add Form</ModalTitle>}
+        {!props.profile.flag && <ModalTitle>Status</ModalTitle>}
       </ModalHeader>
       <ModalBody>
-        {!props.profile && (
+        {!props.profile.flag && (
           <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
             <b>{alerts.msg}</b>
           </p>
         )}
-        {props.profile && 
-           <ProfileData view={false} file={alerts.msg} />
+        {props.profile.flag && 
+           <ProfileData view={props.profile.view} file={alerts.msg} />
         }
         {props.flag && (
           <ButtonGroup>
@@ -63,7 +63,7 @@ const Alerts = (props) => {
           </ButtonGroup>
         )}
       </ModalBody>
-     {!props.profile &&
+     {!props.profile.flag &&
       <ModalFooter>
       {(props.flag) && (
         <Button variant="primary" onClick={handleConfirm}>

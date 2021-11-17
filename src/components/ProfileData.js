@@ -16,7 +16,6 @@ import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import { ProfileActions } from "../Redux/ProfileSlice";
 
-
 let date = new Date().getTime();
 
 const validate = (value) => {
@@ -58,45 +57,45 @@ const validate = (value) => {
     errors.emailID = "*Invalid Format.";
   }
 
-  if(!value.primarySkill){
-    errors.primarySkill = "*Required"
+  if (!value.primarySkill) {
+    errors.primarySkill = "*Required";
   }
 
-  if(!String(value.primaryExperience)){
-    errors.primaryExperience = "*Required"
+  if (!String(value.primaryExperience)) {
+    errors.primaryExperience = "*Required";
   }
 
-  if(!value.secondarySkill){
-    errors.secondarySkill = "*Required"
+  if (!value.secondarySkill) {
+    errors.secondarySkill = "*Required";
   }
 
-  if(!String(value.secondaryExperience)){
-    errors.secondaryExperience = "*Required"
-  }
-  
-  if(!String(value.currentCTC)){
-    errors.currentCTC= "*Required"
+  if (!String(value.secondaryExperience)) {
+    errors.secondaryExperience = "*Required";
   }
 
-  if(!String(value.expectedCTC)){
-    errors.expectedCTC = "*Required"
+  if (!String(value.currentCTC)) {
+    errors.currentCTC = "*Required";
   }
 
-  if(!value.education){
-    errors.education = "*Required"
+  if (!String(value.expectedCTC)) {
+    errors.expectedCTC = "*Required";
   }
 
-  if(!String(value.mark)){
-    errors.mark = "*Required"
+  if (!value.education) {
+    errors.education = "*Required";
+  }
+
+  if (!String(value.mark)) {
+    errors.mark = "*Required";
   } else if (!(value.mark <= 100 && value.mark >= 0)) {
-    errors.mark = "*Mark percentage should be in 0 to 100."
+    errors.mark = "*Mark percentage should be in 0 to 100.";
   }
   return errors;
 };
 
 const ProfileData = (props) => {
   const dispatch = useDispatch();
-  const profileInfo = useSelector(state => state.profileInfo)
+  const profileInfo = useSelector((state) => state.profileInfo);
 
   const formik = useFormik({
     initialValues: {
@@ -115,17 +114,16 @@ const ProfileData = (props) => {
       education: "",
       mark: "",
     },
-    validate
+    validate,
   });
 
   useEffect(() => {
-    if(!props.view) {
-        if(Object.keys(profileInfo.data).includes(props.file)) {
-            console.log(profileInfo.data[props.file])
-            formik.setValues(profileInfo.data[props.file])
-        }
+    if (props.view) {
+      if (Object.keys(profileInfo.data).includes(props.file)) {
+        formik.setValues(profileInfo.data[props.file]);
+      }
     }
-  },[profileInfo])
+  }, [profileInfo]);
 
   const handleClose = () => {
     dispatch(AlertActions.handleClose());
@@ -133,11 +131,11 @@ const ProfileData = (props) => {
 
   const handleConfirm = () => {
     dispatch(AlertActions.handleClose());
-    dispatch(ProfileActions.handleAdd({[props.file] : formik.values}));
-    formik.resetForm()
-    formik.setFieldValue("gender", "- Select Gender -")
+    dispatch(ProfileActions.handleAdd({ [props.file]: formik.values }));
+    formik.resetForm();
+    formik.setFieldValue("gender", "- Select Gender -");
   };
-
+  console.log(profileInfo.data);
   return (
     <Form>
       <Row>
@@ -417,13 +415,11 @@ const ProfileData = (props) => {
               onBlur={formik.handleBlur}
               isInvalid={
                 formik.errors.currentCTC &&
-                (formik.touched.currentCTC ||
-                  formik.values.currentCTC > 0)
+                (formik.touched.currentCTC || formik.values.currentCTC > 0)
               }
               isValid={
                 !formik.errors.currentCTC &&
-                (formik.touched.currentCTC ||
-                  formik.values.currentCTC > 0)
+                (formik.touched.currentCTC || formik.values.currentCTC > 0)
               }
             />
             <div className="invalid-feedback">{formik.errors.currentCTC}</div>
@@ -442,13 +438,11 @@ const ProfileData = (props) => {
               onBlur={formik.handleBlur}
               isInvalid={
                 formik.errors.expectedCTC &&
-                (formik.touched.expectedCTC ||
-                  formik.values.expectedCTC > 0)
+                (formik.touched.expectedCTC || formik.values.expectedCTC > 0)
               }
               isValid={
                 !formik.errors.expectedCTC &&
-                (formik.touched.expectedCTC ||
-                  formik.values.expectedCTC > 0)
+                (formik.touched.expectedCTC || formik.values.expectedCTC > 0)
               }
             />
             <div className="invalid-feedback">{formik.errors.expectedCTC}</div>
@@ -502,12 +496,22 @@ const ProfileData = (props) => {
           </FormGroup>
         </Col>
       </Row>
-      {!props.view && <hr/>}
-      <div className={`d-flex justify-content-${props.view ? `between` :`end` }`}>
-          <Button variant="danger" className={props.view ? "" : "me-4"} onClick={handleClose}>
+      {!props.view && <hr />}
+      <div
+        className={`d-flex justify-content-${props.view ? `between` : `end`}`}
+      >
+        <Button
+          variant="danger"
+          className={props.view ? "" : "me-4"}
+          onClick={handleClose}
+        >
           Close
         </Button>
-        <Button variant="primary" onClick={handleConfirm} disabled={props.view || !(formik.dirty && formik.isValid)}>
+        <Button
+          variant="primary"
+          onClick={handleConfirm}
+          disabled={props.view || !(formik.dirty && formik.isValid)}
+        >
           {props.flag ? "Confirm" : "Save"}
         </Button>
       </div>
