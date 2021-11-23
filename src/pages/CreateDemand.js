@@ -471,7 +471,7 @@ const CreateDemand = (props) => {
   return (
     <Fragment>
       {!Object.values(pre_requisite.users).length > 0 && <Spinners />}
-      <Alerts />
+      <Alerts flag={true} />
       {Object.values(pre_requisite.users).length > 0 && (
         <Container className="d-flex justify-content-center ">
           <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>

@@ -19,7 +19,7 @@ const AddEmployeePage = () => {
   }, []);
   return (
     <Fragment>
-      <Alerts />
+      <Alerts flag={true}/>
       <Container fluid className={sm ? "my-3" : "p-5"}>
         <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
           <Nav.Item>

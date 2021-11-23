@@ -112,7 +112,7 @@ const NavBar = () => {
                     className="text-warning fw-bold"
                     as={Link}
                     onClick={() => setExpanded(!isExpanded)}
-                    to="/manageEmployeeProfile/JR-111113?activeTab=personal-info"
+                    to="/manageEmployeeProfile/111113?activeTab=personal-info"
                   >
                     {" "}
                     <FaUserEdit

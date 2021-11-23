@@ -51,6 +51,9 @@ const ManageEmployeeProfilePage = () => {
                 activeTab,
               })
             );
+            if (profile_info.img_uploaded) {
+              dispatch(InfoActions.getImageFlag(true));
+            }
             if (profile_info.employee.id === loggedUser.id) {
               if (!profile_info.img_uploaded && !password_info.status) {
                 dispatch(
@@ -101,7 +104,7 @@ const ManageEmployeeProfilePage = () => {
 
   return (
     <Fragment>
-      <Alerts />
+      <Alerts flag={true} />
       {isSpinner && <Spinners />}
       {!isSpinner && (
         <Container fluid className={sm ? "my-3" : "p-5"}>

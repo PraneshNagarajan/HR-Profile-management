@@ -28,23 +28,31 @@ const Alerts = (props) => {
     dispatch(AlertActions.acceptSubmit(radioValue));
     setRadioValue("");
   };
-
+  console.log(props);
+  console.log(props.profile);
   return (
-    <Modal show={alerts.show} backdrop="static" keyboard={false} centered scrollable="true">
+    <Modal
+      show={alerts.show}
+      backdrop="static"
+      keyboard={false}
+      centered
+      scrollable="true"
+    >
       <ModalHeader className="bg-primary text-white">
-        {props.profile.flag && <ModalTitle>Profile Add Form</ModalTitle>}
-        {!props.profile.flag && <ModalTitle>Status</ModalTitle>}
+        <ModalTitle>Status</ModalTitle>
       </ModalHeader>
       <ModalBody>
-        {!props.profile.flag && (
+        {(props.flag || !props.profile.flag) && (
           <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
             <b>{alerts.msg}</b>
           </p>
         )}
-        {props.profile.flag && 
-           <ProfileData view={props.profile.view} file={alerts.msg} />
-        }
-        {props.flag && (
+
+        {!props.flag && props.profile.flag && (
+          <ProfileData view={props.profile.view} file={alerts.msg} />
+        )}
+
+        {props.status && (
           <ButtonGroup>
             {props.stepOptions.map((radio, idx) => (
               <ToggleButton
@@ -63,17 +71,18 @@ const Alerts = (props) => {
           </ButtonGroup>
         )}
       </ModalBody>
-     {!props.profile.flag &&
-      <ModalFooter>
-      {(props.flag) && (
-        <Button variant="primary" onClick={handleConfirm}>
-          {props.flag ? "Confirm" : "Save"}
-        </Button>
+      {(!props.profile || !props.profile.flag) && (
+        <ModalFooter>
+          {props.status && (
+            <Button variant="primary" onClick={handleConfirm}>
+              {props.flag ? "Confirm" : "Save"}
+            </Button>
+          )}
+          <Button variant="danger" onClick={handleClose}>
+            Close
+          </Button>{" "}
+        </ModalFooter>
       )}
-      <Button variant="danger" onClick={handleClose}>
-        Close
-      </Button>{" "}
-    </ModalFooter>}
     </Modal>
   );
 };

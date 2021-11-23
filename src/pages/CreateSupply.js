@@ -23,6 +23,8 @@ import { fireStorage, firestore } from "../firebase";
 import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import { ProfileActions } from "../Redux/ProfileSlice";
+import axios from "axios";
+import FileDownload from "js-file-download";
 
 const initialValues = {
   demand_id: "",
@@ -196,18 +198,19 @@ const CreateSupply = (props) => {
     let profileIDS = [];
     let profilesList = [];
     await files.map(async (file, index) => {
-      let userProfile = profileInfo.data[file.name.split(".")[0]];
+      let userProfile = profileInfo.data[file.name];
       let filename = await userProfile.candidateID;
       await profileIDS.push(filename);
-      await profilesList.push({ [filename]: userProfile });
+      const fireStorageRef = await fireStorage.ref(
+        "profiles/resumes/" + filename + ".pdf"
+      );
+      await fireStorageRef.put(file);
+      let url = await "";
+      await fireStorageRef.getDownloadURL().then((link) => {
+        url = link;
+      });
+      await profilesList.push({ ...userProfile, url });
       await dispatch(ProfileActions.handleRemove(file.name.split(".")[0]));
-      //dispatch(ProfileActions.handleAdd({ [filename]: profileData }));
-      await fireStorage
-        .ref("profiles/resumes/" + formik.values.demand_id + "/" + filename)
-        .put(file)
-        .catch((err) => {
-          res_error.push(filename);
-        });
       if ((await files.length) - 1 === index) {
         if ((await res_error.length) === 0) {
           let new_data = addedProfiles.concat(profileIDS);
@@ -341,9 +344,7 @@ const CreateSupply = (props) => {
       let count = 0;
       let profile = [...e.target.files];
       Object.values(e.target.files).map((file) => {
-        let filename = String(String(file.name).replaceAll(" ", "-")).split(
-          "."
-        )[0];
+        let filename = file.name;
         if (filenames.includes(filename)) {
           dispatch(
             AlertActions.handleShow({
@@ -633,17 +634,61 @@ const CreateSupply = (props) => {
       ""
     );
 
-  const downloadProfilesFromDB = () => {};
-
   useEffect(() => {
     if (!alerts.show) {
       setProfileFlag(false);
     }
   }, [alerts.show]);
 
+  useEffect(() => {
+    if (addedProfiles.length > 0) {
+      addedProfiles.map((profile) => {
+        if (!profileDBDatas.includes(profile)) {
+        }
+      });
+    }
+  }, [addedProfiles]);
+
+  const onDownloadProfile = () => {
+    let postData = {
+      dirName: formik.values.demand_id,
+      datas: [
+        {
+          fileName: "Pranesh",
+          url: "https://firebasestorage.googleapis.com/v0/b/hr-profile-management.appspot.com/o/profiles%2Fresumes%2Fharni-1296-f?alt=media&token=85023e6f-c8a5-458f-a6d8-d2af066fc5ee",
+        },
+        {
+          fileName: "Parthi",
+          url: "https://firebasestorage.googleapis.com/v0/b/hr-profile-management.appspot.com/o/profiles%2Fresumes%2Fhari-9500-m?alt=media&token=776a7ab8-f54f-43f7-a883-7e7774871c36",
+        },
+        {
+          fileName: "Prasanna",
+          url: "https://firebasestorage.googleapis.com/v0/b/hr-profile-management.appspot.com/o/profiles%2Fresumes%2Fjaya-9500-f?alt=media&token=3b6a8123-24a2-446f-9557-42fce051a350",
+        },
+      ],
+    };
+
+    axios.post("http://localhost:5000/download", postData).then((res) => {
+      if (res.data.includes("ready")) {
+        setTimeout(() => {
+          axios({
+            url: "http://localhost:5000/downloadZip",
+            responseType: "blob",
+            method: "POST",
+            data: {
+              dirName: "P123456789",
+            },
+          }).then((res) => {
+            FileDownload(res.data, formik.values.demand_id + ".zip");
+          });
+        }, 2000);
+      }
+    });
+  };
+
   return (
     <Fragment>
-      <Alerts profile={{ flag: profileFlag, view: profileView }} />
+      <Alerts profile={{ flag: profileFlag, view: profileView }} f />
       <Container className="d-flex justify-content-center ">
         <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
           <Card.Header className="bg-primary text-center text-white">
@@ -1145,6 +1190,7 @@ const CreateSupply = (props) => {
                 </Fragment>
               )}
             </Form>
+            <Button onClick={onDownloadProfile}>Download files</Button>
           </Card.Body>
         </Card>
       </Container>
