@@ -28,8 +28,7 @@ const Alerts = (props) => {
     dispatch(AlertActions.acceptSubmit(radioValue));
     setRadioValue("");
   };
-  console.log(props);
-  console.log(props.profile);
+  
   return (
     <Modal
       show={alerts.show}
