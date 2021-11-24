@@ -38,9 +38,7 @@ const validate = (value) => {
   } else if (String(value.contactNo).length > 14) {
     errors.contactNo =
       "*Phone number must be with in 15 charcaters with country code.";
-  } else if (!new RegExp("^[+]").test(value.contactNo)) {
-    errors.contactNo = "*Please add '+' before country code.";
-  } else if (!new RegExp("^[+][0-9]{1,3}[-]{1}").test(value.contactNo)) {
+  } else if (!new RegExp("^[0-9]{1,3}[-]{1}").test(value.contactNo)) {
     errors.contactNo = "*Please enter hypen after country code.";
   } else if (!new RegExp("[0-9]{7,10}$").test(value.contactNo)) {
     errors.contactNo = "*Invalid Format (Numbers Only).";
@@ -254,7 +252,7 @@ const ProfileData = (props) => {
             <FormControl
               type="text"
               name="contactNo"
-              placeholder="+91-9999999999"
+              placeholder="91-9999999999"
               readOnly={props.view}
               value={formik.values.contactNo}
               onChange={formik.handleChange}

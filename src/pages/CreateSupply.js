@@ -665,12 +665,16 @@ const CreateSupply = (props) => {
 
   const onDownloadProfile = () => {
     let datas = [];
+    let metaData = [];
     Object.values(profileInfo.added_data).map((profile) => {
       datas.push({ fileName: profile.candidateID, url: profile.url });
+      metaData.push(profile)
     });
+    console.log(metaData)
     let postData = {
       dirName: formik.values.demand_id,
       datas,
+      metaData
     };
 
     axios.post("http://localhost:5000/download", postData).then((res) => {
