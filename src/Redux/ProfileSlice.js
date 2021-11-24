@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const ProfileSlice = createSlice({
   name: "Profile",
   initialState: {
+    added_data : {},
     data: {},
   },
   reducers: {
@@ -13,13 +14,31 @@ const ProfileSlice = createSlice({
       state.data = tmpData;
     },
     handleRemove(state,action){
-       let tmpData = state.data
-       delete tmpData[action.payload]
-       state.data = tmpData
+       let tmpData = action.payload.flag ? state.added_data : state.data
+       delete tmpData[action.payload.index]
+       if(action.payload.flag){
+        state.added_data = tmpData
+       } else {
+        state.data = tmpData
+       }
     },
     handleClear(state) {
       state.data = {};
     },
+    handleMove(state) {
+      let tmpData = state.added_data;
+      for (const [key, value] of Object.entries(state.data)) {
+        tmpData[value.candidateID] = value;
+      }
+      state.added_data = tmpData;
+      state.data = {}
+    },
+    handleAddExistingData(state,action) {
+      let tmpData = state.added_data;
+      let key = Object.keys(action.payload)[0];
+      tmpData[key] = action.payload[key];
+      state.added_data = tmpData;
+    }
   },
 });
 

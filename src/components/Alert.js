@@ -38,7 +38,8 @@ const Alerts = (props) => {
       scrollable="true"
     >
       <ModalHeader className="bg-primary text-white">
-        <ModalTitle>Status</ModalTitle>
+        {props.profile && <ModalTitle>{props.profile.view ? "Profile Info": "Add Profile Info"}</ModalTitle>}
+        {(props.flag || props.status ) && <ModalTitle>Status</ModalTitle>}
       </ModalHeader>
       <ModalBody>
         {(props.flag || !props.profile.flag) && (

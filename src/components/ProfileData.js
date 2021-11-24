@@ -16,7 +16,6 @@ import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import { ProfileActions } from "../Redux/ProfileSlice";
 
-let date = new Date().getTime();
 
 const validate = (value) => {
   const errors = {};
@@ -99,7 +98,7 @@ const ProfileData = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      candidateID: "P" + date,
+      candidateID: "P" + new Date().getTime(),
       candidateName: "",
       dob: "",
       gender: "- Selcet Gender -",
@@ -121,6 +120,8 @@ const ProfileData = (props) => {
     if (props.view) {
       if (Object.keys(profileInfo.data).includes(props.file)) {
         formik.setValues(profileInfo.data[props.file]);
+      } else {
+        formik.setValues(profileInfo.added_data[props.file]);
       }
     }
   }, [profileInfo]);
