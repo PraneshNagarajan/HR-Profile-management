@@ -89,7 +89,7 @@ const NavBar = () => {
                   // active={location.pathname.includes("Employee") ? `active` : ``}
                   title={
                     <span>
-                      <FaUsersCog className="mb-1" /> Employees
+                      <FaUsersCog className="mb-1" /> Employee
                     </span>
                   }
                   id="collasible-nav-dropdown"
@@ -132,7 +132,7 @@ const NavBar = () => {
               title={
                 <span>
                   <FaRegListAlt className="mb-1" />{" "}
-                  {user.role === "FOCAL" ? "Demands" : "Supplies"}
+                  {user.role === "FOCAL" ? "Demand" : "Supply"}
                 </span>
               }
               id="collasible-nav-dropdown"
@@ -172,7 +172,7 @@ const NavBar = () => {
             disabled={!(user.photoUrl.length > 0 && user.security)}
             title={
               <span>
-                <FaRegIdBadge className="mb-1" /> Profiles
+                <FaRegIdBadge className="mb-1" /> Profile
               </span>
             }
             id="collasible-nav-dropdown"

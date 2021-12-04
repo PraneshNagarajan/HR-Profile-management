@@ -120,8 +120,8 @@ function App() {
             <Fragment>
               <Route path="/focalHomePage">
                 <MainLayout>
-                  <FocalHomePage />
-                  {/* <UserHomePage /> */}
+                  {/* <FocalHomePage /> */}
+                  <UserHomePage />
                 </MainLayout>
               </Route>
               <Route path="/createDemand">

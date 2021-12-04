@@ -440,9 +440,9 @@ const CreateDemand = (props) => {
     let recruiters = [];
     pre_requisite.users.map((recruiter, idx) => {
       if (
-        recruiter.supervisor === String(loggedUser.id) ||
-        recruiter.manager === String(loggedUser.id) ||
-        (recruiterIsChecked && recruiter.role.includes("RECRUITER"))
+        ((recruiter.supervisor === String(loggedUser.id) ||
+        recruiter.manager === String(loggedUser.id)) ||recruiterIsChecked )&&
+        (recruiter.role.includes("RECRUITER"))
       ) {
         recruiters.push({
           key: recruiter.id,

@@ -216,7 +216,9 @@ const CreateSupply = (props) => {
       );
       if ((await files.length) - 1 === index) {
         if ((await res_error.length) === 0) {
-          let new_data = await addedProfiles.concat(profileIDS);
+          let new_data = await addedProfiles.concat(profileIDS).concat(searchProfileDB)
+          await console.log(addedProfiles.concat(profileIDS))
+          await console.log(addedProfiles.concat(profileIDS).concat(searchProfileDB))
           await setAddedProfiles(new_data);
           await setFileNames([]);
           await setFiles([]);
@@ -240,7 +242,7 @@ const CreateSupply = (props) => {
     let excessSizeFileList = await [];
     let res = await filenames.filter((file) => addedProfiles.includes(file));
     if ((await res.length) === 0) {
-      if ((await searchProfileDB.length) > 0 && files.length === 0) {
+      if ((await searchProfileDB.length) > 0 ) {
         let new_data = addedProfiles.concat(searchProfileDB);
         await setAddedProfiles(new_data);
         await setFileNames([]);
@@ -455,6 +457,7 @@ const CreateSupply = (props) => {
   };
 
   const getDemandInfo = async (doc) => {
+    await dispatch(ProfileActions.handleClear())
     await formik.setFieldValue("profile_id", "");
     await formik.setFieldTouched("profile_id", false);
     await setFileNames([]);
@@ -1178,7 +1181,7 @@ const CreateSupply = (props) => {
                             )}
                             {isSaving && (
                               <Button
-                                variant="primary"
+                                variant="secondary"
                                 className={`my-3`}
                                 style={{ width: sm ? "100%" : "45%" }}
                                 disabled
@@ -1200,7 +1203,7 @@ const CreateSupply = (props) => {
                           <Fragment>
                             {isLoading && (
                               <Button
-                                variant="primary"
+                                variant="success"
                                 className={`my-3`}
                                 style={{ width: sm ? "100%" : "45%" }}
                                 disabled

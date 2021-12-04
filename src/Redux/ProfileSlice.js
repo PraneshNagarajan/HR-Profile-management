@@ -24,6 +24,7 @@ const ProfileSlice = createSlice({
     },
     handleClear(state) {
       state.data = {};
+      state.added_data = {}
     },
     handleMove(state) {
       let tmpData = state.added_data;
