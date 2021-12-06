@@ -113,9 +113,9 @@ const CreateSupply = (props) => {
   };
 
   const updateDemandInfo = async (datas, profileList) => {
-    await datas.map(async (profile, index) => {
-      let data = await {};
-      await firestore
+    await datas.map((profile, index) => {
+      let data = {};
+      firestore
         .collection("Profiles")
         .doc(profile.candidateID)
         .set({
@@ -158,19 +158,6 @@ const CreateSupply = (props) => {
                 data,
               "info.status": "Inprogress",
             })
-            .then(async () => {
-              await dispatch(ProfileActions.handleClear());
-              await dispatch(
-                AlertActions.handleShow({
-                  msg: (
-                    <Fragment>
-                      <p>Profile has been added sucessfully.</p>
-                    </Fragment>
-                  ),
-                  flag: true,
-                })
-              );
-            })
             .catch((err) => {
               dispatch(
                 AlertActions.handleShow({
@@ -180,7 +167,18 @@ const CreateSupply = (props) => {
               );
             });
         })
-        .catch((err) => {});
+        .catch((err) => {
+          alert(String(err));
+        });
+      if (index === datas.length - 1) {
+        dispatch(ProfileActions.handleClear());
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Profile has been added sucessfully",
+            flag: true,
+          })
+        );
+      }
     });
     await setIsSaving(false);
   };
@@ -212,10 +210,6 @@ const CreateSupply = (props) => {
           let new_data = await addedProfiles
             .concat(profileIDS)
             .concat(searchProfileDB);
-          await console.log(addedProfiles.concat(profileIDS));
-          await console.log(
-            addedProfiles.concat(profileIDS).concat(searchProfileDB)
-          );
           await setAddedProfiles(new_data);
           await setFileNames([]);
           await setFiles([]);
@@ -588,7 +582,7 @@ const CreateSupply = (props) => {
     dispatch(AlertActions.handleShow({ msg: file, msgFlag: "" }));
     setProfileFlag(true);
     let res = files.filter((item) => item.name.includes(file));
-    if (res.length > 0) {
+    if (res.length > 0 && !Object.keys(profileInfo.data).includes(file)) {
       setProfileView(false);
     } else {
       setProfileView(true);
@@ -670,7 +664,6 @@ const CreateSupply = (props) => {
       datas.push({ fileName: profile.candidateID, url: profile.url });
       metaData.push(profile);
     });
-    console.log(metaData);
     let postData = {
       dirName: formik.values.demand_id,
       datas,
@@ -1159,17 +1152,17 @@ const CreateSupply = (props) => {
                               <Button
                                 variant="secondary"
                                 className={sm ? `mt-3` : `my-3`}
-                                disabled={
-                                  filenames.length > 0 || files.length > 0
-                                    ? Object.keys(profileInfo.data).length !==
-                                        filenames.length &&
-                                      searchProfileDB.length < 1
-                                      ? true
-                                      : false
-                                    : searchProfileDB.length > 0
-                                    ? false
-                                    : true
-                                }
+                                // disabled={
+                                //   filenames.length > 0 || files.length > 0
+                                //     ? Object.keys(profileInfo.data).length !==
+                                //         filenames.length &&
+                                //       searchProfileDB.length < 1
+                                //       ? true
+                                //       : false
+                                //     : searchProfileDB.length > 0
+                                //     ? false
+                                //     : true
+                                // }
                                 style={{ width: sm ? "100%" : "45%" }}
                                 onClick={onSave}
                               >

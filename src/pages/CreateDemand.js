@@ -62,7 +62,7 @@ const CreateDemand = (props) => {
       type: "- Select the type -",
       demand: 1,
       demandallot: "",
-      status: 0,
+      status: "Unstarted",
       file_count: 0,
       clientname: "- Select the Client -",
       endclientname: "- Select the End-Client -",

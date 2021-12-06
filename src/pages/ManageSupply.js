@@ -162,9 +162,12 @@ const ManageSupply = () => {
     );
     setStepOptions(step);
   };
-
+   
   //update the status db
   const onUpdateChangesToDB = (step, suppliedData) => {
+    console.log("step : "+step)
+    console.log("Profile-key : "+profileKey)
+    console.log(suppliedData[profileKey])
     let dir = "profile_info.profiles_status.data." + profileKey;
     let finalStatus = {};
     Object.values(suppliedData[profileKey].status).map((item, idx) => {
@@ -175,6 +178,7 @@ const ManageSupply = () => {
         ? item.title.split("(")[1].split(")")[0]
         : "";
       finalStatus[title] = value;
+      console.log(finalStatus)
       if (suppliedData[profileKey].status.length - 1 === idx) {
         firestore
           .collection("Demands")
@@ -286,6 +290,7 @@ const ManageSupply = () => {
             onClick: () => {
               profileKey = key;
               onSelectFirstStatus(steps1[index].title);
+              console.log("onSelctFirst")
             },
           });
         }
@@ -330,8 +335,11 @@ const ManageSupply = () => {
           },
         });
       }
+      console.log(status1)
+      console.log(status2)
       let combinedStatus =
         activeStep1 === -1 && activeStep2 === -1 ? [...status1] : [...status2];
+        console.log(combinedStatus)
       statusValues[key]["status"] = combinedStatus;
       statusValues[key]["activeStep"] =
         activeStep1 === -1 && activeStep2 === -1
@@ -339,10 +347,12 @@ const ManageSupply = () => {
           : activeStep2 === -1
           ? 0
           : activeStep2;
+          console.log(statusValues)
       if (keys.length - 1 === index) {
         setData(statusValues);
         setSupplyList(statusValues);
         if (step.length > 0) {
+          console.log("step check : ")
           onUpdateChangesToDB(step, statusValues);
         }
       }
@@ -353,6 +363,8 @@ const ManageSupply = () => {
   const onSelectFirstStatus = (step) => {
     let statusValues = getData;
     statusValues[profileKey]["status"][step] = alertData.data + dateFormat;
+    console.log(getData)
+    console.log(statusValues)
     onProcessData(step, statusValues);
   };
 

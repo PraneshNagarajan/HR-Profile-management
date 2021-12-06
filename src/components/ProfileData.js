@@ -223,7 +223,7 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Male");
                   formik.setFieldValue(
                     "candidateID",
-                    formik.values.candidateID + "M"
+                     (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID ) + "M"
                   );
                 }}
               >
@@ -235,7 +235,7 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Female");
                   formik.setFieldValue(
                     "candidateID",
-                    formik.values.candidateID + "F"
+                    (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID ) + "F"
                   );
                 }}
               >
@@ -247,7 +247,7 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Others");
                   formik.setFieldValue(
                     "candidateID",
-                    formik.values.candidateID + "O"
+                    (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID )+"O"
                   );
                 }}
               >
