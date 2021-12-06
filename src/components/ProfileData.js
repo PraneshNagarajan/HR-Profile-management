@@ -16,7 +16,6 @@ import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import { ProfileActions } from "../Redux/ProfileSlice";
 
-
 const validate = (value) => {
   const errors = {};
   if (!value.candidateName) {
@@ -220,19 +219,37 @@ const ProfileData = (props) => {
             </Dropdown.Toggle>
             <Dropdown.Menu className="w-100 text-center">
               <Dropdown.Item
-                onClick={(e) => formik.setFieldValue("gender", "Male")}
+                onClick={(e) => {
+                  formik.setFieldValue("gender", "Male");
+                  formik.setFieldValue(
+                    "candidateID",
+                    formik.values.candidateID + "M"
+                  );
+                }}
               >
                 Male
               </Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item
-                onClick={(e) => formik.setFieldValue("gender", "Female")}
+                onClick={(e) => {
+                  formik.setFieldValue("gender", "Female");
+                  formik.setFieldValue(
+                    "candidateID",
+                    formik.values.candidateID + "F"
+                  );
+                }}
               >
                 Female
               </Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item
-                onClick={(e) => formik.setFieldValue("gender", "Others")}
+                onClick={(e) => {
+                  formik.setFieldValue("gender", "Others");
+                  formik.setFieldValue(
+                    "candidateID",
+                    formik.values.candidateID + "O"
+                  );
+                }}
               >
                 Others
               </Dropdown.Item>

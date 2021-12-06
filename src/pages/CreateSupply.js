@@ -153,17 +153,10 @@ const CreateSupply = (props) => {
             .update({
               "info.file_count": totalFileCount,
               "profile_info.profiles": profileList,
-              "profile_info.status":
-                totalFileCount === formik.values.demand
-                  ? "Submitted"
-                  : "Inprogress",
               "profile_info.comments": "",
               ["profile_info.profiles_status.data." + profile.candidateID]:
                 data,
-              "info.status":
-                totalFileCount == formik.values.demand
-                  ? "Submitted"
-                  : "Inprogress",
+              "info.status": "Inprogress",
             })
             .then(async () => {
               await dispatch(ProfileActions.handleClear());
@@ -216,9 +209,13 @@ const CreateSupply = (props) => {
       );
       if ((await files.length) - 1 === index) {
         if ((await res_error.length) === 0) {
-          let new_data = await addedProfiles.concat(profileIDS).concat(searchProfileDB)
-          await console.log(addedProfiles.concat(profileIDS))
-          await console.log(addedProfiles.concat(profileIDS).concat(searchProfileDB))
+          let new_data = await addedProfiles
+            .concat(profileIDS)
+            .concat(searchProfileDB);
+          await console.log(addedProfiles.concat(profileIDS));
+          await console.log(
+            addedProfiles.concat(profileIDS).concat(searchProfileDB)
+          );
           await setAddedProfiles(new_data);
           await setFileNames([]);
           await setFiles([]);
@@ -242,7 +239,7 @@ const CreateSupply = (props) => {
     let excessSizeFileList = await [];
     let res = await filenames.filter((file) => addedProfiles.includes(file));
     if ((await res.length) === 0) {
-      if ((await searchProfileDB.length) > 0 ) {
+      if ((await searchProfileDB.length) > 0) {
         let new_data = addedProfiles.concat(searchProfileDB);
         await setAddedProfiles(new_data);
         await setFileNames([]);
@@ -457,7 +454,7 @@ const CreateSupply = (props) => {
   };
 
   const getDemandInfo = async (doc) => {
-    await dispatch(ProfileActions.handleClear())
+    await dispatch(ProfileActions.handleClear());
     await formik.setFieldValue("profile_id", "");
     await formik.setFieldTouched("profile_id", false);
     await setFileNames([]);
@@ -473,7 +470,7 @@ const CreateSupply = (props) => {
             datas.assignees.includes(String(loggedUser.id)) ||
             datas.owner === loggedUser.id
           ) {
-            if (datas.status !== "Submitted" && datas.status !== "Completed") {
+            if (datas.status !== "Completed") {
               await formik.setValues({
                 demand_id: formik.values.demand_id,
                 profile_id: "",
@@ -671,13 +668,13 @@ const CreateSupply = (props) => {
     let metaData = [];
     Object.values(profileInfo.added_data).map((profile) => {
       datas.push({ fileName: profile.candidateID, url: profile.url });
-      metaData.push(profile)
+      metaData.push(profile);
     });
-    console.log(metaData)
+    console.log(metaData);
     let postData = {
       dirName: formik.values.demand_id,
       datas,
-      metaData
+      metaData,
     };
 
     axios.post("http://localhost:5000/download", postData).then((res) => {

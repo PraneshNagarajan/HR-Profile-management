@@ -164,10 +164,10 @@ const ManageSupply = () => {
   };
 
   //update the status db
-  const onUpdateChangesToDB = (step) => {
+  const onUpdateChangesToDB = (step, suppliedData) => {
     let dir = "profile_info.profiles_status.data." + profileKey;
     let finalStatus = {};
-    Object.values(supplyList[profileKey].status).map((item, idx) => {
+    Object.values(suppliedData[profileKey].status).map((item, idx) => {
       let title = item.title.includes("(")
         ? item.title.split("(")[0]
         : item.title;
@@ -175,7 +175,7 @@ const ManageSupply = () => {
         ? item.title.split("(")[1].split(")")[0]
         : "";
       finalStatus[title] = value;
-      if (supplyList[profileKey].status.length - 1 === idx) {
+      if (suppliedData[profileKey].status.length - 1 === idx) {
         firestore
           .collection("Demands")
           .doc(params.demandId)
@@ -251,7 +251,7 @@ const ManageSupply = () => {
           tmp_data[profileKey]["status"][0].title = alertData.data + dateFormat;
         }
       }
-      onUpdateChangesToDB(alertData.data);
+      onUpdateChangesToDB(alertData.data, tmp_data);
       setSupplyList(tmp_data);
       dispatch(AlertActions.cancelSubmit());
     }
@@ -259,7 +259,7 @@ const ManageSupply = () => {
 
   //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
   //and disable previous step status options.
-  const onProcessData = (statusValues) => {
+  const onProcessData = (step = "", statusValues) => {
     let keys = Object.keys(statusValues);
     keys.map((key, index) => {
       let activeStep1 = -1;
@@ -271,11 +271,7 @@ const ManageSupply = () => {
           if (statusValues[key]["status"][step.title].length > 0) {
             status2.push({
               ...step,
-              title:
-                step.title +
-                "(" +
-                statusValues[key]["status"][step.title] +
-                ")",
+              title: step.title + statusValues[key]["status"][step.title],
               onClick: () => {
                 if (options1[index]) {
                   onChangeStatus(key, options1[index]);
@@ -299,11 +295,7 @@ const ManageSupply = () => {
           if (statusValues[key]["status"][step.title].length > 0) {
             status2.push({
               ...step,
-              title:
-                step.title +
-                "(" +
-                statusValues[key]["status"][step.title] +
-                ")",
+              title: step.title + statusValues[key]["status"][step.title],
               onClick: () => {
                 if (Object.keys(options2).includes(step.title)) {
                   onChangeStatus(key, options2[step.title]);
@@ -350,6 +342,9 @@ const ManageSupply = () => {
       if (keys.length - 1 === index) {
         setData(statusValues);
         setSupplyList(statusValues);
+        if (step.length > 0) {
+          onUpdateChangesToDB(step, statusValues);
+        }
       }
     });
   };
@@ -358,8 +353,7 @@ const ManageSupply = () => {
   const onSelectFirstStatus = (step) => {
     let statusValues = getData;
     statusValues[profileKey]["status"][step] = alertData.data + dateFormat;
-    onProcessData(statusValues);
-    onUpdateChangesToDB(step);
+    onProcessData(step, statusValues);
   };
 
   useEffect(() => {
@@ -371,7 +365,7 @@ const ManageSupply = () => {
         .then((response) => {
           getData = response.data().profile_info.profiles_status.data;
           let statusValues = response.data().profile_info.profiles_status.data;
-          onProcessData(statusValues);
+          onProcessData("", statusValues);
           dispatch(
             PaginationActions.initial({
               size: data.profiles.length,
@@ -417,10 +411,9 @@ const ManageSupply = () => {
         <Spinners />
       )}
       <Fragment>
-        <Alerts
-          flag={stepOptions.length > 0 ? true : false}
-          stepOptions={stepOptions}
-        />
+        {stepOptions.length > 0 && (
+          <Alerts flag={true} status={{ stepOptions }} />
+        )}
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
@@ -541,13 +534,15 @@ const ManageSupply = () => {
                           <Col md="2">
                             <Card.Img
                               src={
-                                demand.slice(-1).toLowerCase() === "m"
+                                demand.slice(-1) === "M"
                                   ? index % 2 === 0
                                     ? male
                                     : man
-                                  : index % 2 === 0
-                                  ? women
-                                  : female
+                                  : demand.slice(-1) === "F"
+                                  ? index % 2 === 0
+                                    ? women
+                                    : female
+                                  : ""
                               }
                               className={sm ? `w-25` : `w-75`}
                             ></Card.Img>

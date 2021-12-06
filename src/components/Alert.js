@@ -54,7 +54,7 @@ const Alerts = (props) => {
 
         {props.status && (
           <ButtonGroup>
-            {props.stepOptions.map((radio, idx) => (
+            {props.status.stepOptions.map((radio, idx) => (
               <ToggleButton
                 key={idx}
                 id={`radio-${idx}`}

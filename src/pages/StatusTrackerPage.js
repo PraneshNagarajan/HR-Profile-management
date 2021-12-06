@@ -15,9 +15,9 @@ import { Link } from "react-router-dom";
 
 const StatusTrackerPage = () => {
   const data = [
-    { id: "FO-1111121636468555961JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111114", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
+    { id: "D1638596665820", status: "Inprogress" },
+    { id: "D1637669805463", status: "Submitted" },
+    { id: "D1638772983586", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
     { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
     { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
@@ -77,7 +77,11 @@ const StatusTrackerPage = () => {
     let options = [...selectedOptions];
     options.push(item.key);
     dispatch(
-      FilterDemandActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterDemandActions.onTextFilterHandler({
+        data,
+        options,
+        id: formik.values.id,
+      })
     );
     setSelectedOptions(options);
   };
@@ -87,7 +91,11 @@ const StatusTrackerPage = () => {
     let index = selectedOptions.findIndex((id) => id === item.key);
     options.splice(index, 1);
     dispatch(
-      FilterDemandActions.onTextFilterHandler({ data, options, id: formik.values.id })
+      FilterDemandActions.onTextFilterHandler({
+        data,
+        options,
+        id: formik.values.id,
+      })
     );
     setSelectedOptions(options);
   };
@@ -116,7 +124,7 @@ const StatusTrackerPage = () => {
       );
     }
   }, [formik.values.id, filter.flag]);
-  
+
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
@@ -193,7 +201,7 @@ const StatusTrackerPage = () => {
                       }`}
                       key={index}
                       as={Link}
-                      to={"/manageSupply/"+demand.id}
+                      to={"/manageSupply/" + demand.id}
                     >
                       <Card.Body>
                         <small>
