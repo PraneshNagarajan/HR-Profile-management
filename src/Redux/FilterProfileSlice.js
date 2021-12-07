@@ -1,13 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const onCatagoryFilterHandler = (dataLists, options, key) => {
+const onCatagoryFilterHandler = (dataLists, options) => {
   let datas = options.length > 0 ? {} : dataLists;
   Object.entries(dataLists).map(([key, value]) => {
-    if (options.includes(value.current_status)) {
-      datas[key] = dataLists[key];
-    }
+    options.map(option => {
+      if(value.status.slice(0, value.activeStep+1).filter(item => item.title.includes(option)).length > 0) {
+        datas[key] = dataLists[key];
+      }
+    })
   });
-  return datas;
+  let errors = Object.keys(datas).length === 0 ||  dataLists.length > 0 ? "No match found." : "";
+  return {datas, errors}
 };
 
 const initialState = {
@@ -35,21 +38,18 @@ const FilterProfileSlice = createSlice({
           key = item;
         }
         if (
-          Object.keys(action.payload.data).length - 1 === index &&
-          Object.keys(result).length > 0
+          Object.keys(action.payload.data).length - 1 === index 
         ) {
+          let sendData =  action.payload.id.length > 0 ?  Object.keys(result).length > 0 ? result
+          : [] : action.payload.data
           let output = onCatagoryFilterHandler(
-            action.payload.id.length > 0 || action.payload.length > 0
-              ? result
-              : action.payload.data,
-            action.payload.options,
-            key
+           sendData,
+            action.payload.options
           );
-          result = output;
-          state.result = output;
+          state.result = output.datas
+          state.errors = output.errors
         }
       });
-      state.errors = Object.keys(result).length === 0 ? "No match found." : "";
     },
   },
 });

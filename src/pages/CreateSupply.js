@@ -124,10 +124,21 @@ const CreateSupply = (props) => {
           info: profile,
         })
         .then(async () => {
+          let date = new Date();
+          let dateFormat =
+            "(" +
+            date.getDate() +
+            "/" +
+            (date.getMonth() + 1) +
+            "/" +
+            date.getFullYear() +
+            ")";
+
           data = await {
             current_status: "Profile Submitted",
+            activeStep: 0,
             status: {
-              "profile submitted": new Date().toString(),
+              "Profile Submitted":  dateFormat,
               "Screen Reject": "",
               Duplicate: "",
               "Feedback Pending": "",

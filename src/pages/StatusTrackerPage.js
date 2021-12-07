@@ -21,7 +21,7 @@ const StatusTrackerPage = () => {
     { id: "D1638787548486", status: "new" },
     { id: "D1638788774318", status: "Inprogress" },
     { id: "D1638798236798", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
+    { id: "D1638884567314", status: "Submitted" },
     { id: "FO-1111111635861804887JR-111111", status: "Completed" },
     { id: "FO-1111111635861804887JR-111111", status: "new" },
     { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },

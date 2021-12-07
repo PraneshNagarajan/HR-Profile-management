@@ -1,11 +1,21 @@
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  FormGroup,
+  InputGroup,
+  FormControl,
+  FormLabel,
+  Spinner,
+} from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
 import PageSwitcher from "../components/Pagination";
 import { useDispatch } from "react-redux";
-import { Col, FormControl, Card, Row } from "react-bootstrap";
-import { Link, useHistory, useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { firestore } from "../firebase";
 import { PaginationActions } from "../Redux/PaginationSlice";
 import { useMediaQuery } from "react-responsive";
@@ -23,25 +33,12 @@ import Stepper from "react-stepper-horizontal";
 import Alerts from "../components/Alert";
 import { AlertActions } from "../Redux/AlertSlice";
 
-const steps1 = [
-  {
-    icon: failedIcon,
-    title: "Screen Reject",
-  },
-  {
-    icon: failedIcon,
-    title: "Duplicate",
-  },
-  {
-    icon: holdIcon,
-    title: "Feedback Pending",
-  },
-  {
-    icon: holdIcon,
-    title: "Position Hold",
-  },
-];
-const steps2 = [
+const steps = [
+  { state: "success", icon: successIcon, title: "Profile Submitted" },
+  { state: "danger", icon: failedIcon, title: "Screen Reject" },
+  { state: "danger", icon: failedIcon, title: "Duplicate" },
+  { state: "warning", icon: holdIcon, title: "Feedback Pending" },
+  { state: "warning", icon: holdIcon, title: "Position Hold" },
   { state: "success", icon: successIcon, title: "Interview Scheduled" },
   { state: "danger", icon: failedIcon, title: "No Show" },
   { state: "danger", icon: failedIcon, title: "L1 Reject" },
@@ -57,16 +54,19 @@ const steps2 = [
   { state: "success", icon: successIcon, title: "On Boarded" },
 ];
 
-let options1 = {
-  2: [{ status: "Position Hold", color: "warning" }],
-  3: [
+let statusOptions = {
+  "Profile Submitted": [
+    { status: "Position Hold", color: "warning" },
     { status: "Screen Reject", color: "danger" },
     { status: "Duplicate", color: "danger" },
     { status: "Interview Scheduled", color: "primary" },
   ],
-};
-
-let options2 = {
+  "Feedback Pending": [{ status: "Position Hold", color: "warning" }],
+  "Position Hold": [
+    { status: "Screen Reject", color: "danger" },
+    { status: "Duplicate", color: "danger" },
+    { status: "Interview Scheduled", color: "primary" },
+  ],
   "Interview Scheduled": [
     { status: "No Show", color: "danger" },
     { status: "L1 Select", color: "primary" },
@@ -91,8 +91,8 @@ let options2 = {
   ],
 };
 
+let title;
 let profileKey = "";
-let getData = [];
 let date = new Date();
 let dateFormat =
   "(" +
@@ -115,10 +115,12 @@ const ManageSupply = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [data, setData] = useState([]);
   const [stepOptions, setStepOptions] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const formik = useFormik({
     initialValues: {
       id: "",
+      comments: ""
     },
   });
 
@@ -162,15 +164,12 @@ const ManageSupply = () => {
     );
     setStepOptions(step);
   };
-   
+
   //update the status db
-  const onUpdateChangesToDB = (step, suppliedData) => {
-    console.log("step : "+step)
-    console.log("Profile-key : "+profileKey)
-    console.log(suppliedData[profileKey])
+  const onUpdateChangesToDB = (step, activeStep) => {
     let dir = "profile_info.profiles_status.data." + profileKey;
     let finalStatus = {};
-    Object.values(suppliedData[profileKey].status).map((item, idx) => {
+    Object.values(supplyList[profileKey].status).map((item, idx) => {
       let title = item.title.includes("(")
         ? item.title.split("(")[0]
         : item.title;
@@ -178,14 +177,14 @@ const ManageSupply = () => {
         ? item.title.split("(")[1].split(")")[0]
         : "";
       finalStatus[title] = value;
-      console.log(finalStatus)
-      if (suppliedData[profileKey].status.length - 1 === idx) {
+      if (supplyList[profileKey].status.length - 1 === idx) {
         firestore
           .collection("Demands")
           .doc(params.demandId)
           .update({
             [dir + ".status"]: finalStatus,
             [dir + ".current_status"]: step,
+            [dir + ".activeStep"]: activeStep,
           })
           .catch((err) => console.log(String(err)));
       }
@@ -202,60 +201,54 @@ const ManageSupply = () => {
           index = pos;
         }
       });
+      title = tmp_data[profileKey]["status"][index]["title"];
+      //check current status between profile_submit to profile select
+      if (steps.slice(0, 6).filter((item) => item.title === title).length > 0) {
+        tmp_data[profileKey]["status"][index]["title"] =
+          alertData.data + dateFormat;
+        tmp_data[profileKey]["status"][0] = {
+          ...tmp_data[profileKey]["status"][0],
+          onClick: () => {},
+        };
+        if (tmp_data[profileKey]["status"][index].state === "danger") {
+          let tmp_value = [
+            tmp_data[profileKey]["status"][0],
+            tmp_data[profileKey]["status"][index],
+          ];
+          tmp_data[profileKey]["status"] = tmp_value;
+        } else {
+          for (let k = index - 1; k >= 1; k--) {
+            if (!tmp_data[profileKey]["status"][k].title.includes("(")) {
+              tmp_data[profileKey]["status"].splice(k, 1);
+            }
+          }
+        }
+      }
       //check whether first step is "Interview Scheduled"
-      if (
-        tmp_data[profileKey]["status"][0].title.includes("Interview Scheduled")
-      ) {
+      else if (steps.slice(7).filter((item) => item.title === title).length > 0)
         tmp_data[profileKey]["status"][index].title =
           alertData.data + dateFormat;
 
-        tmp_data[profileKey].activeStep = index;
-
-        for (let k = index - 1; k >= 0; k--) {
-          if (tmp_data[profileKey]["status"][k].state !== "success") {
-            tmp_data[profileKey]["status"].splice(k, 1);
-          }
-          if (
-            tmp_data[profileKey]["status"][k].state === "success" &&
-            !tmp_data[profileKey]["status"][k].title.includes(alertData.data)
-          ) {
-            tmp_data[profileKey]["status"][k] = {
-              ...tmp_data[profileKey]["status"][k],
-              onClick: () => {},
-            };
-          }
+      for (let k = index - 1; k >= 0; k--) {
+        if (tmp_data[profileKey]["status"][k].state !== "success") {
+          tmp_data[profileKey]["status"].splice(k, 1);
         }
-
-        tmp_data[profileKey]["status"].map((step, pos) => {
-          if (step.title.includes(alertData.data)) {
-            tmp_data[profileKey].activeStep = pos;
-          }
-        });
-      } else {
-        let tmp = [];
-        for (let i in steps1) {
-          if (steps1[i].title === alertData.data) {
-            tmp = {
-              ...steps1[i],
-              onClick: () => {
-                if (options1[i]) {
-                  onChangeStatus(profileKey, options1[i]);
-                }
-              },
-            };
-            tmp_data[profileKey]["status"][0] = {
-              ...tmp,
-              title: alertData.data + dateFormat,
-            };
-          }
-        }
-        //delete first step
-        if (Object.values(tmp).length === 0) {
-          tmp_data[profileKey]["status"].splice(0, 1);
-          tmp_data[profileKey]["status"][0].title = alertData.data + dateFormat;
+        if (
+          tmp_data[profileKey]["status"][k].state === "success" &&
+          !tmp_data[profileKey]["status"][k].title.includes(alertData.data)
+        ) {
+          tmp_data[profileKey]["status"][k] = {
+            ...tmp_data[profileKey]["status"][k],
+            onClick: () => {},
+          };
         }
       }
-      onUpdateChangesToDB(alertData.data, tmp_data);
+      tmp_data[profileKey]["status"].map((step, pos) => {
+        if (step.title.includes(alertData.data)) {
+          tmp_data[profileKey].activeStep = pos;
+        }
+      });
+      onUpdateChangesToDB(alertData.data, tmp_data[profileKey].activeStep);
       setSupplyList(tmp_data);
       dispatch(AlertActions.cancelSubmit());
     }
@@ -263,109 +256,36 @@ const ManageSupply = () => {
 
   //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
   //and disable previous step status options.
-  const onProcessData = (step = "", statusValues) => {
+  const onProcessData = (statusValues) => {
+    let tmp_status = [];
     let keys = Object.keys(statusValues);
     keys.map((key, index) => {
-      let activeStep1 = -1;
-      let activeStep2 = -1;
-      let status1 = [];
-      let status2 = [];
-      steps1.map((step, index) => {
+      let status = [];
+      steps.map((step, index) => {
         if (statusValues[key]["status"][step.title] !== undefined) {
-          if (statusValues[key]["status"][step.title].length > 0) {
-            status2.push({
-              ...step,
-              title: step.title + statusValues[key]["status"][step.title],
-              onClick: () => {
-                if (options1[index]) {
-                  onChangeStatus(key, options1[index]);
-                }
-              },
-            });
-            activeStep1 += 1;
-          }
-
-          status1.push({
+          title = statusValues[key]["status"][step.title];
+          status.push({
             ...step,
+            title:
+              title.length > 0 ? step.title + "(" + title + ")" : step.title,
             onClick: () => {
-              profileKey = key;
-              onSelectFirstStatus(steps1[index].title);
-              console.log("onSelctFirst")
+              if (
+                Object.keys(statusOptions).includes(step.title) &&
+                index >= statusValues[key].activeStep
+              ) {
+                onChangeStatus(key, statusOptions[step.title]);
+              }
             },
           });
         }
       });
-      steps2.map((step, index) => {
-        if (statusValues[key]["status"][step.title] !== undefined) {
-          if (statusValues[key]["status"][step.title].length > 0) {
-            status2.push({
-              ...step,
-              title: step.title + statusValues[key]["status"][step.title],
-              onClick: () => {
-                if (Object.keys(options2).includes(step.title)) {
-                  onChangeStatus(key, options2[step.title]);
-                }
-              },
-            });
-            activeStep2 += 1;
-          } else {
-            status2.push({
-              ...step,
-              onClick: () => {
-                if (Object.keys(options2).includes(step.title)) {
-                  alert("true");
-                  onChangeStatus(key, options2[step.title]);
-                }
-              },
-            });
-          }
-        }
-      });
-      if (activeStep1 === -1 && activeStep2 === -1) {
-        status1.unshift({
-          title: "Submitted",
-          icon: successIcon,
-        });
-        status1.push({
-          title: "Interview Scheduled",
-          icon: successIcon,
-          onClick: () => {
-            profileKey = key;
-            onSelectFirstStatus("Interview Scheduled");
-          },
-        });
-      }
-      console.log(status1)
-      console.log(status2)
-      let combinedStatus =
-        activeStep1 === -1 && activeStep2 === -1 ? [...status1] : [...status2];
-        console.log(combinedStatus)
-      statusValues[key]["status"] = combinedStatus;
-      statusValues[key]["activeStep"] =
-        activeStep1 === -1 && activeStep2 === -1
-          ? status1.length - 1
-          : activeStep2 === -1
-          ? 0
-          : activeStep2;
-          console.log(statusValues)
+      statusValues[key]["status"] = status;
+      statusValues[key]["activeStep"] = statusValues[key].activeStep;
       if (keys.length - 1 === index) {
         setData(statusValues);
         setSupplyList(statusValues);
-        if (step.length > 0) {
-          console.log("step check : ")
-          onUpdateChangesToDB(step, statusValues);
-        }
       }
     });
-  };
-
-  //call this funcion if no step had choosen
-  const onSelectFirstStatus = (step) => {
-    let statusValues = getData;
-    statusValues[profileKey]["status"][step] = alertData.data + dateFormat;
-    console.log(getData)
-    console.log(statusValues)
-    onProcessData(step, statusValues);
   };
 
   useEffect(() => {
@@ -375,9 +295,8 @@ const ManageSupply = () => {
         .doc(params.demandId)
         .get()
         .then((response) => {
-          getData = response.data().profile_info.profiles_status.data;
           let statusValues = response.data().profile_info.profiles_status.data;
-          onProcessData("", statusValues);
+          onProcessData(statusValues);
           dispatch(
             PaginationActions.initial({
               size: data.profiles.length,
@@ -402,10 +321,8 @@ const ManageSupply = () => {
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
-        size: supplyList.profile_info
-          ? Object.keys(supplyList.profile_info.profiles_status.data).length
-          : 0,
-        count: sm ? 5 : 10,
+        size: Object.keys(supplyList).length,
+        count: sm ? 5 : 5,
         current: 1,
       })
     );
@@ -429,7 +346,7 @@ const ManageSupply = () => {
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
-              placeholder="Enter Demand ID"
+              placeholder="Enter Profile ID"
               type="text"
               name="id"
               value={formik.values.id}
@@ -526,15 +443,18 @@ const ManageSupply = () => {
             <div className="mt-3 d-flex justify-content-center flex-wrap">
               {Object.keys(supplyList).map((demand, index) => {
                 if (
-                  index >= (currentPage - 1) * (sm ? 5 : 10) &&
-                  index < currentPage * (sm ? 5 : 10)
+                  index >= (currentPage - 1) * (sm ? 5 : 5) &&
+                  index < currentPage * (sm ? 5 : 5)
                 ) {
                   return (
                     <Card
                       className={`mx-1 my-2 text-center shadow border border-2 border-${
                         supplyList[demand].current_status.includes("Hold")
                           ? `warning`
-                          : supplyList[demand].current_status.includes("ed")
+                          : supplyList[demand].current_status.slice(-2) ===
+                              "ed" ||
+                            supplyList[demand].current_status.slice(-4) ===
+                              "lect"
                           ? `primary`
                           : `danger`
                       }`}
@@ -556,11 +476,11 @@ const ManageSupply = () => {
                                     : female
                                   : ""
                               }
-                              className={sm ? `w-25` : `w-75`}
+                              className={sm ? `w-25` : `w-50`}
                             ></Card.Img>
                           </Col>
                           <Col
-                            md={{ span: "8", offset: "1" }}
+                            md="4"
                             className="text-center mt-5"
                           >
                             <div>
@@ -576,6 +496,61 @@ const ManageSupply = () => {
                               </small>
                             </div>
                           </Col>
+                        <Col md="6" className="text-center mt-5">
+                          <InputGroup className="mb-3">
+                            <FormControl
+                              placeholder="Enter Comments"
+                              name="comments"
+                              value={formik.values.comments}
+                              isInvalid={
+                                formik.errors.comments &&
+                                formik.touched.comments
+                              }
+                              isValid={
+                                !formik.errors.comments &&
+                                formik.touched.comments
+                              }
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {!isSearching && (
+                              <Button
+                                variant="outline-primary"
+                                onClick={()=>{}}
+                                disabled={
+                                  isSearching ||
+                                  !formik.values.comments.length > 0
+                                }
+                              >
+                                Search
+                              </Button>
+                            )}
+                            {isSearching && (
+                              <Button variant="primary" disabled>
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  role="status"
+                                  aria-hidden="true"
+                                />{" "}
+                                Searching...
+                                <span className="visually-hidden">
+                                  Loading...
+                                </span>
+                              </Button>
+                            )}
+                          </InputGroup>
+
+                          {formik.touched.comments &&
+                            (!formik.values.comments.length > 0 ||
+                              formik.errors.comments) && (
+                              <div className="text-danger">
+                                {formik.errors.comments}
+                              </div>
+                            )}
+
+                        </Col>
                         </Row>
                         <Row style={{ cursor: "pointer" }}>
                           <Stepper
