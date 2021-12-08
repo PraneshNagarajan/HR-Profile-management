@@ -88,11 +88,11 @@ let statusOptions = {
   ],
   "Client Hold": [
     { status: "Client Select", color: "primary" },
-    { status: "Declined Before Offer", color: "danger" }
+    { status: "Declined Before Offer", color: "danger" },
   ],
   "Client Select": [
     { status: "Declined Before Offer", color: "danger" },
-    { status: "Offered", color: "primary" }
+    { status: "Offered", color: "primary" },
   ],
   Offered: [
     { status: "Declined After Offer", color: "danger" },
@@ -102,7 +102,7 @@ let statusOptions = {
 
 let title;
 let profileKey = "";
-let dateFormat = new Date().toISOString().slice(0, 10);
+let dateFormat = new Date().toISOString().slice(0, 10).replace("-", "/");
 let dir = "profile_info.profiles_status.data.";
 
 const ManageSupply = () => {
@@ -245,7 +245,7 @@ const ManageSupply = () => {
       let value = item.title.includes("(")
         ? item.title.split("(")[1].split(")")[0]
         : "";
-      finalStatus[title] = { value, uploaded_by: activeStep == idx  ? loggedUser.id : item.titleValue.uploaded_by};
+      finalStatus[title] = item.titleValue;
       if (supplyList[profileKey].status.length - 1 === idx) {
         firestore
           .collection("Demands")
@@ -267,56 +267,55 @@ const ManageSupply = () => {
     if (alertData.accept) {
       let tmp_data = supplyList;
       let index = -1;
-      tmp_data[profileKey]["status"].map((step, pos) => {
+      let pStatus = tmp_data[profileKey]["status"];
+      pStatus.map((step, pos) => {
         if (step.title === alertData.data) {
           index = pos;
         }
       });
-      title = tmp_data[profileKey]["status"][index]["title"];
+      title = pStatus[index]["title"];
       //check current status between profile_submit to profile select
       if (steps.slice(0, 6).filter((item) => item.title === title).length > 0) {
-        tmp_data[profileKey]["status"][index]["title"] =
-          alertData.data + "(" + dateFormat + ")";
-        tmp_data[profileKey]["status"][0] = {
-          ...tmp_data[profileKey]["status"][0],
+        pStatus[index]["title"] = alertData.data + "(" + dateFormat + ")";
+        pStatus[0] = {
+          ...pStatus[0],
           onClick: () => {},
         };
-        if (tmp_data[profileKey]["status"][index].state === "danger") {
-          let tmp_value = [
-            tmp_data[profileKey]["status"][0],
-            tmp_data[profileKey]["status"][index],
-          ];
-          tmp_data[profileKey]["status"] = tmp_value;
+        if (pStatus[index].state === "danger") {
+          let tmp_value = pStatus.slice(0, index + 1);
+          pStatus = tmp_value;
         } else {
           for (let k = index - 1; k >= 1; k--) {
-            if (!tmp_data[profileKey]["status"][k].title.includes("(")) {
-              tmp_data[profileKey]["status"].splice(k, 1);
+            if (!pStatus[k].title.includes("(")) {
+              pStatus.splice(k, 1);
             }
           }
         }
       }
       //check whether first step is "Interview Scheduled"
       else if (steps.slice(7).filter((item) => item.title === title).length > 0)
-        tmp_data[profileKey]["status"][index].title =
-          alertData.data + "(" + dateFormat + ")";
-
+        pStatus[index].title = alertData.data + "(" + dateFormat + ")";
       for (let k = index - 1; k >= 0; k--) {
-        if (tmp_data[profileKey]["status"][k].state !== "success") {
-          tmp_data[profileKey]["status"].splice(k, 1);
+        if (pStatus[k].state === "danger") {
+          pStatus.splice(k, 1);
         }
         if (
-          tmp_data[profileKey]["status"][k].state === "success" &&
-          !tmp_data[profileKey]["status"][k].title.includes(alertData.data)
+          pStatus[k].state === "success" &&
+          !pStatus[k].title.includes(alertData.data)
         ) {
-          tmp_data[profileKey]["status"][k] = {
-            ...tmp_data[profileKey]["status"][k],
+          pStatus[k] = {
+            ...pStatus[k],
             onClick: () => {},
           };
         }
       }
-      tmp_data[profileKey]["status"].map((step, pos) => {
+      pStatus.map((step, pos) => {
         if (step.title.includes(alertData.data)) {
           tmp_data[profileKey].activeStep = pos;
+          pStatus[pos].titleValue = {
+            value: dateFormat,
+            uploaded_by: loggedUser.id,
+          };
         }
       });
       onUpdateChangesToDB(alertData.data, tmp_data[profileKey].activeStep);
@@ -336,7 +335,7 @@ const ManageSupply = () => {
           status.push({
             ...step,
             title:
-              title.length > 0
+              title.value.length > 0
                 ? step.title + "(" + title.value + ")"
                 : step.title,
             titleValue: title,

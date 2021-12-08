@@ -46,7 +46,7 @@ const initialValues = {
   file_count: 0,
 };
 let date = new Date();
-let dateFormat = new Date().toISOString().slice(0, 10);
+let dateFormat = new Date().toISOString().slice(0, 10).replace('-', '/')
 
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
@@ -74,7 +74,7 @@ const CreateSupply = (props) => {
     uploaded_by: loggedUser.id + " - (" + date + ")",
     status: {
       "Profile Submitted": {
-        value: "(" + dateFormat + ")",
+        value: dateFormat,
         uploaded_by: loggedUser.id,
       },
       "Screen Reject": { value: "", uploaded_by: "" },
