@@ -125,20 +125,14 @@ const CreateSupply = (props) => {
         })
         .then(async () => {
           let date = new Date();
-          let dateFormat =
-            "(" +
-            date.getDate() +
-            "/" +
-            (date.getMonth() + 1) +
-            "/" +
-            date.getFullYear() +
-            ")";
+          let dateFormat = new Date().toISOString().slice(0, 10);
 
           data = await {
             current_status: "Profile Submitted",
             activeStep: 0,
+            uploaded_by: loggedUser.id+" - ("+ date +")",
             status: {
-              "Profile Submitted":  dateFormat,
+              "Profile Submitted":  "("+dateFormat+")",
               "Screen Reject": "",
               Duplicate: "",
               "Feedback Pending": "",
@@ -169,6 +163,24 @@ const CreateSupply = (props) => {
                 data,
               "info.status": "Inprogress",
             })
+            // upload data to dashboard statics
+            // .then(() => {
+            //   let date = new Date()
+            //   let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            //   let mnt_year = months[date.getMonth()]+"-"+date.getFullYear()
+            //   firestore.collection("Dashboard-Focal").doc("Info").get().then(response => {
+            //     let res_data = response.data()
+            //     if(Object.keys(res_data.breakups["0"]).includes(loggedUser.id)) {
+            //       let demand = res_data.breakups["0"][loggedUser.id]['demand']
+            //       demand['count'] = demand.count+1
+            //       if(Object.keys(demand.dates).includes(mnt_year) && Object.keys(demand.dates[mnt_year]).includes(dateFormat)) {
+            //         let value = demand.dates[mnt_year]
+            //         value[dateFormat] = [dateFormat].value +1 
+            //         value["days_worked"] = value["days_worked"]+1
+            //       }
+            //     }
+            //   })
+            // })
             .catch((err) => {
               dispatch(
                 AlertActions.handleShow({

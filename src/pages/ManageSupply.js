@@ -35,10 +35,10 @@ import { AlertActions } from "../Redux/AlertSlice";
 
 const steps = [
   { state: "success", icon: successIcon, title: "Profile Submitted" },
+  { state: "warning", icon: holdIcon, title: "Position Hold" },
+  { state: "warning", icon: holdIcon, title: "Feedback Pending" },
   { state: "danger", icon: failedIcon, title: "Screen Reject" },
   { state: "danger", icon: failedIcon, title: "Duplicate" },
-  { state: "warning", icon: holdIcon, title: "Feedback Pending" },
-  { state: "warning", icon: holdIcon, title: "Position Hold" },
   { state: "success", icon: successIcon, title: "Interview Scheduled" },
   { state: "danger", icon: failedIcon, title: "No Show" },
   { state: "danger", icon: failedIcon, title: "L1 Reject" },
@@ -61,11 +61,16 @@ let statusOptions = {
     { status: "Duplicate", color: "danger" },
     { status: "Interview Scheduled", color: "primary" },
   ],
-  "Feedback Pending": [{ status: "Position Hold", color: "warning" }],
-  "Position Hold": [
+  "Feedback Pending": [
     { status: "Screen Reject", color: "danger" },
     { status: "Duplicate", color: "danger" },
-    { status: "Interview Scheduled", color: "primary" },
+    { status: "Interview Scheduled", color: "primary" }
+  ],
+  "Position Hold": [
+    { status: "Position Hold", color: "warning" },
+    { status: "Screen Reject", color: "danger" },
+    { status: "Duplicate", color: "danger" },
+    { status: "Interview Scheduled", color: "primary" }
   ],
   "Interview Scheduled": [
     { status: "No Show", color: "danger" },
