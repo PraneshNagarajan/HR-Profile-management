@@ -12,6 +12,7 @@ import ModalHeader from "react-bootstrap/esm/ModalHeader";
 import { useDispatch, useSelector } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import ProfileData from "./ProfileData";
+import Tables from "./Table";
 
 const Alerts = (props) => {
   const alerts = useSelector((state) => state.alert);
@@ -28,6 +29,7 @@ const Alerts = (props) => {
     dispatch(AlertActions.acceptSubmit(radioValue));
     setRadioValue("");
   };
+  console.log(props)
   
   return (
     <Modal
@@ -40,18 +42,22 @@ const Alerts = (props) => {
       <ModalHeader className="bg-primary text-white">
         {props.profile && <ModalTitle>{props.profile.view ? "Profile Info": "Add Profile Info"}</ModalTitle>}
         {(props.flag || props.status ) && <ModalTitle>Status</ModalTitle>}
+        {props.table && <ModalTitle>Comments</ModalTitle>}
       </ModalHeader>
       <ModalBody>
-        {(props.flag || !props.profile.flag) && (
+        {(props.flag) && (
           <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
             <b>{alerts.msg}</b>
           </p>
         )}
 
-        {!props.flag && props.profile.flag && (
+        {props.profile && (
           <ProfileData view={props.profile.view} file={alerts.msg} />
         )}
-
+        
+        { props.table && (
+          <Tables comments={props.table} />
+        )}
         {props.status && (
           <ButtonGroup>
             {props.status.stepOptions.map((radio, idx) => (

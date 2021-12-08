@@ -158,7 +158,6 @@ const CreateSupply = (props) => {
             .update({
               "info.file_count": totalFileCount,
               "profile_info.profiles": profileList,
-              "profile_info.comments": "",
               ["profile_info.profiles_status.data." + profile.candidateID]:
                 data,
               "info.status": "Inprogress",
@@ -722,7 +721,9 @@ const CreateSupply = (props) => {
       )}
       {isLoadingMsg.length === 0 && (
         <Fragment>
-          <Alerts profile={{ flag: profileFlag, view: profileView }} f />
+          {profileFlag && 
+          <Alerts profile={{view: profileView }} />
+          }
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">

@@ -98,19 +98,13 @@ let statusOptions = {
 
 let title;
 let profileKey = "";
-let date = new Date();
-let dateFormat =
-  "(" +
-  date.getDate() +
-  "/" +
-  (date.getMonth() + 1) +
-  "/" +
-  date.getFullYear() +
-  ")";
+let dateFormat = new Date().toISOString().slice(0, 10);
+let dir = "profile_info.profiles_status.data."
 
 const ManageSupply = () => {
   const params = useParams();
   const [supplyList, setSupplyList] = useState({});
+  const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const sm = useMediaQuery({ maxWidth: 768 });
   const filter = useSelector((state) => state.filterProfile);
@@ -121,6 +115,8 @@ const ManageSupply = () => {
   const [data, setData] = useState([]);
   const [stepOptions, setStepOptions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [comment, setComment] = useState({key: -1, value:""})
+  const [viewComment, setViewComment] = useState("")
 
   const formik = useFormik({
     initialValues: {
@@ -170,9 +166,50 @@ const ManageSupply = () => {
     setStepOptions(step);
   };
 
+  const onViewComment = (pKey) => {
+    setIsSearching(true)
+    firestore
+    .collection("Demands")
+    .doc(params.demandId).get().then(response => {
+      let res_data = response.data().profile_info.profiles_status.data[pKey]["comments"]
+      if(res_data){
+        setViewComment(res_data)
+      dispatch(AlertActions.handleShow({msg:"", flag: true}))
+      } else {
+        setViewComment({})
+        dispatch(AlertActions.handleShow({msg:"No comments found.", flag: false}))
+      }
+      setIsSearching(false)
+    }).catch(err => {
+      dispatch(AlertActions.handleShow({msg : "Unable to fetch comments.", flag: false}))
+      setIsSearching(false)
+    })
+  }
+
+  //update comments
+  const onUpdateComments = (profileName) => {
+    setIsSearching(true)
+    firestore
+    .collection("Demands")
+    .doc(params.demandId)
+    .update({
+      [dir + profileName + ".comments."+ new Date().getTime()] : {
+        comment: comment.value,
+        commented_by : loggedUser.id,
+        date: new Date().toString()
+      }
+    }).then(() => {
+      dispatch(AlertActions.handleShow({msg : "Comments added successfully.", flag: true}))
+      setIsSearching(false)
+    }).catch(err => {
+      dispatch(AlertActions.handleShow({msg : "Comments added failed.", flag: false}))
+      setIsSearching(false)
+    })
+    setComment({key: -1, value:""})
+  }
+
   //update the status db
   const onUpdateChangesToDB = (step, activeStep) => {
-    let dir = "profile_info.profiles_status.data." + profileKey;
     let finalStatus = {};
     Object.values(supplyList[profileKey].status).map((item, idx) => {
       let title = item.title.includes("(")
@@ -187,9 +224,9 @@ const ManageSupply = () => {
           .collection("Demands")
           .doc(params.demandId)
           .update({
-            [dir + ".status"]: finalStatus,
-            [dir + ".current_status"]: step,
-            [dir + ".activeStep"]: activeStep,
+            [dir + profileKey + ".status"]: finalStatus,
+            [dir + profileKey + ".current_status"]: step,
+            [dir + profileKey + ".activeStep"]: activeStep,
           })
           .catch((err) => console.log(String(err)));
       }
@@ -197,6 +234,8 @@ const ManageSupply = () => {
   };
 
   // if user confirm to update the status eg( L1 -> L2 lvl) change
+  //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
+  //and disable previous step status options.
   useEffect(() => {
     if (alertData.accept) {
       let tmp_data = supplyList;
@@ -210,7 +249,7 @@ const ManageSupply = () => {
       //check current status between profile_submit to profile select
       if (steps.slice(0, 6).filter((item) => item.title === title).length > 0) {
         tmp_data[profileKey]["status"][index]["title"] =
-          alertData.data + dateFormat;
+          alertData.data + "("+dateFormat+")";
         tmp_data[profileKey]["status"][0] = {
           ...tmp_data[profileKey]["status"][0],
           onClick: () => {},
@@ -232,7 +271,7 @@ const ManageSupply = () => {
       //check whether first step is "Interview Scheduled"
       else if (steps.slice(7).filter((item) => item.title === title).length > 0)
         tmp_data[profileKey]["status"][index].title =
-          alertData.data + dateFormat;
+          alertData.data + "("+dateFormat+")";
 
       for (let k = index - 1; k >= 0; k--) {
         if (tmp_data[profileKey]["status"][k].state !== "success") {
@@ -259,10 +298,8 @@ const ManageSupply = () => {
     }
   }, [alertData.accept]);
 
-  //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
-  //and disable previous step status options.
+  //adding stepper
   const onProcessData = (statusValues) => {
-    let tmp_status = [];
     let keys = Object.keys(statusValues);
     keys.map((key, index) => {
       let status = [];
@@ -344,10 +381,17 @@ const ManageSupply = () => {
       {Object.keys(supplyList).length === 0 && error.length === 0 && (
         <Spinners />
       )}
+
       <Fragment>
+        <Alerts flag={true}/>
         {stepOptions.length > 0 && (
-          <Alerts flag={true} status={{ stepOptions }} />
+          <Alerts status={{ stepOptions }} />
         )}
+        {
+          Object.values(viewComment).length > 0 && (
+            <Alerts table={viewComment} />
+          )
+        }
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
@@ -446,7 +490,7 @@ const ManageSupply = () => {
         {error.length === 0 && Object.keys(supplyList).length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {Object.keys(supplyList).map((demand, index) => {
+              {Object.keys(supplyList).map((profileName, index) => {
                 if (
                   index >= (currentPage - 1) * (sm ? 5 : 5) &&
                   index < currentPage * (sm ? 5 : 5)
@@ -454,11 +498,11 @@ const ManageSupply = () => {
                   return (
                     <Card
                       className={`mx-1 my-2 text-center shadow border border-2 border-${
-                        supplyList[demand].current_status.includes("Hold")
+                        supplyList[profileName].current_status.includes("Hold")
                           ? `warning`
-                          : supplyList[demand].current_status.slice(-2) ===
+                          : supplyList[profileName].current_status.slice(-2) ===
                               "ed" ||
-                            supplyList[demand].current_status.slice(-4) ===
+                            supplyList[profileName].current_status.slice(-4) ===
                               "lect"
                           ? `primary`
                           : `danger`
@@ -471,11 +515,11 @@ const ManageSupply = () => {
                           <Col md="2">
                             <Card.Img
                               src={
-                                demand.slice(-1) === "M"
+                                profileName.slice(-1) === "M"
                                   ? index % 2 === 0
                                     ? male
                                     : man
-                                  : demand.slice(-1) === "F"
+                                  : profileName.slice(-1) === "F"
                                   ? index % 2 === 0
                                     ? women
                                     : female
@@ -491,13 +535,13 @@ const ManageSupply = () => {
                             <div>
                               <small>
                                 <b>Profile Name : </b>
-                                {demand}
+                                {profileName}
                               </small>
                             </div>
                             <div>
                               <small>
                                 <b>Current Status : </b>
-                                {supplyList[demand].current_status}
+                                {supplyList[profileName].current_status}
                               </small>
                             </div>
                           </Col>
@@ -505,33 +549,34 @@ const ManageSupply = () => {
                           <InputGroup className="mb-3">
                             <FormControl
                               placeholder="Enter Comments"
-                              name="comments"
-                              value={formik.values.comments}
-                              isInvalid={
-                                formik.errors.comments &&
-                                formik.touched.comments
-                              }
-                              isValid={
-                                !formik.errors.comments &&
-                                formik.touched.comments
-                              }
-                              onChange={formik.handleChange}
-                              onBlur={formik.handleBlur}
+                              value={comment.key === index ? comment.value: ""}
+                              onChange={(e) => setComment({ value : e.target.value , key : index})}
                             />
-                            {!isSearching && (
+                            {comment.value.length === 0 && (
                               <Button
-                                variant="outline-primary"
-                                onClick={()=>{}}
-                                disabled={
-                                  isSearching ||
-                                  !formik.values.comments.length > 0
+                                variant="outline-secondary"
+                                onClick={() => {
+                                  onViewComment(profileName)
+                                }
                                 }
                               >
-                                Search
+                                View Comments
                               </Button>
                             )}
-                            {isSearching && (
-                              <Button variant="primary" disabled>
+
+                            {!isSearching && comment.key === index && comment.value.length > 0 && (
+                              <Button
+                                variant="outline-primary"
+                                onClick={() => {
+                                  onUpdateComments(profileName)
+                                }
+                                }
+                              >
+                                Add
+                              </Button>
+                            )}
+                            {isSearching && comment.key === index && (
+                              <Button variant={comment.value.length > 0 ? "primary" : "secondary"} disabled>
                                 <Spinner
                                   as="span"
                                   animation="border"
@@ -539,28 +584,19 @@ const ManageSupply = () => {
                                   role="status"
                                   aria-hidden="true"
                                 />{" "}
-                                Searching...
+                                Adding...
                                 <span className="visually-hidden">
                                   Loading...
                                 </span>
                               </Button>
                             )}
                           </InputGroup>
-
-                          {formik.touched.comments &&
-                            (!formik.values.comments.length > 0 ||
-                              formik.errors.comments) && (
-                              <div className="text-danger">
-                                {formik.errors.comments}
-                              </div>
-                            )}
-
                         </Col>
                         </Row>
                         <Row style={{ cursor: "pointer" }}>
                           <Stepper
-                            steps={[...supplyList[demand].status]}
-                            activeStep={supplyList[demand].activeStep}
+                            steps={[...supplyList[profileName].status]}
+                            activeStep={supplyList[profileName].activeStep}
                             circleTop={30}
                             circleFontSize={0}
                             completeColor="#FFFFFF"
