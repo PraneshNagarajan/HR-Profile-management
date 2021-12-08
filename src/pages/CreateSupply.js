@@ -45,6 +45,8 @@ const initialValues = {
   status: "",
   file_count: 0,
 };
+let date = new Date();
+let dateFormat = new Date().toISOString().slice(0, 10);
 
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
@@ -65,6 +67,35 @@ const CreateSupply = (props) => {
   const [profileView, setProfileView] = useState(false);
   const [profileDBDatas, setProfileDBDatas] = useState([]);
   const [isLoadingMsg, setIsLoadingMsg] = useState("");
+
+  let statusDatas = {
+    current_status: "Profile Submitted",
+    activeStep: 0,
+    uploaded_by: loggedUser.id + " - (" + date + ")",
+    status: {
+      "Profile Submitted": {
+        value: "(" + dateFormat + ")",
+        uploaded_by: loggedUser.id,
+      },
+      "Screen Reject": { value: "", uploaded_by: "" },
+      Duplicate: { value: "", uploaded_by: "" },
+      "Feedback Pending": { value: "", uploaded_by: "" },
+      "Position Hold": { value: "", uploaded_by: "" },
+      "Interview Scheduled": { value: "", uploaded_by: "" },
+      "L1 Select": { value: "", uploaded_by: "" },
+      "No Show": { value: "", uploaded_by: "" },
+      "L1 Reject": { value: "", uploaded_by: "" },
+      "L2 Reject": { value: "", uploaded_by: "" },
+      "L2 Select": { value: "", uploaded_by: "" },
+      "Client Select": { value: "", uploaded_by: "" },
+      "Client Reject": { value: "", uploaded_by: "" },
+      "Client Hold": { value: "", uploaded_by: "" },
+      "Declined Before Offer": { value: "", uploaded_by: "" },
+      Offered: { value: "", uploaded_by: "" },
+      "Declined After Offer": { value: "", uploaded_by: "" },
+      "On Boarded": { value: "", uploaded_by: "" },
+    },
+  };
 
   const formik = useFormik({
     initialValues,
@@ -112,9 +143,8 @@ const CreateSupply = (props) => {
     );
   };
 
-  const updateDemandInfo = async (datas, profileList) => {
-    await datas.map((profile, index) => {
-      let data = {};
+  const updateDemandInfo = (datas, profileList) => {
+    datas.map((profile, index) => {
       firestore
         .collection("Profiles")
         .doc(profile.candidateID)
@@ -123,63 +153,17 @@ const CreateSupply = (props) => {
           demand_id: formik.values.demand_id,
           info: profile,
         })
-        .then(async () => {
-          let date = new Date();
-          let dateFormat = new Date().toISOString().slice(0, 10);
-
-          data = await {
-            current_status: "Profile Submitted",
-            activeStep: 0,
-            uploaded_by: loggedUser.id+" - ("+ date +")",
-            status: {
-              "Profile Submitted":  "("+dateFormat+")",
-              "Screen Reject": "",
-              Duplicate: "",
-              "Feedback Pending": "",
-              "Position Hold": "",
-              "Interview Scheduled": "",
-              "L1 Select": "",
-              "No Show": "",
-              "L1 Reject": "",
-              "L2 Reject": "",
-              "L2 Select": "",
-              "Client Select": "",
-              "Client Reject": "",
-              "Client Hold": "",
-              "Declined Before Offer": "",
-              Offered: "",
-              "Declined After Offer": "",
-              "On Boarded": "",
-            },
-          };
-          await firestore
+        .then(() => {
+          firestore
             .collection("Demands")
             .doc(formik.values.demand_id)
             .update({
               "info.file_count": totalFileCount,
               "profile_info.profiles": profileList,
               ["profile_info.profiles_status.data." + profile.candidateID]:
-                data,
+                statusDatas,
               "info.status": "Inprogress",
             })
-            // upload data to dashboard statics
-            // .then(() => {
-            //   let date = new Date()
-            //   let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-            //   let mnt_year = months[date.getMonth()]+"-"+date.getFullYear()
-            //   firestore.collection("Dashboard-Focal").doc("Info").get().then(response => {
-            //     let res_data = response.data()
-            //     if(Object.keys(res_data.breakups["0"]).includes(loggedUser.id)) {
-            //       let demand = res_data.breakups["0"][loggedUser.id]['demand']
-            //       demand['count'] = demand.count+1
-            //       if(Object.keys(demand.dates).includes(mnt_year) && Object.keys(demand.dates[mnt_year]).includes(dateFormat)) {
-            //         let value = demand.dates[mnt_year]
-            //         value[dateFormat] = [dateFormat].value +1 
-            //         value["days_worked"] = value["days_worked"]+1
-            //       }
-            //     }
-            //   })
-            // })
             .catch((err) => {
               dispatch(
                 AlertActions.handleShow({
@@ -202,7 +186,7 @@ const CreateSupply = (props) => {
         );
       }
     });
-    await setIsSaving(false);
+    setIsSaving(false);
   };
 
   const uploadDatasToDB = async () => {
@@ -227,24 +211,25 @@ const CreateSupply = (props) => {
           [filename]: { ...userProfile, url },
         })
       );
-      if ((await files.length) - 1 === index) {
-        if ((await res_error.length) === 0) {
-          let new_data = await addedProfiles
-            .concat(profileIDS)
-            .concat(searchProfileDB);
-          await setAddedProfiles(new_data);
-          await setFileNames([]);
-          await setFiles([]);
-          await formik.setFieldValue("file_count", 0);
-          await updateDemandInfo(profilesListDatas, new_data);
-        } else {
-          await dispatch(
-            AlertActions.handleShow({
-              msg: "Profile submitted is Failed.",
-              flag: false,
-            })
-          );
-        }
+      if (
+        (await res_error.length) === 0 &&
+        profilesListDatas.length === files.length
+      ) {
+        let new_data = await addedProfiles
+          .concat(profileIDS)
+          .concat(searchProfileDB);
+        await setAddedProfiles(new_data);
+        await setFileNames([]);
+        await setFiles([]);
+        await updateDemandInfo(profilesListDatas, new_data);
+        await formik.setFieldValue("file_count", 0);
+      } else {
+        await dispatch(
+          AlertActions.handleShow({
+            msg: "Profile submitted is Failed.",
+            flag: false,
+          })
+        );
       }
     });
   };
@@ -721,9 +706,7 @@ const CreateSupply = (props) => {
       )}
       {isLoadingMsg.length === 0 && (
         <Fragment>
-          {profileFlag && 
-          <Alerts profile={{view: profileView }} />
-          }
+          {profileFlag && <Alerts profile={{ view: profileView }} />}
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">

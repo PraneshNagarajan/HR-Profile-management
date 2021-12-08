@@ -64,13 +64,13 @@ let statusOptions = {
   "Feedback Pending": [
     { status: "Screen Reject", color: "danger" },
     { status: "Duplicate", color: "danger" },
-    { status: "Interview Scheduled", color: "primary" }
+    { status: "Interview Scheduled", color: "primary" },
   ],
   "Position Hold": [
-    { status: "Position Hold", color: "warning" },
+    { status: "Feedback Pending", color: "warning" },
     { status: "Screen Reject", color: "danger" },
     { status: "Duplicate", color: "danger" },
-    { status: "Interview Scheduled", color: "primary" }
+    { status: "Interview Scheduled", color: "primary" },
   ],
   "Interview Scheduled": [
     { status: "No Show", color: "danger" },
@@ -86,9 +86,13 @@ let statusOptions = {
     { status: "Client Reject", color: "danger" },
     { status: "Client Hold", color: "warning" },
   ],
+  "Client Hold": [
+    { status: "Client Select", color: "primary" },
+    { status: "Declined Before Offer", color: "danger" }
+  ],
   "Client Select": [
     { status: "Declined Before Offer", color: "danger" },
-    { status: "Offered", color: "primary" },
+    { status: "Offered", color: "primary" }
   ],
   Offered: [
     { status: "Declined After Offer", color: "danger" },
@@ -99,7 +103,7 @@ let statusOptions = {
 let title;
 let profileKey = "";
 let dateFormat = new Date().toISOString().slice(0, 10);
-let dir = "profile_info.profiles_status.data."
+let dir = "profile_info.profiles_status.data.";
 
 const ManageSupply = () => {
   const params = useParams();
@@ -115,13 +119,13 @@ const ManageSupply = () => {
   const [data, setData] = useState([]);
   const [stepOptions, setStepOptions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [comment, setComment] = useState({key: -1, value:""})
-  const [viewComment, setViewComment] = useState("")
+  const [comment, setComment] = useState({ key: -1, value: "" });
+  const [viewComment, setViewComment] = useState("");
 
   const formik = useFormik({
     initialValues: {
       id: "",
-      comments: ""
+      comments: "",
     },
   });
 
@@ -167,46 +171,69 @@ const ManageSupply = () => {
   };
 
   const onViewComment = (pKey) => {
-    setIsSearching(true)
+    setIsSearching(true);
     firestore
-    .collection("Demands")
-    .doc(params.demandId).get().then(response => {
-      let res_data = response.data().profile_info.profiles_status.data[pKey]["comments"]
-      if(res_data){
-        setViewComment(res_data)
-      dispatch(AlertActions.handleShow({msg:"", flag: true}))
-      } else {
-        setViewComment({})
-        dispatch(AlertActions.handleShow({msg:"No comments found.", flag: false}))
-      }
-      setIsSearching(false)
-    }).catch(err => {
-      dispatch(AlertActions.handleShow({msg : "Unable to fetch comments.", flag: false}))
-      setIsSearching(false)
-    })
-  }
+      .collection("Demands")
+      .doc(params.demandId)
+      .get()
+      .then((response) => {
+        let res_data =
+          response.data().profile_info.profiles_status.data[pKey]["comments"];
+        if (res_data) {
+          setViewComment(res_data);
+          dispatch(AlertActions.handleShow({ msg: "", flag: true }));
+        } else {
+          setViewComment({});
+          dispatch(
+            AlertActions.handleShow({ msg: "No comments found.", flag: false })
+          );
+        }
+        setIsSearching(false);
+      })
+      .catch((err) => {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Unable to fetch comments.",
+            flag: false,
+          })
+        );
+        setIsSearching(false);
+      });
+  };
 
   //update comments
   const onUpdateComments = (profileName) => {
-    setIsSearching(true)
+    setIsSearching(true);
     firestore
-    .collection("Demands")
-    .doc(params.demandId)
-    .update({
-      [dir + profileName + ".comments."+ new Date().getTime()] : {
-        comment: comment.value,
-        commented_by : loggedUser.id,
-        date: new Date().toString()
-      }
-    }).then(() => {
-      dispatch(AlertActions.handleShow({msg : "Comments added successfully.", flag: true}))
-      setIsSearching(false)
-    }).catch(err => {
-      dispatch(AlertActions.handleShow({msg : "Comments added failed.", flag: false}))
-      setIsSearching(false)
-    })
-    setComment({key: -1, value:""})
-  }
+      .collection("Demands")
+      .doc(params.demandId)
+      .update({
+        [dir + profileName + ".comments." + new Date().getTime()]: {
+          comment: comment.value,
+          commented_by: loggedUser.id,
+          date: new Date().toString(),
+        },
+      })
+      .then(() => {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Comments added successfully.",
+            flag: true,
+          })
+        );
+        setIsSearching(false);
+      })
+      .catch((err) => {
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Comments added failed.",
+            flag: false,
+          })
+        );
+        setIsSearching(false);
+      });
+    setComment({ key: -1, value: "" });
+  };
 
   //update the status db
   const onUpdateChangesToDB = (step, activeStep) => {
@@ -218,7 +245,7 @@ const ManageSupply = () => {
       let value = item.title.includes("(")
         ? item.title.split("(")[1].split(")")[0]
         : "";
-      finalStatus[title] = value;
+      finalStatus[title] = { value, uploaded_by: activeStep == idx  ? loggedUser.id : item.titleValue.uploaded_by};
       if (supplyList[profileKey].status.length - 1 === idx) {
         firestore
           .collection("Demands")
@@ -249,7 +276,7 @@ const ManageSupply = () => {
       //check current status between profile_submit to profile select
       if (steps.slice(0, 6).filter((item) => item.title === title).length > 0) {
         tmp_data[profileKey]["status"][index]["title"] =
-          alertData.data + "("+dateFormat+")";
+          alertData.data + "(" + dateFormat + ")";
         tmp_data[profileKey]["status"][0] = {
           ...tmp_data[profileKey]["status"][0],
           onClick: () => {},
@@ -271,7 +298,7 @@ const ManageSupply = () => {
       //check whether first step is "Interview Scheduled"
       else if (steps.slice(7).filter((item) => item.title === title).length > 0)
         tmp_data[profileKey]["status"][index].title =
-          alertData.data + "("+dateFormat+")";
+          alertData.data + "(" + dateFormat + ")";
 
       for (let k = index - 1; k >= 0; k--) {
         if (tmp_data[profileKey]["status"][k].state !== "success") {
@@ -309,7 +336,10 @@ const ManageSupply = () => {
           status.push({
             ...step,
             title:
-              title.length > 0 ? step.title + "(" + title + ")" : step.title,
+              title.length > 0
+                ? step.title + "(" + title.value + ")"
+                : step.title,
+            titleValue: title,
             onClick: () => {
               if (
                 Object.keys(statusOptions).includes(step.title) &&
@@ -383,15 +413,11 @@ const ManageSupply = () => {
       )}
 
       <Fragment>
-        <Alerts flag={true}/>
-        {stepOptions.length > 0 && (
-          <Alerts status={{ stepOptions }} />
+        <Alerts flag={true} />
+        {stepOptions.length > 0 && <Alerts status={{ stepOptions }} />}
+        {Object.values(viewComment).length > 0 && (
+          <Alerts table={viewComment} />
         )}
-        {
-          Object.values(viewComment).length > 0 && (
-            <Alerts table={viewComment} />
-          )
-        }
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
@@ -528,10 +554,7 @@ const ManageSupply = () => {
                               className={sm ? `w-25` : `w-50`}
                             ></Card.Img>
                           </Col>
-                          <Col
-                            md="4"
-                            className="text-center mt-5"
-                          >
+                          <Col md="4" className="text-center mt-5">
                             <div>
                               <small>
                                 <b>Profile Name : </b>
@@ -545,53 +568,67 @@ const ManageSupply = () => {
                               </small>
                             </div>
                           </Col>
-                        <Col md="6" className="text-center mt-5">
-                          <InputGroup className="mb-3">
-                            <FormControl
-                              placeholder="Enter Comments"
-                              value={comment.key === index ? comment.value: ""}
-                              onChange={(e) => setComment({ value : e.target.value , key : index})}
-                            />
-                            {comment.value.length === 0 && (
-                              <Button
-                                variant="outline-secondary"
-                                onClick={() => {
-                                  onViewComment(profileName)
+                          <Col md="6" className="text-center mt-5">
+                            <InputGroup className="mb-3">
+                              <FormControl
+                                placeholder="Enter Comments"
+                                value={
+                                  comment.key === index ? comment.value : ""
                                 }
+                                onChange={(e) =>
+                                  setComment({
+                                    value: e.target.value,
+                                    key: index,
+                                  })
                                 }
-                              >
-                                View Comments
-                              </Button>
-                            )}
+                              />
+                              {comment.value.length === 0 && (
+                                <Button
+                                  variant="outline-secondary"
+                                  onClick={() => {
+                                    onViewComment(profileName);
+                                  }}
+                                >
+                                  View Comments
+                                </Button>
+                              )}
 
-                            {!isSearching && comment.key === index && comment.value.length > 0 && (
-                              <Button
-                                variant="outline-primary"
-                                onClick={() => {
-                                  onUpdateComments(profileName)
-                                }
-                                }
-                              >
-                                Add
-                              </Button>
-                            )}
-                            {isSearching && comment.key === index && (
-                              <Button variant={comment.value.length > 0 ? "primary" : "secondary"} disabled>
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />{" "}
-                                Adding...
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </Button>
-                            )}
-                          </InputGroup>
-                        </Col>
+                              {!isSearching &&
+                                comment.key === index &&
+                                comment.value.length > 0 && (
+                                  <Button
+                                    variant="outline-primary"
+                                    onClick={() => {
+                                      onUpdateComments(profileName);
+                                    }}
+                                  >
+                                    Add
+                                  </Button>
+                                )}
+                              {isSearching && comment.key === index && (
+                                <Button
+                                  variant={
+                                    comment.value.length > 0
+                                      ? "primary"
+                                      : "secondary"
+                                  }
+                                  disabled
+                                >
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  />{" "}
+                                  Adding...
+                                  <span className="visually-hidden">
+                                    Loading...
+                                  </span>
+                                </Button>
+                              )}
+                            </InputGroup>
+                          </Col>
                         </Row>
                         <Row style={{ cursor: "pointer" }}>
                           <Stepper

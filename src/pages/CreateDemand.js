@@ -368,7 +368,6 @@ const CreateDemand = (props) => {
                 assignees: selectedRecruiters,
               },
               profile_info: {
-                comments: "",
                 profiles: [],
                 profiles_status: {},
               },
