@@ -29,7 +29,6 @@ const Alerts = (props) => {
     dispatch(AlertActions.acceptSubmit(radioValue));
     setRadioValue("");
   };
-  console.log(props)
   
   return (
     <Modal
@@ -77,7 +76,7 @@ const Alerts = (props) => {
           </ButtonGroup>
         )}
       </ModalBody>
-      {(!props.profile || !props.profile.flag) && (
+      {(!props.profile) && (
         <ModalFooter>
           {props.status && (
             <Button variant="primary" onClick={handleConfirm}>

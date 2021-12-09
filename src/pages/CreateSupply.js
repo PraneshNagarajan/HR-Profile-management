@@ -46,7 +46,7 @@ const initialValues = {
   file_count: 0,
 };
 let date = new Date();
-let dateFormat = new Date().toISOString().slice(0, 10).replace('-', '/')
+let dateFormat = new Date().toISOString().slice(0, 10).replaceAll('-', '/')
 
 const CreateSupply = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
