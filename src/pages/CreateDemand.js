@@ -364,7 +364,7 @@ const CreateDemand = (props) => {
             [demandID]: {
               info: {
                 ...value,
-                owner: loggedUser.id,
+                owners: [loggedUser.id],
                 assignees: selectedRecruiters,
               },
               profile_info: {
@@ -391,7 +391,7 @@ const CreateDemand = (props) => {
                 .set({
                   info: {
                     ...value,
-                    owner: loggedUser.id,
+                    owners: [loggedUser.id],
                     assignees: selectedRecruiters,
                   },
                   profile_info: {

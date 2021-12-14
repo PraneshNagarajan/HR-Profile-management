@@ -30,14 +30,12 @@ function App() {
   const clientRef = firestore.collection("Clients");
   const techonologyRef = firestore.collection("Skills");
   const usersRef = firestore.collection("Employee-Info").doc("users");
-  
+
   useEffect(() => {
     // Get real-time data
     usersRef.onSnapshot((querySnapshot) => {
       dispatch(
-        DemandPreRequisiteActions.getUsers(
-          Object.values(querySnapshot.data())
-        )
+        DemandPreRequisiteActions.getUsers(Object.values(querySnapshot.data()))
       );
     });
     if (user.includes("FOCAL")) {
@@ -102,61 +100,48 @@ function App() {
               <ManageEmployeeProfilePage />
             </MainLayout>
           </Route>
-          {(user === "ADMIN" || user === 'SUPERADMIN')&& (
-            <Fragment>
+          {(user === "ADMIN" || user === "SUPERADMIN") && (
+            <MainLayout>
               <Route path="/adminHomePage">
-                <MainLayout>
-                  <AdminHomePage />
-                </MainLayout>
+                <AdminHomePage />
               </Route>
               <Route path="/addEmployees">
-                <MainLayout>
-                  <AddEmployeePage />
-                </MainLayout>
+                <AddEmployeePage />
               </Route>
-            </Fragment>
+            </MainLayout>
           )}
           {user === "FOCAL" && (
-            <Fragment>
+            <MainLayout>
               <Route path="/focalHomePage">
-                <MainLayout>
-                  {/* <FocalHomePage /> */}
-                  <UserHomePage />
-                </MainLayout>
+                {/* <FocalHomePage /> */}
+                <UserHomePage />
               </Route>
               <Route path="/createDemand">
-                <MainLayout>
-                  <CreateDemand
-                    clientFlag={isClientPresent}
-                    techFlag={isTechPresent}
-                  />
-                </MainLayout>
-              </Route>
-            </Fragment>
-          )}
-          {user.includes("RECRUITER") && (
-            <Fragment>
-              <Route path="/userHomePage">
-                <MainLayout>
-                  <UserHomePage />
-                </MainLayout>
-              </Route>
-              <Route path="/createSupply">
-                <MainLayout>
-                  <CreateSupply />
-                </MainLayout>
+                <CreateDemand
+                  clientFlag={isClientPresent}
+                  techFlag={isTechPresent}
+                />
               </Route>
               <Route path="/manageSupplies">
-                <MainLayout>
-                  <StatusTrackerPage/>
-                </MainLayout>
+                <StatusTrackerPage />
+              </Route>
+              <Route path="/viewSupply/:demandId">
+                <CreateSupply />
               </Route>
               <Route path="/manageSupply/:demandId">
-                <MainLayout>
-                <ManageSupply/>
-                </MainLayout>
+                <ManageSupply />
               </Route>
-            </Fragment>
+            </MainLayout>
+          )}
+          {user.includes("RECRUITER") && (
+            <MainLayout>
+              <Route path="/userHomePage">
+                <UserHomePage />
+              </Route>
+              <Route path="/createSupply">
+                <CreateSupply />
+              </Route>
+            </MainLayout>
           )}
         </Fragment>
       )}

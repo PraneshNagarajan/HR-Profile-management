@@ -68,7 +68,13 @@ const NavBar = () => {
               disabled={!(user.photoUrl.length > 0 && user.security)}
               as={Link}
               onClick={() => setExpanded(!isExpanded)}
-              to={user.role === "FOCAL" ? "/focalHomePage" : user.role === "ADMIN" ? "/adminHomePage" : "/userHomePage"}
+              to={
+                user.role === "FOCAL"
+                  ? "/focalHomePage"
+                  : user.role === "ADMIN"
+                  ? "/adminHomePage"
+                  : "/userHomePage"
+              }
               active={
                 location.pathname.includes("Home") &&
                 user.photoUrl.length > 0 &&
@@ -125,7 +131,7 @@ const NavBar = () => {
               </Fragment>
             )}
 
-            {(user.role.includes('RECRUITER') || user.role.includes('FOCAL'))  &&
+            {/* {(user.role.includes('RECRUITER') || user.role.includes('FOCAL'))  &&
             <NavDropdown
               disabled={!(user.photoUrl.length > 0 && user.security)}
               // active={location.pathname.includes("Demand"  || 'Supplies') ? `active` : ``}
@@ -165,33 +171,73 @@ const NavBar = () => {
                 {user.role === "FOCAL" ? "Manage Demands" : "Manage Supply"}
               </NavDropdown.Item>
             </NavDropdown>
-          }
+          } */}
+
+            {(user.role === "FOCAL" || user.role === "ADMIN") && (
+              <Nav.Link
+                as={Link}
+                onClick={() => setExpanded(!isExpanded)}
+                to={
+                  user.role === "FOCAL"
+                    ? "/createDemand"
+                    : user.role === "ADMIN"
+                    ? "/manageDemand"
+                    : ""
+                }
+                active={location.pathname.includes("Demand")}
+              >
+                <span className={sm ? "h6 ms-2" : "h5 me-2"}>
+                  <FaRegListAlt className="mb-1" /> {" Demand"}
+                </span>
+              </Nav.Link>
+            )}
+            {sm && <hr className="text-white line-break mt-1" />}
+            {(user.role === "FOCAL" || user.role.includes("RECRUITER")) && (
+              <Nav.Link
+                as={Link}
+                onClick={() => setExpanded(!isExpanded)}
+                to={
+                  user.role === "FOCAL"
+                    ? "/manageSupplies"
+                    : user.role.includes("RECRUITER")
+                    ? "createSupply"
+                    : ""
+                }
+                active={location.pathname.includes("Suppl")}
+              >
+                <span className={sm ? "h6 ms-2" : "h5 me-2"}>
+                  <FaRegListAlt className="mb-1" /> {" Supply"}
+                </span>
+              </Nav.Link>
+            )}
+
             {sm && <hr className="text-white line-break" />}
-            {user.role !== "ADMIN" &&
-            <NavDropdown
-            disabled={!(user.photoUrl.length > 0 && user.security)}
-            title={
-              <span>
-                <FaRegIdBadge className="mb-1" /> Profile
-              </span>
-            }
-            id="collasible-nav-dropdown"
-            className={`${
-              location.pathname.includes("employee") ? "active" : ""
-            } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
-          >
-            <NavDropdown.Item className="text-primary fw-bold">
-              {" "}
-              <FaIdCard style={{ width: "20px", height: "20px" }} /> Add
-              Profile
-            </NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item className="text-warning fw-bold">
-              {" "}
-              <FaEdit style={{ width: "20px", height: "20px" }} /> Manage
-              Profiles
-            </NavDropdown.Item>
-          </NavDropdown>}
+            {user.role !== "ADMIN" && (
+              <NavDropdown
+                disabled={!(user.photoUrl.length > 0 && user.security)}
+                title={
+                  <span>
+                    <FaRegIdBadge className="mb-1" /> Profile
+                  </span>
+                }
+                id="collasible-nav-dropdown"
+                className={`${
+                  location.pathname.includes("employee") ? "active" : ""
+                } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
+              >
+                <NavDropdown.Item className="text-primary fw-bold">
+                  {" "}
+                  <FaIdCard style={{ width: "20px", height: "20px" }} /> Add
+                  Profile
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item className="text-warning fw-bold">
+                  {" "}
+                  <FaEdit style={{ width: "20px", height: "20px" }} /> Manage
+                  Profiles
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
             {sm && <hr className="text-white line-break" />}
           </Nav>
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>

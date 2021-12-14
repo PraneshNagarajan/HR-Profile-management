@@ -17,6 +17,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import "./CreateSupply.css";
 import Alerts from "../components/Alert";
+import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useFormik } from "formik";
 import { fireStorage, firestore } from "../firebase";
@@ -26,6 +27,7 @@ import { ProfileActions } from "../Redux/ProfileSlice";
 import axios from "axios";
 import FileDownload from "js-file-download";
 import Spinners from "../components/Spinners";
+import { Link } from "react-router-dom";
 
 const initialValues = {
   demand_id: "",
@@ -46,9 +48,14 @@ const initialValues = {
   file_count: 0,
 };
 let date = new Date();
-let dateFormat = new Date().toISOString().slice(0, 10).replaceAll('-', '/')
+let dateFormat = new Date().toISOString().slice(0, 10).replaceAll("-", "/");
+let datas = [];
+let new_data;
+let filename;
+let res;
 
 const CreateSupply = (props) => {
+  const params = useParams()
   const sm = useMediaQuery({ maxWidth: 768 });
   const loggedUser = useSelector((state) => state.auth);
   const profileInfo = useSelector((state) => state.profileInfo);
@@ -67,6 +74,7 @@ const CreateSupply = (props) => {
   const [profileView, setProfileView] = useState(false);
   const [profileDBDatas, setProfileDBDatas] = useState([]);
   const [isLoadingMsg, setIsLoadingMsg] = useState("");
+  const alertData = useSelector((state) => state.alert);
 
   let statusDatas = {
     current_status: "Profile Submitted",
@@ -190,12 +198,12 @@ const CreateSupply = (props) => {
   };
 
   const uploadDatasToDB = async () => {
-    let res_error = await [];
+    res = await [];
     let profileIDS = [];
     let profilesListDatas = [];
     await files.map(async (file, index) => {
       let userProfile = profileInfo.data[file.name];
-      let filename = await userProfile.candidateID;
+      filename = await userProfile.candidateID;
       await profileIDS.push(filename);
       const fireStorageRef = await fireStorage.ref(
         "profiles/resumes/" + filename + ".pdf"
@@ -212,10 +220,10 @@ const CreateSupply = (props) => {
         })
       );
       if (
-        (await res_error.length) === 0 &&
+        (await res.length) === 0 &&
         profilesListDatas.length === files.length
       ) {
-        let new_data = await addedProfiles
+        new_data = await addedProfiles
           .concat(profileIDS)
           .concat(searchProfileDB);
         await setAddedProfiles(new_data);
@@ -238,19 +246,19 @@ const CreateSupply = (props) => {
     await setIsSaving(true);
     let presentFileList = await [];
     let excessSizeFileList = await [];
-    let res = await filenames.filter((file) => addedProfiles.includes(file));
+    res = await filenames.filter((file) => addedProfiles.includes(file));
     if ((await res.length) === 0) {
       if ((await searchProfileDB.length) > 0) {
-        let new_data = addedProfiles.concat(searchProfileDB);
+        new_data = addedProfiles.concat(searchProfileDB);
         await setAddedProfiles(new_data);
         await setFileNames([]);
         await setFiles([]);
         formik.setFieldValue("file_count", 0);
-        let Data_DB = await [];
+        new_data = await [];
         await searchProfileDB.map(async (profile) => {
-          Data_DB.push(profileInfo.added_data[profile]);
+          new_data.push(profileInfo.added_data[profile]);
         });
-        await updateDemandInfo(Data_DB, new_data);
+        await updateDemandInfo(new_data, new_data);
         await setSearchProfileDB([]);
         await dispatch(
           AlertActions.handleShow({
@@ -264,7 +272,7 @@ const CreateSupply = (props) => {
         );
       }
       await files.map(async (file, index) => {
-        let filename = String(file.name);
+        filename = String(file.name);
         await firestore
           .collection("Profiles")
           .doc(filename)
@@ -313,7 +321,7 @@ const CreateSupply = (props) => {
       .collection("Demands")
       .doc(formik.values.demand_id)
       .update({
-        "info.status": "Closure Request Submitted",
+        "info.status": "Submitted",
         "profile_info.status": "Closure Request Submitted",
       })
       .then(async () => {
@@ -322,7 +330,7 @@ const CreateSupply = (props) => {
           AlertActions.handleShow({
             msg:
               "Closer Request has been submitted to the demand owner (" +
-              formik.values.owner +
+              formik.values.owners +
               ") successfully.",
             flag: true,
           })
@@ -346,11 +354,10 @@ const CreateSupply = (props) => {
 
   const handleChange = (e) => {
     if (e.target.files) {
-      let data = [];
       let count = 0;
       let profile = [...e.target.files];
       Object.values(e.target.files).map((file) => {
-        let filename = file.name;
+        filename = file.name;
         if (filenames.includes(filename)) {
           dispatch(
             AlertActions.handleShow({
@@ -360,19 +367,19 @@ const CreateSupply = (props) => {
           );
           return true;
         } else {
-          data = filenames;
+          datas = filenames;
           profile = files;
-          data.push(filename);
+          datas.push(filename);
           profile.push(file);
           count += 1;
         }
       });
 
-      if (data.length > 0) {
+      if (datas.length > 0) {
         setFiles(profile);
-        setFileNames(data);
+        setFileNames(datas);
         setTotalFileCount(totalFileCount + count);
-        formik.setFieldValue("file_count", data.length);
+        formik.setFieldValue("file_count", datas.length);
       }
     }
   };
@@ -384,7 +391,7 @@ const CreateSupply = (props) => {
     name = ""
   ) => {
     if (await flag) {
-      let new_list = await addedProfiles;
+      new_data = await addedProfiles;
       let profile_status = {};
       await firestore
         .collection("Demands")
@@ -407,23 +414,23 @@ const CreateSupply = (props) => {
         ProfileActions.handleRemove({ index: addedProfiles[index], flag })
       );
       delete profile_status[addedProfiles[index]];
-      await new_list.splice(index, 1);
+      await new_data.splice(index, 1);
       firestore
         .collection("Demands")
         .doc(formik.values.demand_id)
         .update({
-          "profile_info.profiles": new_list,
-          "info.file_count": new_list.length,
+          "profile_info.profiles": new_data,
+          "info.file_count": new_data.length,
           "profile_info.profiles_status": profile_status,
         })
-        .then(async () => {
+        .then(() => {
           dispatch(
             AlertActions.handleShow({
               msg: "Removed profile : " + name,
               flag: true,
             })
           );
-          setAddedProfiles(new_list);
+          setAddedProfiles(new_data);
           setTotalFileCount(totalFileCount - 1);
         })
         .catch((err) => {
@@ -436,19 +443,19 @@ const CreateSupply = (props) => {
         });
     } else {
       if (!flag1) {
-        let new_list1 = files;
-        new_list1.splice(index, 1);
-        setFiles(new_list1);
+        new_data = files;
+        new_data.splice(index, 1);
+        setFiles(new_data);
       } else {
         let tmpData = searchProfileDB;
         let index = searchProfileDB.indexOf(name);
         tmpData.splice(index, 1);
         setSearchProfileDB(tmpData);
       }
-      let new_list2 = filenames;
-      dispatch(ProfileActions.handleRemove({ index: new_list2[index], flag }));
-      new_list2.splice(index, 1);
-      setFileNames(new_list2);
+      new_data = filenames;
+      dispatch(ProfileActions.handleRemove({ index: new_data[index], flag }));
+      new_data.splice(index, 1);
+      setFileNames(new_data);
       setTotalFileCount(totalFileCount - 1);
       formik.setFieldValue("file_count", files.length);
     }
@@ -466,14 +473,14 @@ const CreateSupply = (props) => {
       .get()
       .then(async (documentSnapshot) => {
         if (await documentSnapshot.exists) {
-          let datas = await documentSnapshot.get("info");
+          datas = await documentSnapshot.get("info");
           if (
             datas.assignees.includes(String(loggedUser.id)) ||
             datas.owner === loggedUser.id
           ) {
             if (datas.status !== "Completed") {
               await formik.setValues({
-                demand_id: formik.values.demand_id,
+                demand_id: params.demandId ? params.demandId : formik.values.demand_id,
                 profile_id: "",
                 ...datas,
                 assignees: datas.assignees.join(", "),
@@ -481,19 +488,6 @@ const CreateSupply = (props) => {
               datas = await documentSnapshot.get("profile_info");
               await setTotalFileCount(datas.profiles.length);
               await setAddedProfiles(datas.profiles);
-              await datas.profiles.map((doc) => {
-                firestore
-                  .collection("Profiles")
-                  .doc(doc)
-                  .get()
-                  .then((res) => {
-                    dispatch(
-                      ProfileActions.handleAddExistingData({
-                        [doc]: res.data().info,
-                      })
-                    );
-                  });
-              });
               await setFiles([]);
               await setSearchProfileDB([]);
             } else {
@@ -522,23 +516,22 @@ const CreateSupply = (props) => {
   const getProfileFromDB = (profile_id) => {
     formik.setFieldValue("profile_id", "");
     formik.setFieldTouched("profile_id", false);
-    let data = [];
     firestore
       .collection("Profiles")
       .doc(profile_id)
       .get()
       .then((doc) => {
         if (doc.exists) {
-          data = doc.data();
-          let profileHistory = data.history
-            ? data.history.filter((demand) => demand.id === profile_id)
+          datas = doc.data();
+          let profileHistory = datas.history
+            ? datas.history.filter((demand) => demand.id === profile_id)
             : [];
-          if (data.status === "mapped") {
+          if (datas.status === "mapped") {
             dispatch(
               AlertActions.handleShow({
                 msg:
                   "This profile already mapped to demand id : " +
-                  data.demand_id +
+                  datas.demand_id +
                   ". So, you can't add it. Please add other profile.",
                 flag: false,
               })
@@ -549,7 +542,7 @@ const CreateSupply = (props) => {
               AlertActions.handleShow({
                 msg:
                   " Duplicate Entry. This profile had mapped to demand id : " +
-                  data.demand_id +
+                  datas.demand_id +
                   "and it is status " +
                   profileHistory[0]["status"] +
                   ". So, you can't add it. Please add other profile.",
@@ -559,7 +552,7 @@ const CreateSupply = (props) => {
           } else {
             dispatch(
               ProfileActions.handleAddExistingData({
-                [profile_id]: data.info,
+                [profile_id]: datas.info,
               })
             );
             setProfileView(true);
@@ -567,11 +560,11 @@ const CreateSupply = (props) => {
               prevItem.push(profile_id);
               return prevItem;
             });
-            data = filenames;
-            data.push(profile_id);
-            setFileNames(data);
+            datas = filenames;
+            datas.push(profile_id);
+            setFileNames(datas);
             setTotalFileCount(totalFileCount + 1);
-            formik.setFieldValue("file_count", data.length);
+            formik.setFieldValue("file_count", datas.length);
           }
           setProfileView(true);
         } else {
@@ -588,7 +581,7 @@ const CreateSupply = (props) => {
   const onShowForm = (file) => {
     dispatch(AlertActions.handleShow({ msg: file, msgFlag: "" }));
     setProfileFlag(true);
-    let res = files.filter((item) => item.name.includes(file));
+    res = files.filter((item) => item.name.includes(file));
     if (res.length > 0 && !Object.keys(profileInfo.data).includes(file)) {
       setProfileView(false);
     } else {
@@ -665,37 +658,53 @@ const CreateSupply = (props) => {
   }, [addedProfiles]);
 
   const onDownloadProfile = () => {
-    let datas = [];
-    let metaData = [];
-    Object.values(profileInfo.added_data).map((profile) => {
-      datas.push({ fileName: profile.candidateID, url: profile.url });
-      metaData.push(profile);
-    });
-    let postData = {
-      dirName: formik.values.demand_id,
-      datas,
-      metaData,
-    };
-
-    axios.post("http://localhost:5000/download", postData).then((res) => {
-      setIsLoadingMsg("Downloading & Zipping the profiles....");
-      if (res.data.includes("ready")) {
-        setTimeout(() => {
-          axios({
-            url: "http://localhost:5000/downloadZip",
-            responseType: "blob",
-            method: "POST",
-            data: {
-              dirName: formik.values.demand_id,
-            },
-          }).then((res) => {
-            setIsLoadingMsg("");
-            FileDownload(res.data, formik.values.demand_id + ".zip");
-          });
-        }, 2000);
-      }
+    datas = [];
+    new_data = [];
+    setIsSearching(true)
+    addedProfiles.map((doc, index) => {
+      firestore
+        .collection("Profiles")
+        .doc(doc)
+        .get()
+        .then((res) => {
+          datas.push({ fileName: doc, url: res.data().info.url });
+          new_data.push(res.data().info);
+          if (addedProfiles.length - 1 === index) {
+            axios
+              .post("http://localhost:5000/download", {
+                dirName: formik.values.demand_id,
+                datas,
+                metaData: new_data,
+              })
+              .then((res) => {
+                setIsLoadingMsg("Downloading & Zipping the profiles....");
+                if (res.data.includes("ready")) {
+                  setTimeout(() => {
+                    axios({
+                      url: "http://localhost:5000/downloadZip",
+                      responseType: "blob",
+                      method: "POST",
+                      data: {
+                        dirName: formik.values.demand_id,
+                      },
+                    }).then((res) => {
+                      setIsLoadingMsg("");
+                      setIsSearching(false)
+                      FileDownload(res.data, formik.values.demand_id + ".zip");
+                    });
+                  }, 2000);
+                }
+              });
+          }
+        });
     });
   };
+
+  useEffect(() => {
+    if(params.demandId){
+      getDemandInfo(params.demandId)
+    }
+  },[params.demandId])
 
   return (
     <Fragment>
@@ -706,11 +715,11 @@ const CreateSupply = (props) => {
       )}
       {isLoadingMsg.length === 0 && (
         <Fragment>
-          {profileFlag && <Alerts profile={{ view: profileView }} />}
+          <Alerts profile={{ flag: profileFlag, view: profileView }} />
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">
-                <h4>Create Supply</h4>
+                <h4>{params.demandId ? 'View' : 'Create'} Supply</h4>
               </Card.Header>
               <Card.Body className="mb-4">
                 <Form>
@@ -727,6 +736,7 @@ const CreateSupply = (props) => {
                             <FormControl
                               placeholder="Enter demand ID"
                               name="demand_id"
+                              disabled={params.demandId}
                               value={formik.values.demand_id}
                               isInvalid={
                                 formik.errors.demand_id &&
@@ -739,7 +749,9 @@ const CreateSupply = (props) => {
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
                             />
-                            {!isSearching && (
+                            {!params.demandId &&
+                            <Fragment>
+                              {!isSearching && (
                               <Button
                                 variant="outline-primary"
                                 onClick={() =>
@@ -768,6 +780,8 @@ const CreateSupply = (props) => {
                                 </span>
                               </Button>
                             )}
+                            </Fragment>
+                            }
                           </InputGroup>
 
                           {formik.touched.demand_id &&
@@ -972,7 +986,7 @@ const CreateSupply = (props) => {
                       </Row>
                     </FormGroup>
                   </Col>
-                  {(formik.values.status.includes("Unstarted") ||
+                  { ! params.demandId && (formik.values.status.includes("Unstarted") ||
                     formik.values.status.includes("Inprogress")) && (
                     <Fragment>
                       <hr className="my-4" />
@@ -981,7 +995,10 @@ const CreateSupply = (props) => {
                           <b className="my-1">Added profiles</b>
                           <div
                             className="d-flex flex-wrap my-2 border border-success border-2 mx-2"
-                            style={{ maxHeight: "150px", overflowY: "scroll" }}
+                            style={{
+                              maxHeight: "150px",
+                              overflowY: "scroll",
+                            }}
                           >
                             {addedProfiles.map((file, index) => {
                               return (
@@ -1005,7 +1022,6 @@ const CreateSupply = (props) => {
                                     <b
                                       className="mt-1"
                                       style={{ cursor: "pointer" }}
-                                      onClick={() => onShowForm(file)}
                                     >
                                       {file}
                                     </b>
@@ -1083,7 +1099,7 @@ const CreateSupply = (props) => {
                               md={{ span: "8", offset: "2" }}
                               className="mt-3"
                             >
-                              <InputGroup className="mb-3 ">
+                              <InputGroup className="mb-3">
                                 <FormControl
                                   placeholder="Enter profile ID"
                                   name="profile_id"
@@ -1153,23 +1169,22 @@ const CreateSupply = (props) => {
                         </Tab>
                       </Tabs>
                       <div className="text-center">
-                        <div className="d-flex justify-content-between flex-wrap">
+                        <div className="d-flex justify-content-between flex-wrap mt-5">
                           <Fragment>
                             {!isSaving && (
                               <Button
                                 variant="secondary"
-                                className={sm ? `mt-3` : `my-3`}
-                                // disabled={
-                                //   filenames.length > 0 || files.length > 0
-                                //     ? Object.keys(profileInfo.data).length !==
-                                //         filenames.length &&
-                                //       searchProfileDB.length < 1
-                                //       ? true
-                                //       : false
-                                //     : searchProfileDB.length > 0
-                                //     ? false
-                                //     : true
-                                // }
+                                disabled={
+                                  filenames.length > 0 || files.length > 0
+                                    ? Object.keys(profileInfo.data).length !==
+                                        filenames.length &&
+                                      searchProfileDB.length < 1
+                                      ? true
+                                      : false
+                                    : searchProfileDB.length > 0
+                                    ? false
+                                    : true
+                                }
                                 style={{ width: sm ? "100%" : "45%" }}
                                 onClick={onSave}
                               >
@@ -1179,7 +1194,6 @@ const CreateSupply = (props) => {
                             {isSaving && (
                               <Button
                                 variant="secondary"
-                                className={`my-3`}
                                 style={{ width: sm ? "100%" : "45%" }}
                                 disabled
                               >
@@ -1201,7 +1215,6 @@ const CreateSupply = (props) => {
                             {isLoading && (
                               <Button
                                 variant="success"
-                                className={`my-3`}
                                 style={{ width: sm ? "100%" : "45%" }}
                                 disabled
                               >
@@ -1221,7 +1234,6 @@ const CreateSupply = (props) => {
                             {!isLoading && (
                               <Button
                                 variant="success"
-                                className={`my-3`}
                                 style={{ width: sm ? "100%" : "45%" }}
                                 disabled={addedProfiles.length <= 0}
                                 onClick={onSubmit}
@@ -1234,15 +1246,50 @@ const CreateSupply = (props) => {
                       </div>
                     </Fragment>
                   )}
+                   {loggedUser.role === "FOCAL" && (
+                          <div
+                            className={
+                              sm
+                                ? ""
+                                : "d-flex justify-content-between flex-wrap mt-3"
+                            }
+                          >
+                            {!isSearching &&
+                            <Button
+                            onClick={onDownloadProfile}
+                            style={{ width: sm ? "100%" : "45%" }}
+                          >
+                            Download Profiles
+                          </Button>
+                            }
+                            {isSearching && (
+                              <Button variant="primary" style={{ width: sm ? "100%" : "45%" }} disabled>
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  role="status"
+                                  aria-hidden="true"
+                                />{" "}
+                                Downloading Profiles...
+                                <span className="visually-hidden">
+                                  Loading...
+                                </span>
+                              </Button>
+                            )}
+                            <Button
+                              style={{
+                                background: "rgba(246, 5, 129, 0.8)", borderColor: "rgba(246, 5, 129, 0.8)", width: sm ? "100%" : "45%" 
+                              }}
+
+                              as={Link}
+                              to={"/manageSupply/" + params.demandId}
+                            >
+                              View Profiles
+                            </Button>
+                          </div>
+                        )}
                 </Form>
-                <div className={sm ? "" : "d-flex justify-content-center"}>
-                  <Button
-                    onClick={onDownloadProfile}
-                    className={sm ? "w-100" : "w-75"}
-                  >
-                    Download Profiles
-                  </Button>
-                </div>
               </Card.Body>
             </Card>
           </Container>
@@ -1251,4 +1298,5 @@ const CreateSupply = (props) => {
     </Fragment>
   );
 };
+
 export default CreateSupply;

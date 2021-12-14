@@ -118,6 +118,7 @@ const ProfileData = (props) => {
       if (Object.keys(profileInfo.data).includes(props.file)) {
         formik.setValues(profileInfo.data[props.file]);
       } else {
+        console.log(profileInfo.added_data[props.file]);
         formik.setValues(profileInfo.added_data[props.file]);
       }
     }
@@ -133,7 +134,7 @@ const ProfileData = (props) => {
     formik.resetForm();
     formik.setFieldValue("gender", "- Select Gender -");
   };
-  console.log(profileInfo.data);
+
   return (
     <Form>
       <Row>
@@ -223,7 +224,9 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Male");
                   formik.setFieldValue(
                     "candidateID",
-                     (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID ) + "M"
+                    (isNaN(formik.values.candidateID.slice(-1))
+                      ? formik.values.candidateID.slice(0, -1)
+                      : formik.values.candidateID) + "M"
                   );
                 }}
               >
@@ -235,7 +238,9 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Female");
                   formik.setFieldValue(
                     "candidateID",
-                    (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID ) + "F"
+                    (isNaN(formik.values.candidateID.slice(-1))
+                      ? formik.values.candidateID.slice(0, -1)
+                      : formik.values.candidateID) + "F"
                   );
                 }}
               >
@@ -247,7 +252,9 @@ const ProfileData = (props) => {
                   formik.setFieldValue("gender", "Others");
                   formik.setFieldValue(
                     "candidateID",
-                    (isNaN(formik.values.candidateID.slice(-1)) ? formik.values.candidateID.slice(0,-1)  : formik.values.candidateID )+"O"
+                    (isNaN(formik.values.candidateID.slice(-1))
+                      ? formik.values.candidateID.slice(0, -1)
+                      : formik.values.candidateID) + "O"
                   );
                 }}
               >

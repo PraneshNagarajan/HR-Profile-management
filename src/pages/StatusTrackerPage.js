@@ -14,53 +14,9 @@ import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
 
 const StatusTrackerPage = () => {
-  const data = [
-    { id: "D1638596665820", status: "Inprogress" },
-    { id: "D1637669805463", status: "Submitted" },
-    { id: "D1638772983586", status: "Completed" },
-    { id: "D1638787548486", status: "new" },
-    { id: "D1638788774318", status: "Inprogress" },
-    { id: "D1638798236798", status: "Inprogress" },
-    { id: "D1638884567314", status: "Submitted" },
-    { id: "D1638976851467", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111119", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111119", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Unstarted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887SR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111114", status: "Completed" },
-    { id: "FO-1111119635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Inprogress" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-    { id: "FO-1111111635861804887JR-111111", status: "Completed" },
-    { id: "FO-1111111635861804887JR-111111", status: "new" },
-    { id: "FO-1111111635861804887JR-111111", status: "Submitted" },
-  ];
-
   const sm = useMediaQuery({ maxWidth: 768 });
   const filter = useSelector((state) => state.filterDemand);
   const [supplyList, setSupplyList] = useState([]);
-  const demandRef = firestore.collection("Demands");
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const error = useSelector((state) => state.filterDemand.errors);
@@ -78,7 +34,7 @@ const StatusTrackerPage = () => {
     options.push(item.key);
     dispatch(
       FilterDemandActions.onTextFilterHandler({
-        data,
+        supplyList,
         options,
         id: formik.values.id,
       })
@@ -92,7 +48,7 @@ const StatusTrackerPage = () => {
     options.splice(index, 1);
     dispatch(
       FilterDemandActions.onTextFilterHandler({
-        data,
+        supplyList,
         options,
         id: formik.values.id,
       })
@@ -102,29 +58,31 @@ const StatusTrackerPage = () => {
 
   useEffect(() => {
     if (formik.values.id.length === 0 && selectedOptions.length === 0) {
-      // demandRef.onSnapshot((querySnapshot) => {
-      //   querySnapshot.docs.map((item, index) => {
-      //     if (item.id.includes(loggedUser.id)) {
-      //       data.push({id: item.id, status: item.data().status});
-      //     }
-      //     if (querySnapshot.docs.length - 1 === index) {
-      //       setSupplyList(data);
-      //     }
-      //   });
-      // });
-      setSupplyList(data);
-      dispatch(FilterDemandActions.onSetInitial());
+      let data = []
+      firestore.collection("Demands").onSnapshot((querySnapshot) => {
+        querySnapshot.docs.map((item, index) => {
+          if (String(item.data().info.owner).includes(String(loggedUser.id))) {
+            data.push({id: item.id, status: item.data().info.status});
+          }
+          if (querySnapshot.docs.length - 1 === index) {
+            setSupplyList(data);
+          }
+        });
+      });
+      // setSupplyList(data);
+      // dispatch(FilterDemandActions.onSetInitial());
     } else {
       dispatch(
         FilterDemandActions.onTextFilterHandler({
-          data,
+          supplyList,
           options: selectedOptions.length > 0 ? selectedOptions : [],
           id: formik.values.id,
         })
       );
     }
-  }, [formik.values.id, filter.flag]);
+  }, [formik.values.id, filter]);
 
+  console.log(supplyList)
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
@@ -183,10 +141,10 @@ const StatusTrackerPage = () => {
         {error.length === 0 && supplyList.length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {supplyList.map((demand, index) => {
+              {[...supplyList].sort().reverse().map((demand, index) => {
                 if (
-                  index >= (currentPage - 1) * (sm ? 10 : 20) &&
-                  index < currentPage * (sm ? 10 : 20)
+                  index >= (currentPage - 1) * (sm ? 10 : 24) &&
+                  index < currentPage * (sm ? 10 : 24)
                 ) {
                   return (
                     <Card
@@ -201,7 +159,7 @@ const StatusTrackerPage = () => {
                       }`}
                       key={index}
                       as={Link}
-                      to={"/manageSupply/" + demand.id}
+                      to={"/viewSupply/" + demand.id}
                     >
                       <Card.Body>
                         <small>
@@ -213,7 +171,7 @@ const StatusTrackerPage = () => {
                 }
               })}
             </div>
-            <div className="d-flex justify-content-center mt-4">
+            <div className="d-flex justify-content-center mt-5">
               <PageSwitcher />
             </div>
           </Fragment>

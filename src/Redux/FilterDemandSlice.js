@@ -28,13 +28,13 @@ reducers: {
     onTextFilterHandler(state, action) {
         state.flag = true
         let result = [];
-        action.payload.data.map((item, index) => {
+        action.payload.supplyList.map((item, index) => {
           if (item.id.includes(action.payload.id)) {
             result.push(item);
           }
-          if (action.payload.data.length - 1 === index) {
+          if (action.payload.supplyList.length - 1 === index) {
             let output = onCatagoryFilterHandler(
-                action.payload.id.length > 0 && result.length > 0 ? result : action.payload.data,
+                action.payload.id.length > 0 && result.length > 0 ? result : action.payload.supplyList,
               action.payload.options
             );
             result = output;

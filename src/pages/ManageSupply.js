@@ -32,6 +32,7 @@ import failedIcon from "../images/failedIcon.png";
 import Stepper from "react-stepper-horizontal";
 import Alerts from "../components/Alert";
 import { AlertActions } from "../Redux/AlertSlice";
+import { ProfileActions } from "../Redux/ProfileSlice";
 
 const steps = [
   { state: "success", icon: successIcon, title: "Profile Submitted" },
@@ -120,6 +121,7 @@ const ManageSupply = () => {
   const [stepOptions, setStepOptions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [comment, setComment] = useState({ key: -1, value: "" });
+  const [profileView, setProfileView] = useState(false);
   const [viewComment, setViewComment] = useState("");
 
   const formik = useFormik({
@@ -280,12 +282,9 @@ const ManageSupply = () => {
         ...pStatus[0],
         onClick: () => {},
       };
-      console.log(pStatus[index].state);
       if (pStatus[index].state === "danger") {
         let tmp_value = pStatus.slice(0, index + 1);
-        console.log(tmp_value);
         tmp_data[profileKey]["status"] = tmp_value;
-        console.log(tmp_data[profileKey]["status"]);
       } else {
         for (let k = index - 1; k >= 1; k--) {
           if (!pStatus[k].title.includes("(")) {
@@ -316,8 +315,8 @@ const ManageSupply = () => {
 
       dispatch(AlertActions.cancelSubmit());
     }
-    if(!alertData.show) {
-      setStepOptions([])
+    if (!alertData.show) {
+      setStepOptions([]);
     }
   }, [alertData.accept, !alertData.show]);
 
@@ -326,14 +325,16 @@ const ManageSupply = () => {
     let keys = Object.keys(statusValues);
     keys.map((key, index) => {
       let status = [];
+      let curnt_sts_flag = false;
       steps.map((step, index) => {
         if (statusValues[key]["status"][step.title] !== undefined) {
           title = statusValues[key]["status"][step.title];
-          let curnt_sts_flag = false
-          let condition = Object.keys(statusOptions).includes(step.title) && (curnt_sts_flag || step.title === statusValues[key].current_status )
-          if(condition){
-           curnt_sts_flag = true
-        }
+          let condition =
+            Object.keys(statusOptions).includes(step.title) &&
+            (curnt_sts_flag || step.title === statusValues[key].current_status);
+          if (condition) {
+            curnt_sts_flag = true;
+          }
           status.push({
             ...step,
             title:
@@ -356,6 +357,30 @@ const ManageSupply = () => {
         setSupplyList(statusValues);
       }
     });
+  };
+
+  const viewProfileInfo = (profileID) => {
+    dispatch(ProfileActions.handleClear());
+    firestore
+      .collection("Profiles")
+      .doc(profileID)
+      .get()
+      .then((res) => {
+        dispatch(
+          ProfileActions.handleAddExistingData({ [profileID]: res.data().info })
+        );
+        setProfileView(true);
+        dispatch(AlertActions.handleShow({ msg: profileID, msgFlag: "" }));
+      })
+      .catch((err) => {
+        setProfileView(false);
+        dispatch(
+          AlertActions.handleShow({
+            msg: "Unable to fetch data.",
+            msgFlag: false,
+          })
+        );
+      });
   };
 
   useEffect(() => {
@@ -411,7 +436,9 @@ const ManageSupply = () => {
       )}
 
       <Fragment>
-        <Alerts flag={true} />
+        <Alerts profile={{ flag: profileView, view: true }} />
+
+        {!profileView && <Alerts flag={true} />}
         {stepOptions.length > 0 && <Alerts status={{ stepOptions }} />}
         {Object.values(viewComment).length > 0 && (
           <Alerts table={viewComment} />
@@ -514,138 +541,147 @@ const ManageSupply = () => {
         {error.length === 0 && Object.keys(supplyList).length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {Object.keys(supplyList).map((profileName, index) => {
-                if (
-                  index >= (currentPage - 1) * (sm ? 5 : 5) &&
-                  index < currentPage * (sm ? 5 : 5)
-                ) {
-                  return (
-                    <Card
-                      className={`mx-1 my-2 text-center shadow border border-2 border-${
-                        supplyList[profileName].current_status.includes("Hold")
-                          ? `warning`
-                          : supplyList[profileName].current_status.slice(-2) ===
-                              "ed" ||
-                            supplyList[profileName].current_status.slice(-4) ===
-                              "lect"
-                          ? `primary`
-                          : `danger`
-                      }`}
-                      key={index}
-                      style={{ width: sm ? "98%" : "99%" }}
-                    >
-                      <Card.Body>
-                        <Row>
-                          <Col md="2">
-                            <Card.Img
-                              src={
-                                profileName.slice(-1) === "M"
-                                  ? index % 2 === 0
-                                    ? male
-                                    : man
-                                  : profileName.slice(-1) === "F"
-                                  ? index % 2 === 0
-                                    ? women
-                                    : female
-                                  : ""
-                              }
-                              className={sm ? `w-25` : `w-50`}
-                            ></Card.Img>
-                          </Col>
-                          <Col md="4" className="text-center mt-5">
-                            <div>
-                              <small>
-                                <b>Profile Name : </b>
-                                {profileName}
-                              </small>
-                            </div>
-                            <div>
-                              <small>
-                                <b>Current Status : </b>
-                                {supplyList[profileName].current_status}
-                              </small>
-                            </div>
-                          </Col>
-                          <Col md="6" className="text-center mt-5">
-                            <InputGroup className="mb-3">
-                              <FormControl
-                                placeholder="Enter Comments"
-                                value={
-                                  comment.key === index ? comment.value : ""
+              {Object.keys(supplyList)
+                .sort()
+                .reverse()
+                .map((profileName, index) => {
+                  if (
+                    index >= (currentPage - 1) * (sm ? 5 : 5) &&
+                    index < currentPage * (sm ? 5 : 5)
+                  ) {
+                    return (
+                      <Card
+                        className={`mx-1 my-2 text-center shadow border border-2 border-${
+                          supplyList[profileName].current_status.includes(
+                            "Hold"
+                          )
+                            ? `warning`
+                            : supplyList[profileName].current_status.slice(
+                                -2
+                              ) === "ed" ||
+                              supplyList[profileName].current_status.slice(
+                                -4
+                              ) === "lect"
+                            ? `primary`
+                            : `danger`
+                        }`}
+                        key={index}
+                        style={{ width: sm ? "98%" : "99%" }}
+                      >
+                        <Card.Body>
+                          <Row>
+                            <Col md="2">
+                              <Card.Img
+                                src={
+                                  profileName.slice(-1) === "M"
+                                    ? index % 2 === 0
+                                      ? male
+                                      : man
+                                    : profileName.slice(-1) === "F"
+                                    ? index % 2 === 0
+                                      ? women
+                                      : female
+                                    : ""
                                 }
-                                onChange={(e) =>
-                                  setComment({
-                                    value: e.target.value,
-                                    key: index,
-                                  })
-                                }
-                              />
-                              {comment.value.length === 0 && (
-                                <Button
-                                  variant="outline-secondary"
-                                  onClick={() => {
-                                    onViewComment(profileName);
-                                  }}
-                                >
-                                  View Comments
-                                </Button>
-                              )}
-
-                              {!isSearching &&
-                                comment.key === index &&
-                                comment.value.length > 0 && (
+                                className={sm ? `w-25` : `w-50`}
+                                onClick={() => viewProfileInfo(profileName)}
+                                style={{ cursor: "pointer" }}
+                              ></Card.Img>
+                            </Col>
+                            <Col md="4" className="text-center mt-5">
+                              <div>
+                                <small>
+                                  <b>Profile Name : </b>
+                                  {profileName}
+                                </small>
+                              </div>
+                              <div>
+                                <small>
+                                  <b>Current Status : </b>
+                                  {supplyList[profileName].current_status}
+                                </small>
+                              </div>
+                            </Col>
+                            <Col md="6" className="text-center mt-5">
+                              <InputGroup className="mb-3">
+                                <FormControl
+                                  placeholder="Enter Comments"
+                                  value={
+                                    comment.key === index ? comment.value : ""
+                                  }
+                                  onChange={(e) =>
+                                    setComment({
+                                      value: e.target.value,
+                                      key: index,
+                                    })
+                                  }
+                                />
+                                {comment.value.length === 0 && (
                                   <Button
-                                    variant="outline-primary"
+                                    variant="outline-secondary"
                                     onClick={() => {
-                                      onUpdateComments(profileName);
+                                      onViewComment(profileName);
                                     }}
                                   >
-                                    Add
+                                    View Comments
                                   </Button>
                                 )}
-                              {isSearching && comment.key === index && (
-                                <Button
-                                  variant={
-                                    comment.value.length > 0
-                                      ? "primary"
-                                      : "secondary"
-                                  }
-                                  disabled
-                                >
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    role="status"
-                                    aria-hidden="true"
-                                  />{" "}
-                                  Adding...
-                                  <span className="visually-hidden">
-                                    Loading...
-                                  </span>
-                                </Button>
-                              )}
-                            </InputGroup>
-                          </Col>
-                        </Row>
-                        <Row style={{ cursor: "pointer" }}>
-                          <Stepper
-                            steps={[...supplyList[profileName].status]}
-                            activeStep={supplyList[profileName].activeStep}
-                            circleTop={30}
-                            circleFontSize={0}
-                            completeColor="#FFFFFF"
-                            defaultColor="#FFFFFF"
-                            activeColor="#FFFFFF"
-                            defaultBorderWidth={10}
-                            defaultOpacity="0.2"
-                          />
-                        </Row>
-                      </Card.Body>
-                    </Card>
-                  );
-                }
-              })}
+
+                                {!isSearching &&
+                                  comment.key === index &&
+                                  comment.value.length > 0 && (
+                                    <Button
+                                      variant="outline-primary"
+                                      onClick={() => {
+                                        onUpdateComments(profileName);
+                                      }}
+                                    >
+                                      Add
+                                    </Button>
+                                  )}
+                                {isSearching && comment.key === index && (
+                                  <Button
+                                    variant={
+                                      comment.value.length > 0
+                                        ? "primary"
+                                        : "secondary"
+                                    }
+                                    disabled
+                                  >
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      role="status"
+                                      aria-hidden="true"
+                                    />{" "}
+                                    Adding...
+                                    <span className="visually-hidden">
+                                      Loading...
+                                    </span>
+                                  </Button>
+                                )}
+                              </InputGroup>
+                            </Col>
+                          </Row>
+                          <Row style={{ cursor: "pointer" }}>
+                            <Stepper
+                              steps={[...supplyList[profileName].status]}
+                              activeStep={supplyList[profileName].activeStep}
+                              circleTop={30}
+                              circleFontSize={0}
+                              completeColor="#FFFFFF"
+                              defaultColor="#FFFFFF"
+                              activeColor="#FFFFFF"
+                              defaultBorderWidth={10}
+                              defaultOpacity="0.2"
+                            />
+                          </Row>
+                        </Card.Body>
+                      </Card>
+                    );
+                  }
+                })}
             </div>
             <div className="d-flex justify-content-center mt-4">
               <PageSwitcher />

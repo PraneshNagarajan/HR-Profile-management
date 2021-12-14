@@ -39,18 +39,18 @@ const Alerts = (props) => {
       scrollable="true"
     >
       <ModalHeader className="bg-primary text-white">
-        {props.profile && <ModalTitle>{props.profile.view ? "Profile Info": "Add Profile Info"}</ModalTitle>}
-        {(props.flag || props.status ) && <ModalTitle>Status</ModalTitle>}
+        {props.profile && props.profile.flag && <ModalTitle>{props.profile.view ? "Profile Info": "Add Profile Info"}</ModalTitle>}
+        {(props.flag || props.status || !props.profile.flag ) && <ModalTitle>Status</ModalTitle>}
         {props.table && <ModalTitle>Comments</ModalTitle>}
       </ModalHeader>
       <ModalBody>
-        {(props.flag) && (
+        {(props.flag || (props.profile && !props.profile.flag)) && (
           <p className={alerts.msgFlag ? "text-success" : "text-danger"}>
             <b>{alerts.msg}</b>
           </p>
         )}
 
-        {props.profile && (
+        {props.profile && props.profile.flag && (
           <ProfileData view={props.profile.view} file={alerts.msg} />
         )}
         
@@ -76,7 +76,7 @@ const Alerts = (props) => {
           </ButtonGroup>
         )}
       </ModalBody>
-      {(!props.profile) && (
+      {(!props.profile  || !props.profile.flag ) && (
         <ModalFooter>
           {props.status && (
             <Button variant="primary" onClick={handleConfirm}>
