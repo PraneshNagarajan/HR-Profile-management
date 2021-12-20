@@ -13,6 +13,7 @@ import Multiselect from "multiselect-react-dropdown";
 import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
 
+let data = [];
 const StatusTrackerPage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const filter = useSelector((state) => state.filterDemand);
@@ -58,31 +59,33 @@ const StatusTrackerPage = () => {
 
   useEffect(() => {
     if (formik.values.id.length === 0 && selectedOptions.length === 0) {
-      let data = []
-      firestore.collection("Demands").onSnapshot((querySnapshot) => {
-        querySnapshot.docs.map((item, index) => {
-          if (String(item.data().info.owner).includes(String(loggedUser.id))) {
-            data.push({id: item.id, status: item.data().info.status});
-          }
-          if (querySnapshot.docs.length - 1 === index) {
-            setSupplyList(data);
-          }
-        });
+    firestore.collection("Demands").onSnapshot((querySnapshot) => {
+      querySnapshot.docs.map((item, index) => {
+        if (
+          String(item.data().info.owner).includes(String(loggedUser.id)) ||
+          item.data().info.owners.includes(loggedUser.id)
+        ) {
+          data.push({ id: item.id, status: item.data().info.status });
+        }
+        if (querySnapshot.docs.length - 1 === index) {
+          setSupplyList(data);
+        }
       });
-      // setSupplyList(data);
-      // dispatch(FilterDemandActions.onSetInitial());
-    } else {
+    });
+    dispatch(FilterDemandActions.onSetInitial());
+  }
+    else {
       dispatch(
         FilterDemandActions.onTextFilterHandler({
-          supplyList,
+          supplyList: data,
           options: selectedOptions.length > 0 ? selectedOptions : [],
           id: formik.values.id,
         })
       );
     }
-  }, [formik.values.id, filter]);
+          
+  }, [formik.values.id, filter.flag]);
 
-  console.log(supplyList)
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
@@ -141,35 +144,38 @@ const StatusTrackerPage = () => {
         {error.length === 0 && supplyList.length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {[...supplyList].sort().reverse().map((demand, index) => {
-                if (
-                  index >= (currentPage - 1) * (sm ? 10 : 24) &&
-                  index < currentPage * (sm ? 10 : 24)
-                ) {
-                  return (
-                    <Card
-                      className={`mx-1 my-2 text-center text-white bg-${
-                        demand.status === "Submitted"
-                          ? "primary"
-                          : demand.status === "Completed"
-                          ? "success"
-                          : String(demand.status).includes("Inprogress")
-                          ? "warning"
-                          : "danger"
-                      }`}
-                      key={index}
-                      as={Link}
-                      to={"/viewSupply/" + demand.id}
-                    >
-                      <Card.Body>
-                        <small>
-                          <b>{demand.id} </b>
-                        </small>
-                      </Card.Body>
-                    </Card>
-                  );
-                }
-              })}
+              {[...supplyList]
+                .sort()
+                .reverse()
+                .map((demand, index) => {
+                  if (
+                    index >= (currentPage - 1) * (sm ? 10 : 24) &&
+                    index < currentPage * (sm ? 10 : 24)
+                  ) {
+                    return (
+                      <Card
+                        className={`mx-1 my-2 text-center text-white bg-${
+                          demand.status === "Submitted"
+                            ? "primary"
+                            : demand.status === "Completed"
+                            ? "success"
+                            : String(demand.status).includes("Inprogress")
+                            ? "warning"
+                            : "danger"
+                        }`}
+                        key={index}
+                        as={Link}
+                        to={"/viewSupply/" + demand.id}
+                      >
+                        <Card.Body>
+                          <small>
+                            <b>{demand.id} </b>
+                          </small>
+                        </Card.Body>
+                      </Card>
+                    );
+                  }
+                })}
             </div>
             <div className="d-flex justify-content-center mt-5">
               <PageSwitcher />

@@ -105,6 +105,7 @@ let title;
 let profileKey = "";
 let dateFormat = new Date().toISOString().slice(0, 10).replaceAll("-", "/");
 let dir = "profile_info.profiles_status.data.";
+let dataFlag = true;
 
 const ManageSupply = () => {
   const params = useParams();
@@ -284,7 +285,10 @@ const ManageSupply = () => {
       };
       if (pStatus[index].state === "danger") {
         let tmp_value = pStatus.slice(0, index + 1);
-        tmp_data[profileKey]["status"] = tmp_value;
+        console.log([...tmp_value].filter((item) => item.title.includes("(")));
+        tmp_data[profileKey]["status"] = [...tmp_value].filter((item) =>
+          item.title.includes("(")
+        );
       } else {
         for (let k = index - 1; k >= 1; k--) {
           if (!pStatus[k].title.includes("(")) {
@@ -392,6 +396,7 @@ const ManageSupply = () => {
         .then((response) => {
           let statusValues = response.data().profile_info.profiles_status.data;
           onProcessData(statusValues);
+          dataFlag = Object.keys(supplyList).length > 0 ? true : false
           dispatch(
             PaginationActions.initial({
               size: data.profiles.length,
@@ -431,267 +436,280 @@ const ManageSupply = () => {
 
   return (
     <Fragment>
-      {Object.keys(supplyList).length === 0 && error.length === 0 && (
-        <Spinners />
+      {Object.keys(supplyList).length === 0 &&
+        error.length === 0 &&
+        dataFlag && <Spinners />}
+      {!dataFlag && (
+        <p className="text-danger fw-bold position-absolute top-50 start-50 translate-middle">No Profiles upload yet.</p>
       )}
+      {Object.keys(supplyList).length > 0 && (
+        <Fragment>
+          <Alerts profile={{ flag: profileView, view: true }} />
 
-      <Fragment>
-        <Alerts profile={{ flag: profileView, view: true }} />
-
-        {!profileView && <Alerts flag={true} />}
-        {stepOptions.length > 0 && <Alerts status={{ stepOptions }} />}
-        {Object.values(viewComment).length > 0 && (
-          <Alerts table={viewComment} />
-        )}
-        <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
-          <Col md={{ span: "6", offset: "2" }} className="mb-1">
-            <FormControl
-              placeholder="Enter Profile ID"
-              type="text"
-              name="id"
-              value={formik.values.id}
-              isInvalid={formik.errors.id}
-              onChange={formik.handleChange}
-              autoComplete="off"
-            />
-          </Col>
-          <Col md="3">
-            <Multiselect
-              displayValue="value"
-              onRemove={onRemoveItem}
-              onSelect={onSelectItem}
-              options={[
-                {
-                  key: 0,
-                  value: "Screen Reject",
-                },
-                {
-                  key: 1,
-                  value: "Duplicate",
-                },
-                {
-                  key: 2,
-                  value: "Feedback Pending",
-                },
-                {
-                  key: 3,
-                  value: "Position Hold",
-                },
-                {
-                  key: 4,
-                  value: "Interview Scheduled",
-                },
-                {
-                  key: 5,
-                  value: "No Show",
-                },
-                {
-                  key: 6,
-                  value: "Feedback Pending",
-                },
-                {
-                  key: 7,
-                  value: "L1 Select",
-                },
-                {
-                  key: 8,
-                  value: "L1 Reject",
-                },
-                {
-                  key: 9,
-                  value: "L2 Select",
-                },
-                {
-                  key: 10,
-                  value: "L2 Reject",
-                },
-                {
-                  key: 11,
-                  value: "Client Select",
-                },
-                {
-                  key: 12,
-                  value: "Client Reject",
-                },
-                {
-                  key: 13,
-                  value: "Client Hold",
-                },
-                {
-                  key: 14,
-                  value: "Declined Before Offer",
-                },
-                {
-                  key: 15,
-                  value: "Offered",
-                },
-                {
-                  key: 16,
-                  value: "Declined After Offer",
-                },
-                {
-                  key: 17,
-                  value: "On Boarded",
-                },
-              ]}
-              showCheckbox
-            />
-          </Col>
-        </Row>
-        {error.length === 0 && Object.keys(supplyList).length > 0 && (
-          <Fragment>
-            <div className="mt-3 d-flex justify-content-center flex-wrap">
-              {Object.keys(supplyList)
-                .sort()
-                .reverse()
-                .map((profileName, index) => {
-                  if (
-                    index >= (currentPage - 1) * (sm ? 5 : 5) &&
-                    index < currentPage * (sm ? 5 : 5)
-                  ) {
-                    return (
-                      <Card
-                        className={`mx-1 my-2 text-center shadow border border-2 border-${
-                          supplyList[profileName].current_status.includes(
-                            "Hold"
-                          )
-                            ? `warning`
-                            : supplyList[profileName].current_status.slice(
-                                -2
-                              ) === "ed" ||
-                              supplyList[profileName].current_status.slice(
-                                -4
-                              ) === "lect"
-                            ? `primary`
-                            : `danger`
-                        }`}
-                        key={index}
-                        style={{ width: sm ? "98%" : "99%" }}
-                      >
-                        <Card.Body>
-                          <Row>
-                            <Col md="2">
-                              <Card.Img
-                                src={
-                                  profileName.slice(-1) === "M"
-                                    ? index % 2 === 0
-                                      ? male
-                                      : man
-                                    : profileName.slice(-1) === "F"
-                                    ? index % 2 === 0
-                                      ? women
-                                      : female
-                                    : ""
-                                }
-                                className={sm ? `w-25` : `w-50`}
-                                onClick={() => viewProfileInfo(profileName)}
-                                style={{ cursor: "pointer" }}
-                              ></Card.Img>
-                            </Col>
-                            <Col md="4" className="text-center mt-5">
-                              <div>
-                                <small>
-                                  <b>Profile Name : </b>
-                                  {profileName}
-                                </small>
-                              </div>
-                              <div>
-                                <small>
-                                  <b>Current Status : </b>
-                                  {supplyList[profileName].current_status}
-                                </small>
-                              </div>
-                            </Col>
-                            <Col md="6" className="text-center mt-5">
-                              <InputGroup className="mb-3">
-                                <FormControl
-                                  placeholder="Enter Comments"
-                                  value={
-                                    comment.key === index ? comment.value : ""
+          {!profileView && <Alerts flag={true} />}
+          {stepOptions.length > 0 && <Alerts status={{ stepOptions }} />}
+          {Object.values(viewComment).length > 0 && (
+            <Alerts table={viewComment} />
+          )}
+          <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
+            <Col md={{ span: "6", offset: "2" }} className="mb-1">
+              <FormControl
+                placeholder="Enter Profile ID"
+                type="text"
+                name="id"
+                value={formik.values.id}
+                isInvalid={formik.errors.id}
+                onChange={formik.handleChange}
+                autoComplete="off"
+              />
+            </Col>
+            <Col md="3">
+              <Multiselect
+                displayValue="value"
+                onRemove={onRemoveItem}
+                onSelect={onSelectItem}
+                options={[
+                  {
+                    key: 0,
+                    value: "Screen Reject",
+                  },
+                  {
+                    key: 1,
+                    value: "Duplicate",
+                  },
+                  {
+                    key: 2,
+                    value: "Feedback Pending",
+                  },
+                  {
+                    key: 3,
+                    value: "Position Hold",
+                  },
+                  {
+                    key: 4,
+                    value: "Interview Scheduled",
+                  },
+                  {
+                    key: 5,
+                    value: "No Show",
+                  },
+                  {
+                    key: 6,
+                    value: "Feedback Pending",
+                  },
+                  {
+                    key: 7,
+                    value: "L1 Select",
+                  },
+                  {
+                    key: 8,
+                    value: "L1 Reject",
+                  },
+                  {
+                    key: 9,
+                    value: "L2 Select",
+                  },
+                  {
+                    key: 10,
+                    value: "L2 Reject",
+                  },
+                  {
+                    key: 11,
+                    value: "Client Select",
+                  },
+                  {
+                    key: 12,
+                    value: "Client Reject",
+                  },
+                  {
+                    key: 13,
+                    value: "Client Hold",
+                  },
+                  {
+                    key: 14,
+                    value: "Declined Before Offer",
+                  },
+                  {
+                    key: 15,
+                    value: "Offered",
+                  },
+                  {
+                    key: 16,
+                    value: "Declined After Offer",
+                  },
+                  {
+                    key: 17,
+                    value: "On Boarded",
+                  },
+                ]}
+                showCheckbox
+              />
+            </Col>
+          </Row>
+          {error.length === 0 && Object.keys(supplyList).length > 0 && (
+            <Fragment>
+              <div className="mt-3 d-flex justify-content-center flex-wrap">
+                {Object.keys(supplyList)
+                  .sort()
+                  .reverse()
+                  .map((profileName, index) => {
+                    if (
+                      index >= (currentPage - 1) * (sm ? 5 : 5) &&
+                      index < currentPage * (sm ? 5 : 5)
+                    ) {
+                      return (
+                        <Card
+                          className={`mx-1 my-2 text-center shadow border border-2 border-${
+                            supplyList[profileName].current_status.includes(
+                              "Hold"
+                            )
+                              ? `warning`
+                              : supplyList[profileName].current_status.slice(
+                                  -2
+                                ) === "ed" ||
+                                supplyList[profileName].current_status.slice(
+                                  -4
+                                ) === "lect"
+                              ? `primary`
+                              : `danger`
+                          }`}
+                          key={index}
+                          style={{ width: sm ? "98%" : "99%" }}
+                        >
+                          <Card.Body>
+                            <Row>
+                              <Col md="2">
+                                <Card.Img
+                                  src={
+                                    profileName.slice(-1) === "M"
+                                      ? index % 2 === 0
+                                        ? male
+                                        : man
+                                      : profileName.slice(-1) === "F"
+                                      ? index % 2 === 0
+                                        ? women
+                                        : female
+                                      : ""
                                   }
-                                  onChange={(e) =>
-                                    setComment({
-                                      value: e.target.value,
-                                      key: index,
-                                    })
-                                  }
-                                />
-                                {comment.value.length === 0 && (
-                                  <Button
-                                    variant="outline-secondary"
-                                    onClick={() => {
-                                      onViewComment(profileName);
-                                    }}
-                                  >
-                                    View Comments
-                                  </Button>
-                                )}
-
-                                {!isSearching &&
-                                  comment.key === index &&
-                                  comment.value.length > 0 && (
+                                  className={sm ? `w-25` : `w-50`}
+                                  onClick={() => viewProfileInfo(profileName)}
+                                  style={{ cursor: "pointer" }}
+                                ></Card.Img>
+                              </Col>
+                              <Col md="4" className="text-center mt-5">
+                                <div>
+                                  <small>
+                                    <b>Profile Name : </b>
+                                    {profileName}
+                                  </small>
+                                </div>
+                                <div>
+                                  <small>
+                                    <b>Current Status : </b>
+                                    {supplyList[profileName].current_status}
+                                  </small>
+                                </div>
+                              </Col>
+                              <Col md="6" className="text-center mt-5">
+                                <InputGroup className="mb-3">
+                                  <FormControl
+                                    placeholder="Enter Comments"
+                                    value={
+                                      comment.key === index ? comment.value : ""
+                                    }
+                                    onChange={(e) =>
+                                      setComment({
+                                        value: e.target.value,
+                                        key: index,
+                                      })
+                                    }
+                                  />
+                                  {comment.value.length === 0 && (
                                     <Button
-                                      variant="outline-primary"
+                                      variant="outline-secondary"
                                       onClick={() => {
-                                        onUpdateComments(profileName);
+                                        onViewComment(profileName);
                                       }}
                                     >
-                                      Add
+                                      View Comments
                                     </Button>
                                   )}
-                                {isSearching && comment.key === index && (
-                                  <Button
-                                    variant={
-                                      comment.value.length > 0
-                                        ? "primary"
-                                        : "secondary"
-                                    }
-                                    disabled
-                                  >
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                    />{" "}
-                                    Adding...
-                                    <span className="visually-hidden">
-                                      Loading...
-                                    </span>
-                                  </Button>
-                                )}
-                              </InputGroup>
-                            </Col>
-                          </Row>
-                          <Row style={{ cursor: "pointer" }}>
-                            <Stepper
-                              steps={[...supplyList[profileName].status]}
-                              activeStep={supplyList[profileName].activeStep}
-                              circleTop={30}
-                              circleFontSize={0}
-                              completeColor="#FFFFFF"
-                              defaultColor="#FFFFFF"
-                              activeColor="#FFFFFF"
-                              defaultBorderWidth={10}
-                              defaultOpacity="0.2"
-                            />
-                          </Row>
-                        </Card.Body>
-                      </Card>
-                    );
-                  }
-                })}
-            </div>
-            <div className="d-flex justify-content-center mt-4">
-              <PageSwitcher />
-            </div>
-          </Fragment>
-        )}
-        {error.length > 0 && (
-          <p className="fw-bold text-center text-danger mt-5">{error}</p>
-        )}
-      </Fragment>
+
+                                  {!isSearching &&
+                                    comment.key === index &&
+                                    comment.value.length > 0 && (
+                                      <Button
+                                        variant="outline-primary"
+                                        onClick={() => {
+                                          onUpdateComments(profileName);
+                                        }}
+                                      >
+                                        Add
+                                      </Button>
+                                    )}
+                                  {isSearching && comment.key === index && (
+                                    <Button
+                                      variant={
+                                        comment.value.length > 0
+                                          ? "primary"
+                                          : "secondary"
+                                      }
+                                      disabled
+                                    >
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                      />{" "}
+                                      Adding...
+                                      <span className="visually-hidden">
+                                        Loading...
+                                      </span>
+                                    </Button>
+                                  )}
+                                </InputGroup>
+                              </Col>
+                            </Row>
+                            {true && (
+                              <Row
+                                style={{
+                                  cursor: "pointer",
+                                  width: sm ? "1%" : "100%",
+                                }}
+                              >
+                                <Stepper
+                                  steps={[...supplyList[profileName].status]}
+                                  activeStep={
+                                    supplyList[profileName].activeStep
+                                  }
+                                  circleTop={30}
+                                  circleFontSize={0}
+                                  completeColor="#FFFFFF"
+                                  defaultColor="#FFFFFF"
+                                  activeColor="#FFFFFF"
+                                  defaultBorderWidth={10}
+                                  defaultOpacity="0.2"
+                                />
+                              </Row>
+                            )}
+                          </Card.Body>
+                        </Card>
+                      );
+                    }
+                  })}
+              </div>
+              <div className="d-flex justify-content-center mt-4">
+                <PageSwitcher />
+              </div>
+            </Fragment>
+          )}
+          {error.length > 0 && (
+            <p className="fw-bold text-center text-danger mt-5">{error}</p>
+          )}
+        </Fragment>
+      )}
     </Fragment>
   );
 };

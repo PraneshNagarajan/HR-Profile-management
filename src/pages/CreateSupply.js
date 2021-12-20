@@ -173,6 +173,8 @@ const CreateSupply = (props) => {
               "info.status": "Inprogress",
             })
             .catch((err) => {
+              console.log("line : 176")
+              console.log(String(err))
               dispatch(
                 AlertActions.handleShow({
                   msg: "Failed. Unable to submit.",
@@ -476,7 +478,7 @@ const CreateSupply = (props) => {
           datas = await documentSnapshot.get("info");
           if (
             datas.assignees.includes(String(loggedUser.id)) ||
-            datas.owner === loggedUser.id
+            datas.owner === loggedUser.id || datas.owners.includes(loggedUser.id)
           ) {
             if (datas.status !== "Completed") {
               await formik.setValues({
@@ -1169,7 +1171,7 @@ const CreateSupply = (props) => {
                         </Tab>
                       </Tabs>
                       <div className="text-center">
-                        <div className="d-flex justify-content-between flex-wrap mt-5">
+                        <div className="d-flex justify-content-between flex-wrap mt-3">
                           <Fragment>
                             {!isSaving && (
                               <Button
@@ -1185,7 +1187,7 @@ const CreateSupply = (props) => {
                                     ? false
                                     : true
                                 }
-                                style={{ width: sm ? "100%" : "45%" }}
+                                style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
                                 onClick={onSave}
                               >
                                 Save
@@ -1194,7 +1196,7 @@ const CreateSupply = (props) => {
                             {isSaving && (
                               <Button
                                 variant="secondary"
-                                style={{ width: sm ? "100%" : "45%" }}
+                                style={{ width: sm ? "100%" : "45%" ,marginTop: "20px"}}
                                 disabled
                               >
                                 <Spinner
@@ -1215,7 +1217,7 @@ const CreateSupply = (props) => {
                             {isLoading && (
                               <Button
                                 variant="success"
-                                style={{ width: sm ? "100%" : "45%" }}
+                                style={{ width: sm ? "100%" : "45%",marginTop: "20px" }}
                                 disabled
                               >
                                 <Spinner
@@ -1234,7 +1236,7 @@ const CreateSupply = (props) => {
                             {!isLoading && (
                               <Button
                                 variant="success"
-                                style={{ width: sm ? "100%" : "45%" }}
+                                style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
                                 disabled={addedProfiles.length <= 0}
                                 onClick={onSubmit}
                               >
@@ -1257,13 +1259,13 @@ const CreateSupply = (props) => {
                             {!isSearching &&
                             <Button
                             onClick={onDownloadProfile}
-                            style={{ width: sm ? "100%" : "45%" }}
+                            style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
                           >
                             Download Profiles
                           </Button>
                             }
                             {isSearching && (
-                              <Button variant="primary" style={{ width: sm ? "100%" : "45%" }} disabled>
+                              <Button variant="primary" style={{ width: sm ? "100%" : "45%", marginTop: "20px" }} disabled>
                                 <Spinner
                                   as="span"
                                   animation="border"
@@ -1279,7 +1281,7 @@ const CreateSupply = (props) => {
                             )}
                             <Button
                               style={{
-                                background: "rgba(246, 5, 129, 0.8)", borderColor: "rgba(246, 5, 129, 0.8)", width: sm ? "100%" : "45%" 
+                                background: "rgba(246, 5, 129, 0.8)", borderColor: "rgba(246, 5, 129, 0.8)", width: sm ? "100%" : "45%" , marginTop: "20px"
                               }}
 
                               as={Link}
