@@ -30,61 +30,50 @@ const StatusTrackerPage = () => {
     },
   });
 
-  const onSelectItem = (list, item) => {
-    let options = [...selectedOptions];
-    options.push(item.key);
+  const onDispatchActions = (Options) => {
     dispatch(
       FilterDemandActions.onTextFilterHandler({
-        supplyList,
-        options,
+        supplyList: data,
+        options: Options.length > 0 ? Options : [],
         id: formik.values.id,
       })
     );
-    setSelectedOptions(options);
+  };
+
+  const onSelectItem = (list, item) => {
+    let options = [...selectedOptions];
+    options.push(item.key);
+    onDispatchActions(options);
   };
 
   const onRemoveItem = (list, item) => {
     let options = selectedOptions;
     let index = selectedOptions.findIndex((id) => id === item.key);
     options.splice(index, 1);
-    dispatch(
-      FilterDemandActions.onTextFilterHandler({
-        supplyList,
-        options,
-        id: formik.values.id,
-      })
-    );
+    onDispatchActions(options);
     setSelectedOptions(options);
   };
 
   useEffect(() => {
     if (formik.values.id.length === 0 && selectedOptions.length === 0) {
-    firestore.collection("Demands").onSnapshot((querySnapshot) => {
-      querySnapshot.docs.map((item, index) => {
-        if (
-          String(item.data().info.owner).includes(String(loggedUser.id)) ||
-          item.data().info.owners.includes(loggedUser.id)
-        ) {
-          data.push({ id: item.id, status: item.data().info.status });
-        }
-        if (querySnapshot.docs.length - 1 === index) {
-          setSupplyList(data);
-        }
+      firestore.collection("Demands").onSnapshot((querySnapshot) => {
+        querySnapshot.docs.map((item, index) => {
+          if (
+            String(item.data().info.owner).includes(String(loggedUser.id)) ||
+            item.data().info.owners.includes(loggedUser.id)
+          ) {
+            data.push({ id: item.id, status: item.data().info.status });
+          }
+          if (querySnapshot.docs.length - 1 === index) {
+            setSupplyList(data);
+          }
+        });
       });
-    });
-    dispatch(FilterDemandActions.onSetInitial());
-  }
-    else {
-      dispatch(
-        FilterDemandActions.onTextFilterHandler({
-          supplyList: data,
-          options: selectedOptions.length > 0 ? selectedOptions : [],
-          id: formik.values.id,
-        })
-      );
+      dispatch(FilterDemandActions.onSetInitial());
+    } else {
+      onDispatchActions(selectedOptions);
     }
-          
-  }, [formik.values.id, filter.flag]);
+  }, [formik.values.id, selectedOptions]);
 
   useEffect(() => {
     dispatch(

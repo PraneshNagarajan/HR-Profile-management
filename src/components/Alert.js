@@ -9,6 +9,7 @@ import {
   ToggleButton,
 } from "react-bootstrap";
 import ModalHeader from "react-bootstrap/esm/ModalHeader";
+import { useMediaQuery } from "react-responsive";
 import { useDispatch, useSelector } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
 import ProfileData from "./ProfileData";
@@ -18,6 +19,7 @@ const Alerts = (props) => {
   const alerts = useSelector((state) => state.alert);
   const dispatch = useDispatch();
   const [radioValue, setRadioValue] = useState("");
+  const sm = useMediaQuery({ maxWidth: 768 });
 
   const handleClose = () => {
     dispatch(AlertActions.handleClose());
