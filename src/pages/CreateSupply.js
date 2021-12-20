@@ -173,7 +173,6 @@ const CreateSupply = (props) => {
               "info.status": "Inprogress",
             })
             .catch((err) => {
-              console.log("line : 176")
               console.log(String(err))
               dispatch(
                 AlertActions.handleShow({
@@ -1248,7 +1247,7 @@ const CreateSupply = (props) => {
                       </div>
                     </Fragment>
                   )}
-                   {loggedUser.role === "FOCAL" && (
+                   {loggedUser.role === "FOCAL" && addedProfiles.length > 0 && (
                           <div
                             className={
                               sm

@@ -390,7 +390,6 @@ const ManageSupply = () => {
 
   useEffect(() => {
     if (formik.values.id.length === 0 && selectedOptions.length === 0) {
-      console.log("---------id loop ---------------------------")
       firestore
         .collection("Demands")
         .doc(params.demandId)
@@ -712,11 +711,10 @@ const ManageSupply = () => {
                             </Row>
                           )}
                           {sm &&
-                            [...supplyList[profileName].status].filter(
-                              (value) =>
-                                value.title.includes(
-                                  supplyList[profileName].current_status
-                                )
+                            Object.keys(statusOptions).filter((value) =>
+                              value.includes(
+                                supplyList[profileName].current_status
+                              )
                             ).length > 0 && (
                               <Button
                                 onClick={() => {
