@@ -44,6 +44,7 @@ const StatusTrackerPage = () => {
     let options = [...selectedOptions];
     options.push(item.key);
     onDispatchActions(options);
+    setSelectedOptions(options);
   };
 
   const onRemoveItem = (list, item) => {
@@ -73,7 +74,7 @@ const StatusTrackerPage = () => {
     } else {
       onDispatchActions(selectedOptions);
     }
-  }, [formik.values.id, selectedOptions]);
+  }, [formik.values.id]);
 
   useEffect(() => {
     dispatch(
@@ -86,9 +87,7 @@ const StatusTrackerPage = () => {
   }, [supplyList, sm]);
 
   useEffect(() => {
-    if (filter.flag) {
-      setSupplyList(filter.result);
-    }
+    setSupplyList(filter.result);
   }, [filter.result]);
 
   return (
