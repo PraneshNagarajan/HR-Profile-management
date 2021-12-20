@@ -396,7 +396,7 @@ const ManageSupply = () => {
         .then((response) => {
           let statusValues = response.data().profile_info.profiles_status.data;
           onProcessData(statusValues);
-          dataFlag = Object.keys(supplyList).length > 0 ? true : false
+          dataFlag = Object.keys(statusValues).length > 0 ? true : false
           dispatch(
             PaginationActions.initial({
               size: data.profiles.length,
@@ -437,12 +437,10 @@ const ManageSupply = () => {
   return (
     <Fragment>
       {Object.keys(supplyList).length === 0 &&
-        error.length === 0 &&
-        dataFlag && <Spinners />}
+        error.length === 0 && <Spinners />}
       {!dataFlag && (
         <p className="text-danger fw-bold position-absolute top-50 start-50 translate-middle">No Profiles upload yet.</p>
       )}
-      {Object.keys(supplyList).length > 0 && (
         <Fragment>
           <Alerts profile={{ flag: profileView, view: true }} />
 
@@ -709,7 +707,6 @@ const ManageSupply = () => {
             <p className="fw-bold text-center text-danger mt-5">{error}</p>
           )}
         </Fragment>
-      )}
     </Fragment>
   );
 };
