@@ -31,7 +31,7 @@ const Alerts = (props) => {
     dispatch(AlertActions.acceptSubmit(radioValue));
     setRadioValue("");
   };
-  
+
   return (
     <Modal
       show={alerts.show}
@@ -41,8 +41,16 @@ const Alerts = (props) => {
       scrollable="true"
     >
       <ModalHeader className="bg-primary text-white">
-        {props.profile && props.profile.flag && <ModalTitle>{props.profile.view ? "Profile Info": "Add Profile Info"}</ModalTitle>}
-        {(props.flag || props.status || !props.profile.flag ) && <ModalTitle>Status</ModalTitle>}
+        {props.profile && props.profile.flag && (
+          <ModalTitle>
+            {props.profile.view ? "Profile Info" : "Add Profile Info"}
+          </ModalTitle>
+        )}
+        {(props.flag ||
+          props.status ||
+          (props.profile && !props.profile.flag)) && (
+          <ModalTitle>Status</ModalTitle>
+        )}
         {props.table && <ModalTitle>Comments</ModalTitle>}
       </ModalHeader>
       <ModalBody>
@@ -55,10 +63,8 @@ const Alerts = (props) => {
         {props.profile && props.profile.flag && (
           <ProfileData view={props.profile.view} file={alerts.msg} />
         )}
-        
-        { props.table && (
-          <Tables comments={props.table} />
-        )}
+
+        {props.table && <Tables comments={props.table} />}
         {props.status && (
           <ButtonGroup>
             {props.status.stepOptions.map((radio, idx) => (
@@ -78,7 +84,7 @@ const Alerts = (props) => {
           </ButtonGroup>
         )}
       </ModalBody>
-      {(!props.profile  || !props.profile.flag ) && (
+      {(!props.profile || !props.profile.flag) && (
         <ModalFooter>
           {props.status && (
             <Button variant="primary" onClick={handleConfirm}>

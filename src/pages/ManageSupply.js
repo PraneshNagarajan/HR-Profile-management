@@ -177,6 +177,7 @@ const ManageSupply = () => {
   };
 
   const onViewComment = (pKey) => {
+    setProfileView(false);
     setIsSearching(true);
     firestore
       .collection("Demands")
@@ -367,6 +368,7 @@ const ManageSupply = () => {
   };
 
   const viewProfileInfo = (profileID) => {
+    setViewComment({});
     dispatch(ProfileActions.handleClear());
     firestore
       .collection("Profiles")

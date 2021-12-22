@@ -118,7 +118,6 @@ const ProfileData = (props) => {
       if (Object.keys(profileInfo.data).includes(props.file)) {
         formik.setValues(profileInfo.data[props.file]);
       } else {
-        console.log(profileInfo.added_data[props.file]);
         formik.setValues(profileInfo.added_data[props.file]);
       }
     }
