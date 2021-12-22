@@ -34,6 +34,7 @@ import Stepper from "react-stepper-horizontal";
 import Alerts from "../components/Alert";
 import { AlertActions } from "../Redux/AlertSlice";
 import { ProfileActions } from "../Redux/ProfileSlice";
+import { FaSyncAlt } from "react-icons/fa";
 
 const steps = [
   { state: "success", icon: successIcon, title: "Profile Submitted" },
@@ -125,6 +126,7 @@ const ManageSupply = () => {
   const [comment, setComment] = useState({ key: -1, value: "" });
   const [profileView, setProfileView] = useState(false);
   const [viewComment, setViewComment] = useState("");
+  const [refreshFlag, setRefershFlag] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -389,7 +391,11 @@ const ManageSupply = () => {
   };
 
   useEffect(() => {
-    if (formik.values.id.length === 0 && selectedOptions.length === 0) {
+    if (
+      (formik.values.id.length === 0 && selectedOptions.length === 0) ||
+      refreshFlag
+    ) {
+      setSupplyList([]);
       firestore
         .collection("Demands")
         .doc(params.demandId)
@@ -417,7 +423,8 @@ const ManageSupply = () => {
         })
       );
     }
-  }, [formik.values.id, filter.flag]);
+    setRefershFlag(false);
+  }, [formik.values.id, filter.flag, refreshFlag]);
 
   useEffect(() => {
     dispatch(
@@ -464,6 +471,16 @@ const ManageSupply = () => {
               onChange={formik.handleChange}
               autoComplete="off"
             />
+            <span
+              className="float-end me-2"
+              style={{ position: "relative", marginTop: "-33px" }}
+            >
+              <FaSyncAlt
+                role="button"
+                onClick={() => setRefershFlag(true)}
+                style={{ color: "#0d6efd" }}
+              />
+            </span>
           </Col>
           <Col md="3">
             <Multiselect

@@ -8,7 +8,7 @@ const onCatagoryFilterHandler = (dataLists, options) => {
     }
   });
   let errors =
-    datas.length === 0 || dataLists.length > 0 ? "No match found." : "";
+    datas.length === 0 ? "No match found." : "";
   return { datas, errors };
 };
 

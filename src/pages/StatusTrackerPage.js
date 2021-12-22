@@ -12,6 +12,7 @@ import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
 import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
+import { FaSyncAlt } from "react-icons/fa";
 
 let data = [];
 const StatusTrackerPage = () => {
@@ -23,6 +24,7 @@ const StatusTrackerPage = () => {
   const error = useSelector((state) => state.filterDemand.errors);
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [refresFlag, setRefershFlag] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -56,7 +58,11 @@ const StatusTrackerPage = () => {
   };
 
   useEffect(() => {
-    if (formik.values.id.length === 0 && selectedOptions.length === 0) {
+    if (
+      (formik.values.id.length === 0 && selectedOptions.length === 0) ||
+      refresFlag
+    ) {
+      data = [];
       firestore.collection("Demands").onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((item, index) => {
           if (
@@ -67,6 +73,7 @@ const StatusTrackerPage = () => {
           }
           if (querySnapshot.docs.length - 1 === index) {
             setSupplyList(data);
+            setRefershFlag(false);
           }
         });
       });
@@ -74,13 +81,13 @@ const StatusTrackerPage = () => {
     } else {
       onDispatchActions(selectedOptions);
     }
-  }, [formik.values.id]);
+  }, [formik.values.id, refresFlag]);
 
   useEffect(() => {
     dispatch(
       PaginationActions.initial({
         size: supplyList.length,
-        count: sm ? 10 : 20,
+        count: sm ? 10 : 40,
         current: 1,
       })
     );
@@ -105,6 +112,16 @@ const StatusTrackerPage = () => {
               onChange={formik.handleChange}
               autoComplete="off"
             />
+            <span
+              className="float-end me-2"
+              style={{ position: "relative", marginTop: "-33px" }}
+            >
+              <FaSyncAlt
+                role="button"
+                onClick={() => setRefershFlag(true)}
+                style={{ color: "#0d6efd" }}
+              />
+            </span>
           </Col>
           <Col md="3">
             <Multiselect
@@ -137,8 +154,8 @@ const StatusTrackerPage = () => {
                 .reverse()
                 .map((demand, index) => {
                   if (
-                    index >= (currentPage - 1) * (sm ? 10 : 24) &&
-                    index < currentPage * (sm ? 10 : 24)
+                    index >= (currentPage - 1) * (sm ? 10 : 40) &&
+                    index < currentPage * (sm ? 10 : 40)
                   ) {
                     return (
                       <Card
