@@ -175,7 +175,7 @@ const NavBar = () => {
 
             {(user.role === "FOCAL" || user.role === "ADMIN") && (
               <Nav.Link
-              className="mt-1"
+                className={sm ? "mt-1" : ""}
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
                 to={
@@ -190,7 +190,7 @@ const NavBar = () => {
                 <span className={sm ? "h6 ms-2" : "h5 me-2"}>
                   <FaRegListAlt className="mb-1" /> {" Demand"}
                 </span>
-                {sm && <hr className="text-white line-break mt-2" />}
+                {sm && <hr className="text-white line-break mt-3" />}
               </Nav.Link>
             )}
             {(user.role === "FOCAL" || user.role.includes("RECRUITER")) && (
@@ -212,7 +212,7 @@ const NavBar = () => {
               </Nav.Link>
             )}
 
-            {sm && <hr className="text-white line-break mt-2" />}
+            {sm && <hr className="text-white line-break mt-1" />}
             {user.role !== "ADMIN" && (
               <NavDropdown
                 disabled={!(user.photoUrl.length > 0 && user.security)}
