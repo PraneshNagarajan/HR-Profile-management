@@ -5,6 +5,7 @@ import DemandPreRequisiteReducer from "./DemandCreationPreRequisite";
 import InfoReducer from "./EmployeeInfoSlice";
 import FilterDemandReducer from "./FilterDemandSlice";
 import FilterProfileReducer from "./FilterProfileSlice";
+import NotificationReducer from "./NotificationSlice";
 import PaginationReducer from "./PaginationSlice";
 import ProfileReducer from "./ProfileSlice";
 
@@ -17,7 +18,8 @@ const store = configureStore({
         pagination: PaginationReducer,
         filterDemand: FilterDemandReducer,
         filterProfile: FilterProfileReducer,
-        profileInfo : ProfileReducer
+        profileInfo : ProfileReducer,
+        notification: NotificationReducer
 
     }
 })

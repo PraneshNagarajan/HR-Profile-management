@@ -23,7 +23,7 @@ import ManageSupply from "./pages/ManageSupply";
 import Notifications from "./pages/Notifications";
 
 function App() {
-  const auth = useSelector((state) => state.auth.flag);
+  const auth = useSelector((state) => state.auth);
   const user = useSelector((state) => state.auth.role);
   const [isClientPresent, setISClientPresent] = useState(false);
   const [isTechPresent, setISTechPresent] = useState(false);
@@ -31,6 +31,14 @@ function App() {
   const clientRef = firestore.collection("Clients");
   const techonologyRef = firestore.collection("Skills");
   const usersRef = firestore.collection("Employee-Info").doc("users");
+
+  useEffect(() => {
+    if(auth.flag){
+      firestore.collection("Notificaions").doc(auth.email).get().then((res) => {
+        console.log(res.data())
+      })
+    }
+  })
 
   useEffect(() => {
     // Get real-time data
@@ -89,7 +97,7 @@ function App() {
         </AuthLayout>
       </Route>
 
-      {auth && (
+      {auth.flag && (
         <Fragment>
           <Route path="/changePassword">
             <AuthLayout>
