@@ -223,11 +223,9 @@ const EmployeeTabContent = (props) => {
             })
             .then(async () => {
               //pass value for key+ from variable
-              console.log(pre_requisite.users);
               let position = pre_requisite.users.findIndex(
                 (item) => item.id === value.supervisor
               );
-              console.log(pre_requisite.users[position]);
               let newSupervisorReportees;
               let supervisorManager =
                 value.role === "ADMIN"
@@ -236,10 +234,7 @@ const EmployeeTabContent = (props) => {
               newSupervisorReportees = pre_requisite.users[position].reportees
                 ? [...pre_requisite.users[position].reportees]
                 : [];
-              console.log(newSupervisorReportees);
               newSupervisorReportees.push(String(value.id));
-              console.log(newSupervisorReportees);
-
               await firestore
                 .collection("Employee-Info")
                 .doc("users")
@@ -283,12 +278,31 @@ const EmployeeTabContent = (props) => {
                   let nxtID = formik.values.id + 1;
                   await dispatch(InfoActions.resetForm());
                   await formik.setFieldValue("id", nxtID);
-                  await dispatch(
-                    AlertActions.handleShow({
-                      msg: "Data added successfully.",
-                      flag: true,
+                  // add notification collection for new user(doc)
+                  await firestore
+                    .collection("Notifications")
+                    .doc(email)
+                    .set({
+                      [new Date().getTime()]: {
+                        msg: "Welcome " + infos.personal.firstname,
+                        status: "unread",
+                        link: false,
+                        date: new Date().toString(),
+                      },
                     })
-                  );
+                    .then(async () => {
+                      await dispatch(
+                        AlertActions.handleShow({
+                          msg: "Data added successfully.",
+                          flag: true,
+                        })
+                      );
+                    })
+                    .catch(async (err) => {
+                      console.log(
+                        "Unable to create doc in notificaions collections."
+                      );
+                    });
                 })
                 .catch(async (err) => {
                   await dispatch(
@@ -642,7 +656,6 @@ const EmployeeTabContent = (props) => {
                               >
                                 {recruiter.id}({recruiter.name})
                               </Dropdown.Item>
-                              {console.log()}
                               {index < supervisorOptions.length - 1 && (
                                 <Dropdown.Divider />
                               )}
