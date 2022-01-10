@@ -287,6 +287,7 @@ const EmployeeTabContent = (props) => {
                         msg: "Welcome " + infos.personal.firstname,
                         status: "unread",
                         link: false,
+                        url:"",
                         date: new Date().toString(),
                       },
                     })
