@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import "./NavBar.css";
 import { Fragment } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import {
   FaHome,
   FaUsersCog,
@@ -32,6 +32,7 @@ const NavBar = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const user = useSelector((state) => state.auth);
   const location = useLocation();
+  const history = useHistory();
   const [isExpanded, setExpanded] = useState(false);
   return (
     <Fragment>
@@ -330,6 +331,7 @@ const NavBar = () => {
                   className={`position-relative me-4 ${
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`
                   }`}
+                  onClick={()=> history.push("/notifications")}
                 >
                   <b>
                     <FaBell className="me-1" />

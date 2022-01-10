@@ -20,6 +20,7 @@ import CreateSupply from "./pages/CreateSupply";
 import AdminHomePage from "./pages/AdminHomePage";
 import StatusTrackerPage from "./pages/StatusTrackerPage";
 import ManageSupply from "./pages/ManageSupply";
+import Notifications from "./pages/Notifications";
 
 function App() {
   const auth = useSelector((state) => state.auth.flag);
@@ -97,6 +98,9 @@ function App() {
           </Route>
           {(user === "ADMIN" || user === "SUPERADMIN") && (
             <MainLayout>
+              <Route path="/notifications">
+                <Notifications />
+              </Route>
               <Route path="/adminHomePage">
                 <AdminHomePage />
               </Route>
@@ -110,6 +114,9 @@ function App() {
           )}
           {user === "FOCAL" && (
             <MainLayout>
+              <Route path="/notifications">
+                <Notifications />
+              </Route>
               <Route path="/manageEmployeeProfile/:id">
                 <ManageEmployeeProfilePage />
               </Route>
@@ -136,6 +143,9 @@ function App() {
           )}
           {user.includes("RECRUITER") && (
             <MainLayout>
+              <Route path="/notifications">
+                <Notifications />
+              </Route>
               <Route path="/manageEmployeeProfile/:id">
                 <ManageEmployeeProfilePage />
               </Route>
