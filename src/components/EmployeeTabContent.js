@@ -284,7 +284,7 @@ const EmployeeTabContent = (props) => {
                     .doc(email)
                     .set({
                       [new Date().getTime()]: {
-                        msg: "Welcome " + infos.personal.firstname,
+                        msg: "Welcome Mr/Mrs." + infos.personal.firstname,
                         status: "unread",
                         link: false,
                         url:"",
