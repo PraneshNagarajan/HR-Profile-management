@@ -672,7 +672,7 @@ const CreateSupply = (props) => {
           new_data.push(res.data().info);
           if (addedProfiles.length - 1 === index) {
             axios
-              .post("http://localhost:5000/download", {
+              .post("https://us-central1-hr-profile-management.cloudfunctions.net/app/download", {
                 dirName: formik.values.demand_id,
                 datas,
                 metaData: new_data,
@@ -682,7 +682,7 @@ const CreateSupply = (props) => {
                 if (res.data.includes("ready")) {
                   setTimeout(() => {
                     axios({
-                      url: "http://localhost:5000/downloadZip",
+                      url: "https://us-central1-hr-profile-management.cloudfunctions.net/app/downloadZip",
                       responseType: "blob",
                       method: "POST",
                       data: {
@@ -693,7 +693,7 @@ const CreateSupply = (props) => {
                       setIsSearching(false)
                       FileDownload(res.data, formik.values.demand_id + ".zip");
                     });
-                  }, 2000);
+                  }, 10000);
                 }
               });
           }

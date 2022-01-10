@@ -95,11 +95,6 @@ function App() {
               <ChangePasswordPage />
             </AuthLayout>
           </Route>
-          <Route path="/manageEmployeeProfile/:id">
-            <MainLayout>
-              <ManageEmployeeProfilePage />
-            </MainLayout>
-          </Route>
           {(user === "ADMIN" || user === "SUPERADMIN") && (
             <MainLayout>
               <Route path="/adminHomePage">
@@ -108,10 +103,16 @@ function App() {
               <Route path="/addEmployees">
                 <AddEmployeePage />
               </Route>
+              <Route path="/manageEmployeeProfile/:id">
+                <ManageEmployeeProfilePage />
+              </Route>
             </MainLayout>
           )}
           {user === "FOCAL" && (
             <MainLayout>
+              <Route path="/manageEmployeeProfile/:id">
+                <ManageEmployeeProfilePage />
+              </Route>
               <Route path="/focalHomePage">
                 {/* <FocalHomePage /> */}
                 <UserHomePage />
@@ -135,6 +136,9 @@ function App() {
           )}
           {user.includes("RECRUITER") && (
             <MainLayout>
+              <Route path="/manageEmployeeProfile/:id">
+                <ManageEmployeeProfilePage />
+              </Route>
               <Route path="/userHomePage">
                 <UserHomePage />
               </Route>
