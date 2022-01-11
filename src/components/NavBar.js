@@ -358,6 +358,7 @@ const NavBar = () => {
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`
                   }`}
                   style={{ width: sm ? "97%" : "" }}
+                  onClick={()=> window.location.reload()}
                 >
                   {" "}
                   <b>Logout</b>
