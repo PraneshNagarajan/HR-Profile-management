@@ -18,9 +18,9 @@ const Notifications = () => {
 
   setInterval(() => {
     notifyRef.get().then((res) => {
-      let unreadData = Object.values(res.data()).filter(
+      let unreadData = res.data() !== undefined ? Object.values(res.data()).filter(
         (item) => item.status === "unread"
-      );
+      ): 0;
       dispatch(
         NotificationActions.getNotifications({
           key: unreadData.length,

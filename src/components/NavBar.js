@@ -34,7 +34,7 @@ const NavBar = () => {
   const location = useLocation();
   const history = useHistory();
   const [isExpanded, setExpanded] = useState(false);
-  const notification = useSelector(state => state.notification.count)
+  const notification = useSelector(state => state.notification)
   return (
     <Fragment>
       <Navbar
@@ -246,14 +246,14 @@ const NavBar = () => {
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
             {sm && (
               <Nav.Link
-                disabled={!(user.photoUrl.length > 0 && user.security)}
+                disabled={!(user.photoUrl.length > 0 && user.security) || notification.data === undefined}
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
-                to="\"
+                to="\notifications"
               >
                 <span
                   className={`d-flex  mx-2 fw-bold ${
-                    user.photoUrl.length > 0 && user.security
+                    user.photoUrl.length > 0 && user.security && notification.data !== undefined
                       ? `text-white`
                       : ``
                   }`}
@@ -261,7 +261,7 @@ const NavBar = () => {
                 >
                   <FaBell className="me-1 mt-1" />
                   Notifications
-                 {notification > 0 &&
+                 {notification.count > 0 &&
                   <span
                   className={` ms-1 ${
                     user.photoUrl.length > 0 && user.security
@@ -269,7 +269,7 @@ const NavBar = () => {
                       : ""
                   }`}
                 >
-                  {notification}
+                  {notification.count}
                 </span>
                  }
                 </span>
@@ -329,7 +329,7 @@ const NavBar = () => {
             {!sm && (
               <Nav.Item>
                 <Button
-                  disabled={!(user.photoUrl.length > 0 && user.security)}
+                  disabled={!(user.photoUrl.length > 0 && user.security) || notification.data === undefined}
                   variant="outline-light"
                   className={`position-relative me-4 ${
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`
@@ -340,7 +340,7 @@ const NavBar = () => {
                     <FaBell className="me-1" />
                     Notifications
                   </b>
-                  {notification > 0 &&
+                  {notification.count > 0 &&
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
                   {notification}
                   <span className="visually-hidden">unread messages</span>
