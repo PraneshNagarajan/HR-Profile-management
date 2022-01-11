@@ -35,6 +35,7 @@ const NavBar = () => {
   const history = useHistory();
   const [isExpanded, setExpanded] = useState(false);
   const notification = useSelector(state => state.notification)
+
   return (
     <Fragment>
       <Navbar
@@ -342,7 +343,7 @@ const NavBar = () => {
                   </b>
                   {notification.count > 0 &&
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                  {notification}
+                  {notification.count}
                   <span className="visually-hidden">unread messages</span>
                 </span>
                   }

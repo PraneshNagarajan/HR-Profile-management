@@ -65,6 +65,7 @@ const StatusTrackerPage = () => {
       data = [];
       firestore.collection("Demands").onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((item, index) => {
+          console.log(item.data().info.owners.includes(loggedUser.id) || ([...item.data().info.assignees].includes(String(loggedUser.id))))
           if (
             item.data().info.owners.includes(loggedUser.id) || ([...item.data().info.assignees].includes(String(loggedUser.id)))
           ) {
