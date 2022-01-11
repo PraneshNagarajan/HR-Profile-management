@@ -103,7 +103,7 @@ const StatusTrackerPage = () => {
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
             <FormControl
-              placeholder="Enter Demand ID"
+              placeholder="Enter ID"
               type="text"
               name="id"
               value={formik.values.id}
