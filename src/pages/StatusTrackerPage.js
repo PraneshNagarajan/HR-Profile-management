@@ -66,8 +66,7 @@ const StatusTrackerPage = () => {
       firestore.collection("Demands").onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((item, index) => {
           if (
-            String(item.data().info.owner).includes(String(loggedUser.id)) ||
-            item.data().info.owners.includes(loggedUser.id)
+            item.data().info.owners.includes(loggedUser.id) || ([...item.data().info.assignees].includes(String(loggedUser.id)))
           ) {
             data.push({ id: item.id, status: item.data().info.status });
           }
@@ -170,7 +169,7 @@ const StatusTrackerPage = () => {
                         }`}
                         key={index}
                         as={Link}
-                        to={"/viewSupply/" + demand.id}
+                        to={ (loggedUser.role === "FOCAL" ?  "/viewSupply/" : "/createSupply/")+demand.id}
                       >
                         <Card.Body>
                           <small>

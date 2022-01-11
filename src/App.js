@@ -34,16 +34,27 @@ function App() {
   const usersRef = firestore.collection("Employee-Info").doc("users");
 
   useEffect(() => {
-    if(auth.flag){
-      firestore.collection("Notifications").doc(auth.email).get().then((res) => {
-        let unreadData = res.data() !== undefined ? Object.values(res.data()).filter(
-          (item) => item.status === "unread"
-        ): 0;
-        dispatch(NotificationActions.getNotifications({key: unreadData.length, data: res.data()}))
-      })
+    if (auth.flag) {
+      firestore
+        .collection("Notifications")
+        .doc(auth.email)
+        .get()
+        .then((res) => {
+          let unreadData =
+            res.data() !== undefined
+              ? Object.values(res.data()).filter(
+                  (item) => item.status === "unread"
+                )
+              : 0;
+          dispatch(
+            NotificationActions.getNotifications({
+              key: unreadData.length,
+              data: res.data(),
+            })
+          );
+        });
     }
-  },[auth.flag])
-
+  }, [auth.flag]);
 
   useEffect(() => {
     // Get real-time data
@@ -156,6 +167,9 @@ function App() {
           )}
           {user.includes("RECRUITER") && (
             <MainLayout>
+              <Route path="/Supplies">
+                <StatusTrackerPage />
+              </Route>
               <Route path="/notifications">
                 <Notifications />
               </Route>
@@ -165,7 +179,7 @@ function App() {
               <Route path="/userHomePage">
                 <UserHomePage />
               </Route>
-              <Route path="/createSupply">
+              <Route path="/createSupply/:supplyId">
                 <CreateSupply />
               </Route>
             </MainLayout>

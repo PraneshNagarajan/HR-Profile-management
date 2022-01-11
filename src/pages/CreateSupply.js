@@ -55,7 +55,7 @@ let filename;
 let res;
 
 const CreateSupply = (props) => {
-  const params = useParams()
+  const params = useParams();
   const sm = useMediaQuery({ maxWidth: 768 });
   const loggedUser = useSelector((state) => state.auth);
   const profileInfo = useSelector((state) => state.profileInfo);
@@ -173,7 +173,7 @@ const CreateSupply = (props) => {
               "info.status": "Inprogress",
             })
             .catch((err) => {
-              console.log(String(err))
+              console.log(String(err));
               dispatch(
                 AlertActions.handleShow({
                   msg: "Failed. Unable to submit.",
@@ -477,11 +477,12 @@ const CreateSupply = (props) => {
           datas = await documentSnapshot.get("info");
           if (
             datas.assignees.includes(String(loggedUser.id)) ||
-            datas.owner === loggedUser.id || datas.owners.includes(loggedUser.id)
+            datas.owner === loggedUser.id ||
+            datas.owners.includes(loggedUser.id)
           ) {
             if (datas.status !== "Completed") {
               await formik.setValues({
-                demand_id: params.demandId ? params.demandId : formik.values.demand_id,
+                demand_id: doc,
                 profile_id: "",
                 ...datas,
                 assignees: datas.assignees.join(", "),
@@ -661,7 +662,7 @@ const CreateSupply = (props) => {
   const onDownloadProfile = () => {
     datas = [];
     new_data = [];
-    setIsSearching(true)
+    setIsSearching(true);
     addedProfiles.map((doc, index) => {
       firestore
         .collection("Profiles")
@@ -672,11 +673,14 @@ const CreateSupply = (props) => {
           new_data.push(res.data().info);
           if (addedProfiles.length - 1 === index) {
             axios
-              .post("https://us-central1-hr-profile-management.cloudfunctions.net/app/download", {
-                dirName: formik.values.demand_id,
-                datas,
-                metaData: new_data,
-              })
+              .post(
+                "https://us-central1-hr-profile-management.cloudfunctions.net/app/download",
+                {
+                  dirName: formik.values.demand_id,
+                  datas,
+                  metaData: new_data,
+                }
+              )
               .then((res) => {
                 setIsLoadingMsg("Downloading & Zipping the profiles....");
                 if (res.data.includes("ready")) {
@@ -690,7 +694,7 @@ const CreateSupply = (props) => {
                       },
                     }).then((res) => {
                       setIsLoadingMsg("");
-                      setIsSearching(false)
+                      setIsSearching(false);
                       FileDownload(res.data, formik.values.demand_id + ".zip");
                     });
                   }, 10000);
@@ -702,10 +706,10 @@ const CreateSupply = (props) => {
   };
 
   useEffect(() => {
-    if(params.demandId){
-      getDemandInfo(params.demandId)
+    if (params.demandId || params.supplyId) {
+      getDemandInfo(params.demandId ? params.demandId : params.supplyId);
     }
-  },[params.demandId])
+  }, [params.demandId]);
 
   return (
     <Fragment>
@@ -720,7 +724,7 @@ const CreateSupply = (props) => {
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">
-                <h4>{params.demandId ? 'View' : 'Create'} Supply</h4>
+                <h4>{params.demandId ? "View" : "Create"} Supply</h4>
               </Card.Header>
               <Card.Body className="mb-4">
                 <Form>
@@ -750,39 +754,39 @@ const CreateSupply = (props) => {
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
                             />
-                            {!params.demandId &&
-                            <Fragment>
-                              {!isSearching && (
-                              <Button
-                                variant="outline-primary"
-                                onClick={() =>
-                                  getDemandInfo(formik.values.demand_id)
-                                }
-                                disabled={
-                                  isSearching ||
-                                  !formik.values.demand_id.length > 0
-                                }
-                              >
-                                Search
-                              </Button>
+                            {!params.demandId && (
+                              <Fragment>
+                                {!isSearching && (
+                                  <Button
+                                    variant="outline-primary"
+                                    onClick={() =>
+                                      getDemandInfo(formik.values.demand_id)
+                                    }
+                                    disabled={
+                                      isSearching ||
+                                      !formik.values.demand_id.length > 0
+                                    }
+                                  >
+                                    Search
+                                  </Button>
+                                )}
+                                {isSearching && (
+                                  <Button variant="primary" disabled>
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      role="status"
+                                      aria-hidden="true"
+                                    />{" "}
+                                    Searching...
+                                    <span className="visually-hidden">
+                                      Loading...
+                                    </span>
+                                  </Button>
+                                )}
+                              </Fragment>
                             )}
-                            {isSearching && (
-                              <Button variant="primary" disabled>
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />{" "}
-                                Searching...
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </Button>
-                            )}
-                            </Fragment>
-                            }
                           </InputGroup>
 
                           {formik.touched.demand_id &&
@@ -987,309 +991,334 @@ const CreateSupply = (props) => {
                       </Row>
                     </FormGroup>
                   </Col>
-                  { ! params.demandId && (formik.values.status.includes("Unstarted") ||
-                    formik.values.status.includes("Inprogress")) && (
-                    <Fragment>
-                      <hr className="my-4" />
-                      {addedProfiles.length > 0 && (
-                        <Fragment>
-                          <b className="my-1">Added profiles</b>
-                          <div
-                            className="d-flex flex-wrap my-2 border border-success border-2 mx-2"
-                            style={{
-                              maxHeight: "150px",
-                              overflowY: "scroll",
-                            }}
+                  {!params.demandId &&
+                    (formik.values.status.includes("Unstarted") ||
+                      formik.values.status.includes("Inprogress")) && (
+                      <Fragment>
+                        <hr className="my-4" />
+                        {addedProfiles.length > 0 && (
+                          <Fragment>
+                            <b className="my-1">Added profiles</b>
+                            <div
+                              className="d-flex flex-wrap my-2 border border-success border-2 mx-2"
+                              style={{
+                                maxHeight: "150px",
+                                overflowY: "scroll",
+                              }}
+                            >
+                              {addedProfiles.map((file, index) => {
+                                return (
+                                  <Card
+                                    key={index}
+                                    className={`shadow m-1 w-30 bg-success`}
+                                  >
+                                    <Card.Body className="d-flex justify-content-between text-white">
+                                      <Button
+                                        className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
+                                        style={{ height: "8px", width: "8px" }}
+                                        onClick={() =>
+                                          removeProfilehandler(
+                                            index,
+                                            true,
+                                            false,
+                                            file
+                                          )
+                                        }
+                                      ></Button>
+                                      <b
+                                        className="mt-1"
+                                        style={{ cursor: "pointer" }}
+                                      >
+                                        {file}
+                                      </b>
+                                    </Card.Body>
+                                  </Card>
+                                );
+                              })}
+                            </div>
+                            <hr className="my-4" />
+                          </Fragment>
+                        )}
+                        <b>Adding New Profiles</b>
+                        <Tabs
+                          activeKey={uploadType}
+                          onSelect={(k) => setUploadType(k)}
+                          className="ms-1 mt-4"
+                        >
+                          <Tab
+                            eventKey={"PC"}
+                            title={
+                              <span
+                                className={`fw-bold ${
+                                  uploadType === "PC"
+                                    ? `text-success`
+                                    : `text-dark`
+                                }`}
+                              >
+                                Upload From PC
+                              </span>
+                            }
                           >
-                            {addedProfiles.map((file, index) => {
-                              return (
-                                <Card
-                                  key={index}
-                                  className={`shadow m-1 w-30 bg-success`}
-                                >
-                                  <Card.Body className="d-flex justify-content-between text-white">
+                            <Card>
+                              <div className="text-center mt-3">
+                                <FormControl
+                                  type="file"
+                                  multiple
+                                  accept=".pdf"
+                                  onChange={handleChange}
+                                  value=""
+                                  placeholder="select profiles"
+                                />
+                              </div>
+                              <div className="d-flex flex-wrap justify-content-around">
+                                <p className="my-1">
+                                  Added file : <b>{formik.values.file_count}</b>
+                                </p>
+                                <p className="my-1">
+                                  Remaining :{" "}
+                                  <b>
+                                    {formik.values.demand >= totalFileCount
+                                      ? formik.values.demand - totalFileCount
+                                      : 0}
+                                  </b>
+                                </p>
+                              </div>
+                              {FileListTag}
+                            </Card>
+                          </Tab>
+                          <Tab
+                            eventKey={"DB"}
+                            title={
+                              <span
+                                className={`fw-bold ${
+                                  uploadType === "DB"
+                                    ? `text-success`
+                                    : `text-dark`
+                                }`}
+                              >
+                                Upload From DB
+                              </span>
+                            }
+                          >
+                            <Card>
+                              <Col
+                                md={{ span: "8", offset: "2" }}
+                                className="mt-3"
+                              >
+                                <InputGroup className="mb-3">
+                                  <FormControl
+                                    placeholder="Enter profile ID"
+                                    name="profile_id"
+                                    value={formik.values.profile_id}
+                                    isInvalid={
+                                      !formik.values.profile_id.length > 0 &&
+                                      formik.touched.profile_id
+                                    }
+                                    isValid={
+                                      formik.values.profile_id.length > 0 &&
+                                      formik.touched.profile_id
+                                    }
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                  />
+                                  {!isSearching && (
                                     <Button
-                                      className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
-                                      style={{ height: "8px", width: "8px" }}
+                                      variant="outline-primary"
                                       onClick={() =>
-                                        removeProfilehandler(
-                                          index,
-                                          true,
-                                          false,
-                                          file
+                                        getProfileFromDB(
+                                          formik.values.profile_id
                                         )
                                       }
-                                    ></Button>
-                                    <b
-                                      className="mt-1"
-                                      style={{ cursor: "pointer" }}
+                                      disabled={
+                                        !formik.values.profile_id.length > 0
+                                      }
                                     >
-                                      {file}
-                                    </b>
-                                  </Card.Body>
-                                </Card>
-                              );
-                            })}
+                                      Add
+                                    </Button>
+                                  )}
+                                  {isSearching && (
+                                    <Button variant="primary" disabled>
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                      />{" "}
+                                      Adding...
+                                      <span className="visually-hidden">
+                                        Loading...
+                                      </span>
+                                    </Button>
+                                  )}
+                                </InputGroup>
+                                {formik.touched.profile_id &&
+                                  !formik.values.profile_id.length > 0 && (
+                                    <div className="text-danger">
+                                      {formik.errors.profile_id}
+                                    </div>
+                                  )}
+                              </Col>
+                              <div className="d-flex flex-wrap justify-content-around">
+                                <p className="my-1">
+                                  Added file : <b>{formik.values.file_count}</b>
+                                </p>
+                                <p className="my-1">
+                                  Remaining :{" "}
+                                  <b>
+                                    {formik.values.demand >= totalFileCount
+                                      ? formik.values.demand - totalFileCount
+                                      : 0}
+                                  </b>
+                                </p>
+                              </div>
+                              {FileListTag}
+                            </Card>
+                          </Tab>
+                        </Tabs>
+                        <div className="text-center">
+                          <div className="d-flex justify-content-between flex-wrap mt-3">
+                            <Fragment>
+                              {!isSaving && (
+                                <Button
+                                  variant="secondary"
+                                  disabled={
+                                    filenames.length > 0 || files.length > 0
+                                      ? Object.keys(profileInfo.data).length !==
+                                          filenames.length &&
+                                        searchProfileDB.length < 1
+                                        ? true
+                                        : false
+                                      : searchProfileDB.length > 0
+                                      ? false
+                                      : true
+                                  }
+                                  style={{
+                                    width: sm ? "100%" : "45%",
+                                    marginTop: "20px",
+                                  }}
+                                  onClick={onSave}
+                                >
+                                  Save
+                                </Button>
+                              )}
+                              {isSaving && (
+                                <Button
+                                  variant="secondary"
+                                  style={{
+                                    width: sm ? "100%" : "45%",
+                                    marginTop: "20px",
+                                  }}
+                                  disabled
+                                >
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  />{" "}
+                                  Saving...
+                                  <span className="visually-hidden">
+                                    Loading...
+                                  </span>
+                                </Button>
+                              )}
+                            </Fragment>
+                            <Fragment>
+                              {isLoading && (
+                                <Button
+                                  variant="success"
+                                  style={{
+                                    width: sm ? "100%" : "45%",
+                                    marginTop: "20px",
+                                  }}
+                                  disabled
+                                >
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  />{" "}
+                                  Processing...
+                                  <span className="visually-hidden">
+                                    Loading...
+                                  </span>
+                                </Button>
+                              )}
+                              {!isLoading && (
+                                <Button
+                                  variant="success"
+                                  style={{
+                                    width: sm ? "100%" : "45%",
+                                    marginTop: "20px",
+                                  }}
+                                  disabled={addedProfiles.length <= 0}
+                                  onClick={onSubmit}
+                                >
+                                  Mark as Completed
+                                </Button>
+                              )}
+                            </Fragment>
                           </div>
-                          <hr className="my-4" />
-                        </Fragment>
-                      )}
-                      <b>Adding New Profiles</b>
-                      <Tabs
-                        activeKey={uploadType}
-                        onSelect={(k) => setUploadType(k)}
-                        className="ms-1 mt-4"
-                      >
-                        <Tab
-                          eventKey={"PC"}
-                          title={
-                            <span
-                              className={`fw-bold ${
-                                uploadType === "PC"
-                                  ? `text-success`
-                                  : `text-dark`
-                              }`}
-                            >
-                              Upload From PC
-                            </span>
-                          }
-                        >
-                          <Card>
-                            <div className="text-center mt-3">
-                              <FormControl
-                                type="file"
-                                multiple
-                                accept=".pdf"
-                                onChange={handleChange}
-                                value=""
-                                placeholder="select profiles"
-                              />
-                            </div>
-                            <div className="d-flex flex-wrap justify-content-around">
-                              <p className="my-1">
-                                Added file : <b>{formik.values.file_count}</b>
-                              </p>
-                              <p className="my-1">
-                                Remaining :{" "}
-                                <b>
-                                  {formik.values.demand >= totalFileCount
-                                    ? formik.values.demand - totalFileCount
-                                    : 0}
-                                </b>
-                              </p>
-                            </div>
-                            {FileListTag}
-                          </Card>
-                        </Tab>
-                        <Tab
-                          eventKey={"DB"}
-                          title={
-                            <span
-                              className={`fw-bold ${
-                                uploadType === "DB"
-                                  ? `text-success`
-                                  : `text-dark`
-                              }`}
-                            >
-                              Upload From DB
-                            </span>
-                          }
-                        >
-                          <Card>
-                            <Col
-                              md={{ span: "8", offset: "2" }}
-                              className="mt-3"
-                            >
-                              <InputGroup className="mb-3">
-                                <FormControl
-                                  placeholder="Enter profile ID"
-                                  name="profile_id"
-                                  value={formik.values.profile_id}
-                                  isInvalid={
-                                    !formik.values.profile_id.length > 0 &&
-                                    formik.touched.profile_id
-                                  }
-                                  isValid={
-                                    formik.values.profile_id.length > 0 &&
-                                    formik.touched.profile_id
-                                  }
-                                  onChange={formik.handleChange}
-                                  onBlur={formik.handleBlur}
-                                />
-                                {!isSearching && (
-                                  <Button
-                                    variant="outline-primary"
-                                    onClick={() =>
-                                      getProfileFromDB(formik.values.profile_id)
-                                    }
-                                    disabled={
-                                      !formik.values.profile_id.length > 0
-                                    }
-                                  >
-                                    Add
-                                  </Button>
-                                )}
-                                {isSearching && (
-                                  <Button variant="primary" disabled>
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                    />{" "}
-                                    Adding...
-                                    <span className="visually-hidden">
-                                      Loading...
-                                    </span>
-                                  </Button>
-                                )}
-                              </InputGroup>
-                              {formik.touched.profile_id &&
-                                !formik.values.profile_id.length > 0 && (
-                                  <div className="text-danger">
-                                    {formik.errors.profile_id}
-                                  </div>
-                                )}
-                            </Col>
-                            <div className="d-flex flex-wrap justify-content-around">
-                              <p className="my-1">
-                                Added file : <b>{formik.values.file_count}</b>
-                              </p>
-                              <p className="my-1">
-                                Remaining :{" "}
-                                <b>
-                                  {formik.values.demand >= totalFileCount
-                                    ? formik.values.demand - totalFileCount
-                                    : 0}
-                                </b>
-                              </p>
-                            </div>
-                            {FileListTag}
-                          </Card>
-                        </Tab>
-                      </Tabs>
-                      <div className="text-center">
-                        <div className="d-flex justify-content-between flex-wrap mt-3">
-                          <Fragment>
-                            {!isSaving && (
-                              <Button
-                                variant="secondary"
-                                disabled={
-                                  filenames.length > 0 || files.length > 0
-                                    ? Object.keys(profileInfo.data).length !==
-                                        filenames.length &&
-                                      searchProfileDB.length < 1
-                                      ? true
-                                      : false
-                                    : searchProfileDB.length > 0
-                                    ? false
-                                    : true
-                                }
-                                style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
-                                onClick={onSave}
-                              >
-                                Save
-                              </Button>
-                            )}
-                            {isSaving && (
-                              <Button
-                                variant="secondary"
-                                style={{ width: sm ? "100%" : "45%" ,marginTop: "20px"}}
-                                disabled
-                              >
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />{" "}
-                                Saving...
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </Button>
-                            )}
-                          </Fragment>
-                          <Fragment>
-                            {isLoading && (
-                              <Button
-                                variant="success"
-                                style={{ width: sm ? "100%" : "45%",marginTop: "20px" }}
-                                disabled
-                              >
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />{" "}
-                                Processing...
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </Button>
-                            )}
-                            {!isLoading && (
-                              <Button
-                                variant="success"
-                                style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
-                                disabled={addedProfiles.length <= 0}
-                                onClick={onSubmit}
-                              >
-                                Mark as Completed
-                              </Button>
-                            )}
-                          </Fragment>
                         </div>
-                      </div>
-                    </Fragment>
+                      </Fragment>
+                    )}
+                  {loggedUser.role === "FOCAL" && addedProfiles.length > 0 && (
+                    <div
+                      className={
+                        sm
+                          ? ""
+                          : "d-flex justify-content-between flex-wrap mt-3"
+                      }
+                    >
+                      {!isSearching && (
+                        <Button
+                          onClick={onDownloadProfile}
+                          style={{
+                            width: sm ? "100%" : "45%",
+                            marginTop: "20px",
+                          }}
+                        >
+                          Download Profiles
+                        </Button>
+                      )}
+                      {isSearching && (
+                        <Button
+                          variant="primary"
+                          style={{
+                            width: sm ? "100%" : "45%",
+                            marginTop: "20px",
+                          }}
+                          disabled
+                        >
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />{" "}
+                          Downloading Profiles...
+                          <span className="visually-hidden">Loading...</span>
+                        </Button>
+                      )}
+                      <Button
+                        style={{
+                          background: "rgba(246, 5, 129, 0.8)",
+                          borderColor: "rgba(246, 5, 129, 0.8)",
+                          width: sm ? "100%" : "45%",
+                          marginTop: "20px",
+                        }}
+                        as={Link}
+                        to={"/manageSupply/" + params.demandId}
+                      >
+                        View Profiles
+                      </Button>
+                    </div>
                   )}
-                   {loggedUser.role === "FOCAL" && addedProfiles.length > 0 && (
-                          <div
-                            className={
-                              sm
-                                ? ""
-                                : "d-flex justify-content-between flex-wrap mt-3"
-                            }
-                          >
-                            {!isSearching &&
-                            <Button
-                            onClick={onDownloadProfile}
-                            style={{ width: sm ? "100%" : "45%", marginTop: "20px" }}
-                          >
-                            Download Profiles
-                          </Button>
-                            }
-                            {isSearching && (
-                              <Button variant="primary" style={{ width: sm ? "100%" : "45%", marginTop: "20px" }} disabled>
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />{" "}
-                                Downloading Profiles...
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </Button>
-                            )}
-                            <Button
-                              style={{
-                                background: "rgba(246, 5, 129, 0.8)", borderColor: "rgba(246, 5, 129, 0.8)", width: sm ? "100%" : "45%" , marginTop: "20px"
-                              }}
-
-                              as={Link}
-                              to={"/manageSupply/" + params.demandId}
-                            >
-                              View Profiles
-                            </Button>
-                          </div>
-                        )}
                 </Form>
               </Card.Body>
             </Card>

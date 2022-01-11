@@ -203,7 +203,7 @@ const NavBar = () => {
                   user.role === "FOCAL"
                     ? "/manageSupplies"
                     : user.role.includes("RECRUITER")
-                    ? "createSupply"
+                    ? "supplies"
                     : ""
                 }
                 active={location.pathname.includes("Suppl")}
