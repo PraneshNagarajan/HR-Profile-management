@@ -34,6 +34,7 @@ const NavBar = () => {
   const location = useLocation();
   const history = useHistory();
   const [isExpanded, setExpanded] = useState(false);
+  const notification = useSelector(state => state.notification.count)
   return (
     <Fragment>
       <Navbar
@@ -260,15 +261,17 @@ const NavBar = () => {
                 >
                   <FaBell className="me-1 mt-1" />
                   Notifications
+                 {notification > 0 &&
                   <span
-                    className={` ms-1 ${
-                      user.photoUrl.length > 0 && user.security
-                        ? "badge rounded-circle bg-warning mt-1"
-                        : ""
-                    }`}
-                  >
-                    5
-                  </span>
+                  className={` ms-1 ${
+                    user.photoUrl.length > 0 && user.security
+                      ? "badge rounded-circle bg-warning mt-1"
+                      : ""
+                  }`}
+                >
+                  {notification}
+                </span>
+                 }
                 </span>
                 <hr className="text-white line-break1" />
               </Nav.Link>
@@ -337,10 +340,12 @@ const NavBar = () => {
                     <FaBell className="me-1" />
                     Notifications
                   </b>
+                  {notification > 0 &&
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                    1000{" "}
-                    <span className="visually-hidden">unread messages</span>
-                  </span>
+                  {notification}
+                  <span className="visually-hidden">unread messages</span>
+                </span>
+                  }
                 </Button>
               </Nav.Item>
             )}

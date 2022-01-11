@@ -21,6 +21,7 @@ import AdminHomePage from "./pages/AdminHomePage";
 import StatusTrackerPage from "./pages/StatusTrackerPage";
 import ManageSupply from "./pages/ManageSupply";
 import Notifications from "./pages/Notifications";
+import { NotificationActions } from "./Redux/NotificationSlice";
 
 function App() {
   const auth = useSelector((state) => state.auth);
@@ -34,11 +35,13 @@ function App() {
 
   useEffect(() => {
     if(auth.flag){
-      firestore.collection("Notificaions").doc(auth.email).get().then((res) => {
-        console.log(res.data())
+      firestore.collection("Notifications").doc(auth.email).get().then((res) => {
+        let unreadData = Object.values(res.data()).filter(item =>item.status === "unread")
+        dispatch(NotificationActions.getNotifications({key: unreadData.length, data: res.data()}))
       })
     }
-  })
+  },[auth.flag])
+
 
   useEffect(() => {
     // Get real-time data
