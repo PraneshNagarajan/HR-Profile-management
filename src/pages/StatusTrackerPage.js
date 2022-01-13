@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Col, FormControl, Card, Row } from "react-bootstrap";
+import { Col, FormControl, Card, Row, FormCheck, Badge, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
@@ -12,7 +12,7 @@ import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
 import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
-import { FaSyncAlt } from "react-icons/fa";
+import { FaSyncAlt,FaCertificate } from "react-icons/fa";
 
 let data = [];
 const StatusTrackerPage = () => {
@@ -65,9 +65,13 @@ const StatusTrackerPage = () => {
       data = [];
       firestore.collection("Demands").onSnapshot((querySnapshot) => {
         querySnapshot.docs.map((item, index) => {
-          console.log(item.data().info.owners.includes(loggedUser.id) || ([...item.data().info.assignees].includes(String(loggedUser.id))))
+          console.log(
+            item.data().info.owners.includes(loggedUser.id) ||
+              [...item.data().info.assignees].includes(String(loggedUser.id))
+          );
           if (
-            item.data().info.owners.includes(loggedUser.id) || ([...item.data().info.assignees].includes(String(loggedUser.id)))
+            item.data().info.owners.includes(loggedUser.id) ||
+            [...item.data().info.assignees].includes(String(loggedUser.id))
           ) {
             data.push({ id: item.id, status: item.data().info.status });
           }
@@ -146,6 +150,24 @@ const StatusTrackerPage = () => {
             />
           </Col>
         </Row>
+        <div className="d-flex justify-content-around">
+        <span className="d-flex">
+        <FaCertificate size="15" style={{color: "#dc3545", marginTop: "5px"}}/>
+        <p className="ms-1"> - Unstarted</p>
+        </span>
+        <span className="d-flex">
+        <FaCertificate size="15" style={{color: "#ffc107", marginTop: "5px"}}/>
+        <p className="ms-1"> - Inprogress</p>
+        </span>
+        <span className="d-flex">
+        <FaCertificate size="15" style={{color: "#0d6efd", marginTop: "5px"}}/>
+        <p className="ms-1"> - Completed</p>
+        </span>
+        <span className="d-flex">
+        <FaCertificate size="15" style={{color: "#198754", marginTop: "5px"}}/>
+        <p className="ms-1"> - Submitted</p>
+        </span>
+        </div>
         {error.length === 0 && supplyList.length > 0 && (
           <Fragment>
             <div className="mt-3 d-flex justify-content-center flex-wrap">
@@ -170,7 +192,11 @@ const StatusTrackerPage = () => {
                         }`}
                         key={index}
                         as={Link}
-                        to={ (loggedUser.role === "FOCAL" ?  "/viewSupply/" : "/createSupply/")+demand.id}
+                        to={
+                          (loggedUser.role === "FOCAL"
+                            ? "/viewSupply/"
+                            : "/createSupply/") + demand.id
+                        }
                       >
                         <Card.Body>
                           <small>

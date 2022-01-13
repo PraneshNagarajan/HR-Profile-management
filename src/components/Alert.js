@@ -61,7 +61,7 @@ const Alerts = (props) => {
         )}
 
         {props.profile && props.profile.flag && (
-          <ProfileData view={props.profile.view} file={alerts.msg} />
+          <ProfileData view={props.profile.view} file={alerts.msg} data={props.profile.data} />
         )}
 
         {props.table && <Tables comments={props.table} />}

@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useState, useEffect } from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
 import {
   Card,
   Row,
@@ -10,6 +10,7 @@ import {
   FormLabel,
   Dropdown,
   Button,
+  InputGroup,
 } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -65,8 +66,8 @@ const validate = (value) => {
     errors.secondarySkill = "*Required";
   }
 
-  if (!String(value.secondaryExperience)) {
-    errors.secondaryExperience = "*Required";
+  if (!String(value.totalExperience)) {
+    errors.totalExperience = "*Required";
   }
 
   if (!String(value.currentCTC)) {
@@ -92,31 +93,43 @@ const validate = (value) => {
 const ProfileData = (props) => {
   const dispatch = useDispatch();
   const profileInfo = useSelector((state) => state.profileInfo);
+  const [newFields, setNewFields] = useState({});
+  const [fieldName, setFieldName] = useState("");
+  let initialValues = {
+    candidateID: "P" + new Date().getTime(),
+    candidateName: "",
+    dob: "",
+    gender: "- Selcet Gender -",
+    contactNo: "",
+    emailID: "",
+    currentCTC: "",
+    expectedCTC: "",
+    primarySkill: props.data.pSkill,
+    primaryExperience: "",
+    secondarySkill: props.data.sSkill,
+    totalExperience: "",
+    education: "",
+    mark: "",
+  };
 
   const formik = useFormik({
-    initialValues: {
-      candidateID: "P" + new Date().getTime(),
-      candidateName: "",
-      dob: "",
-      gender: "- Selcet Gender -",
-      contactNo: "",
-      emailID: "",
-      currentCTC: "",
-      expectedCTC: "",
-      primarySkill: "",
-      primaryExperience: "",
-      secondarySkill: "",
-      secondaryExperience: "",
-      education: "",
-      mark: "",
-    },
+    initialValues,
     validate,
   });
 
   useEffect(() => {
     if (props.view) {
-      if (Object.keys(profileInfo.data).includes(props.file)) {
+      let propsKeys = Object.keys(profileInfo.data);
+      if (propsKeys.includes(props.file)) {
         formik.setValues(profileInfo.data[props.file]);
+        let InitialValuekeys = Object.keys(initialValues);
+        let diffFields = [];
+        Object.keys(profileInfo.data[props.file]).map((field) => {
+          if (!InitialValuekeys.includes(field)) {
+            diffFields.push({ [field]: profileInfo.data[props.file][field] });
+          }
+        });
+        onAddNewFields("", diffFields);
       } else {
         formik.setValues(profileInfo.added_data[props.file]);
       }
@@ -132,6 +145,45 @@ const ProfileData = (props) => {
     dispatch(ProfileActions.handleAdd({ [props.file]: formik.values }));
     formik.resetForm();
     formik.setFieldValue("gender", "- Select Gender -");
+  };
+  const onAddNewFields = (fieldName, diffFields = []) => {
+    let fieldList = newFields;
+    if (!props.view) {
+      formik.setValues({ ...formik.values, [fieldName]: "" });
+      let field = (
+        <Col className="mt-2 mb-2" md="12">
+          <FormLabel>{fieldName}</FormLabel>
+          <FormControl
+            type="text"
+            name={fieldName}
+            onChange={formik.handleChange}
+            value={formik.values[fieldName]}
+            placeholder=" Enter Fieldvalue"
+          />
+        </Col>
+      );
+      fieldList[fieldName] = field;
+    } else {
+      diffFields.map((item) => {
+        let field = (
+          <Col className="mt-2 mb-2" md="12">
+            <FormLabel>{Object.keys(item)[0]}</FormLabel>
+            <FormControl
+              type="text"
+              name={Object.keys(item)[0]}
+              readOnly={props.view}
+              onChange={formik.handleChange}
+              value={Object.values(item)[0]}
+              placeholder=" Enter Fieldvalue"
+              isValid={true}
+            />
+          </Col>
+        );
+        fieldList[Object.keys(item)[0]] = field;
+      });
+    }
+    setFieldName("");
+    setNewFields(fieldList);
   };
 
   return (
@@ -322,7 +374,7 @@ const ProfileData = (props) => {
             <FormControl
               type="text"
               name="primarySkill"
-              readOnly={props.view}
+              readOnly
               value={formik.values.primarySkill}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -375,7 +427,7 @@ const ProfileData = (props) => {
             <FormControl
               type="text"
               name="secondarySkill"
-              readOnly={props.view}
+              readOnly
               value={formik.values.secondarySkill}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -397,28 +449,28 @@ const ProfileData = (props) => {
         </Col>
         <Col md="6">
           <FormGroup className="my-2">
-            <FormLabel>Experience (years)</FormLabel>
+            <FormLabel>Total Experience (years)</FormLabel>
             <FormControl
               type="number"
               min="0"
-              name="secondaryExperience"
+              name="totalExperience"
               readOnly={props.view}
-              value={formik.values.secondaryExperience}
+              value={formik.values.totalExperience}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               isInvalid={
-                formik.errors.secondaryExperience &&
-                (formik.touched.secondaryExperience ||
-                  formik.values.secondaryExperience > 0)
+                formik.errors.totalExperience &&
+                (formik.touched.totalExperience ||
+                  formik.values.totalExperience > 0)
               }
               isValid={
-                !formik.errors.secondaryExperience &&
-                (formik.touched.secondaryExperience ||
-                  formik.values.secondaryExperience > 0)
+                !formik.errors.totalExperience &&
+                (formik.touched.totalExperience ||
+                  formik.values.totalExperience > 0)
               }
             />
             <div className="invalid-feedback">
-              {formik.errors.secondaryExperience}
+              {formik.errors.totalExperience}
             </div>
           </FormGroup>
         </Col>
@@ -517,8 +569,36 @@ const ProfileData = (props) => {
             <div className="invalid-feedback">{formik.errors.mark}</div>
           </FormGroup>
         </Col>
+        {Object.values(newFields).map((field) => {
+          return <Fragment>{field}</Fragment>;
+        })}
       </Row>
       {!props.view && <hr />}
+      {!props.view && (
+        <Col md={{ span: 12 }}>
+          <FormGroup className="mt-4">
+            <Row>
+              <InputGroup className="mb-2">
+                <FormControl
+                  placeholder="Enter Field Name"
+                  name="fieldname"
+                  onChange={(e) => setFieldName(e.target.value)}
+                />
+                <Fragment>
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => onAddNewFields(fieldName)}
+                    disabled={fieldName.length === 0}
+                  >
+                    Add Fields
+                  </Button>
+                </Fragment>
+              </InputGroup>
+            </Row>
+          </FormGroup>
+        </Col>
+      )}
+      <hr />
       <div
         className={`d-flex justify-content-${props.view ? `between` : `end`}`}
       >

@@ -29,6 +29,40 @@ import FileDownload from "js-file-download";
 import Spinners from "../components/Spinners";
 import { Link } from "react-router-dom";
 
+let headers = [
+  { id: "candidateID", title: "Profile ID" },
+  { id: "candidateName", title: "Candidate Name" },
+  { id: "dob", title: "Date of Birth" },
+  { id: "gender", title: "Gender" },
+  { id: "contactNo", title: "Contact Number" },
+  { id: "emailID", title: "Email ID" },
+  { id: "primarySkill", title: "Primary Skill" },
+  { id: "primaryExperience", title: "Experience (years)" },
+  { id: "secondarySkill", title: "Secondary Skill" },
+  { id: "totalExperience", title: "Total Experience (years)" },
+  { id: "currentCTC", title: "Current CTC (lakhs)" },
+  { id: "expectedCTC", title: "Expected CTC (lakhs)" },
+  { id: "education", title: "Highest Education" },
+  { id: "mark", title: "Marks/CGPA (%)" },
+];
+
+let headerFields = [
+  "candidateID",
+  "candidateName",
+  "dob",
+  "gender",
+  "contactNo",
+  "emailID",
+  "primarySkill",
+  "primaryExperience",
+  "secondarySkill",
+  "totalExperience",
+  "currentCTC",
+  "expectedCTC",
+  "education",
+  "mark",
+];
+
 const initialValues = {
   demand_id: "",
   profile_id: "",
@@ -486,6 +520,8 @@ const CreateSupply = (props) => {
                 profile_id: "",
                 ...datas,
                 assignees: datas.assignees.join(", "),
+                addprimaryskill: datas.addprimaryskill.join(", "),
+                secondaryskill: datas.secondaryskill.join(", "),
               });
               datas = await documentSnapshot.get("profile_info");
               await setTotalFileCount(datas.profiles.length);
@@ -671,6 +707,11 @@ const CreateSupply = (props) => {
         .then((res) => {
           datas.push({ fileName: doc, url: res.data().info.url });
           new_data.push(res.data().info);
+          Object.keys(res.data().info).map((field) => {
+            if (!headerFields.includes(field) && field !== "url") {
+              headers.push({ id: field, title: field });
+            }
+          });
           if (addedProfiles.length - 1 === index) {
             axios
               .post(
@@ -679,6 +720,8 @@ const CreateSupply = (props) => {
                   dirName: formik.values.demand_id,
                   datas,
                   metaData: new_data,
+                  headers,
+                  id: loggedUser.id,
                 }
               )
               .then((res) => {
@@ -691,6 +734,7 @@ const CreateSupply = (props) => {
                       method: "POST",
                       data: {
                         dirName: formik.values.demand_id,
+                        id: loggedUser.id,
                       },
                     }).then((res) => {
                       setIsLoadingMsg("");
@@ -720,7 +764,16 @@ const CreateSupply = (props) => {
       )}
       {isLoadingMsg.length === 0 && (
         <Fragment>
-          <Alerts profile={{ flag: profileFlag, view: profileView }} />
+          <Alerts
+            profile={{
+              flag: profileFlag,
+              view: profileView,
+              data: {
+                pSkill: formik.values.primaryskill,
+                sSkill: formik.values.secondaryskill,
+              },
+            }}
+          />
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">
@@ -857,7 +910,7 @@ const CreateSupply = (props) => {
                       <Col md="6">
                         <FormGroup className="my-2">
                           <FormLabel>
-                            <b>Location</b>
+                            <b>Demand Location</b>
                           </FormLabel>
                           <FormControl
                             type="text"
@@ -871,7 +924,7 @@ const CreateSupply = (props) => {
                       <Col md="6">
                         <FormGroup className="my-2">
                           <FormLabel>
-                            <b>Pan Location</b>
+                            <b>Demand Location (state) </b>
                           </FormLabel>
                           <FormControl
                             type="text"
@@ -950,6 +1003,26 @@ const CreateSupply = (props) => {
                       </Row>
                     </FormGroup>
                   </Col>
+
+                  <Col md={{ span: 12 }}>
+                    <FormGroup className="mt-4 mb-2">
+                      <Row>
+                        <Col md="4" className="my-1">
+                          <FormLabel>
+                            <b>Additional Primary Skills</b>
+                          </FormLabel>
+                        </Col>
+                        <Col md="8" className="my-1">
+                          <FormControl
+                            type="text"
+                            readOnly
+                            value={formik.values.addprimaryskill}
+                          />
+                        </Col>
+                      </Row>
+                    </FormGroup>
+                  </Col>
+
                   <Col md={{ span: 12 }}>
                     <FormGroup className="my-2">
                       <FormLabel>
@@ -998,7 +1071,9 @@ const CreateSupply = (props) => {
                         <hr className="my-4" />
                         {addedProfiles.length > 0 && (
                           <Fragment>
-                            <b className="my-1">Added profiles</b>
+                            <b className="my-1">
+                              Added profiles ({addedProfiles.length}){" "}
+                            </b>
                             <div
                               className="d-flex flex-wrap my-2 border border-success border-2 mx-2"
                               style={{
@@ -1013,24 +1088,7 @@ const CreateSupply = (props) => {
                                     className={`shadow m-1 w-30 bg-success`}
                                   >
                                     <Card.Body className="d-flex justify-content-between text-white">
-                                      <Button
-                                        className="position-absolute top-0 end-0 me-1 btn-close bg-white rounded-circle"
-                                        style={{ height: "8px", width: "8px" }}
-                                        onClick={() =>
-                                          removeProfilehandler(
-                                            index,
-                                            true,
-                                            false,
-                                            file
-                                          )
-                                        }
-                                      ></Button>
-                                      <b
-                                        className="mt-1"
-                                        style={{ cursor: "pointer" }}
-                                      >
-                                        {file}
-                                      </b>
+                                      <b className="mt-1">{file}</b>
                                     </Card.Body>
                                   </Card>
                                 );

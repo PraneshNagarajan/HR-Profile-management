@@ -11,6 +11,8 @@ import {
   FormLabel,
   FormCheck,
   Spinner,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
@@ -23,6 +25,7 @@ import { useFormik } from "formik";
 import { firestore } from "../firebase";
 import { useDispatch } from "react-redux";
 import { AlertActions } from "../Redux/AlertSlice";
+import { FaQuestionCircle } from "react-icons/fa";
 
 const CreateDemand = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
@@ -40,6 +43,13 @@ const CreateDemand = (props) => {
   const [ssIsChecked, setSecondarySkillIsChecked] = useState(
     props.techFlag ? false : true
   );
+  const [apsIsChecked, setAddPrimarySkillIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+  const [aptIsChecked, setAddPrimaryTechIsChecked] = useState(
+    props.techFlag ? false : true
+  );
+
   const [clientIsChecked, setClientIsChecked] = useState(
     props.clientFlag ? false : true
   );
@@ -52,7 +62,11 @@ const CreateDemand = (props) => {
   const [selectedRecruiters, setSelectedRecruiters] = useState([]);
   const [recruiterIsChecked, setRecruiterIsChecked] = useState(false);
   const [users, setUsers] = useState([]);
-  const multiselectRef = useRef();
+  const [addPrimarySkill, setAddPrimarySkill] = useState([]);
+  const [addSecondarySkill, setAddSecondarySkill] = useState([]);
+  const multiselectRecruiterRef = useRef();
+  const multiselectAddPrimarySkillRef = useRef();
+  const multiselectAddSecondarySkillRef = useRef();
 
   const stateHandler = () => {
     formik.resetForm();
@@ -68,6 +82,8 @@ const CreateDemand = (props) => {
       endclientname: "- Select the End-Client -",
       primarytech: "- Select the Techonology -",
       primaryskill: "- Select the Skill -",
+      addprimarytech: "- Select the Techonology -",
+      addprimaryskill: "- Select the Skill -",
       secondarytech: "- Select the Techonology -",
       secondaryskill: "- Select the Skill -",
     });
@@ -78,9 +94,23 @@ const CreateDemand = (props) => {
     setClientIsChecked(false);
     setEndClientIsChecked(false);
     setSelectedRecruiters([]);
-    multiselectRef.current.resetSelectedValues();
+    multiselectRecruiterRef.current.resetSelectedValues();
+    multiselectAddPrimarySkillRef.current.resetSelectedValues();
+    multiselectAddSecondarySkillRef.current.resetSelectedValues();
     setRecruiterIsChecked(false);
   };
+
+  //  popover
+  const popover = (
+    <Popover id="popover-basic">
+      <Popover.Title as="h3">Note</Popover.Title>
+      <Popover.Content>
+        Click the "View all recruiter" button to access all recruiters across
+        the app otherwise, you can access the limited recruiters who tagged
+        under your name.
+      </Popover.Content>
+    </Popover>
+  );
 
   const checkIsSkillPresentHandler = (tech, skill) => {
     let data = [...pre_requisite.technologies[tech]];
@@ -154,6 +184,7 @@ const CreateDemand = (props) => {
 
   const formik = useFormik({
     initialValues: {
+      assignees: "",
       clientname: props.clientFlag ? "- Select the Client -" : "",
       endclientname: props.clientFlag ? "- Select the End-Client -" : "",
       location: "",
@@ -162,7 +193,9 @@ const CreateDemand = (props) => {
       demand: 1,
       demandallot: "",
       primarytech: props.techFlag ? "- Select the Techonology -" : "",
+      addprimarytech: props.techFlag ? "- Select the Techonology -" : "",
       primaryskill: props.techFlag ? "- Select the Skill -" : "",
+      addprimaryskill: props.techFlag ? "- Select the Skill -" : "",
       secondarytech: props.techFlag ? "- Select the Techonology -" : "",
       secondaryskill: props.techFlag ? "- Select the Skill -" : "",
       status: "Unstarted",
@@ -221,6 +254,20 @@ const CreateDemand = (props) => {
         errors.primaryskill = "*Required.";
       } else if (!new RegExp("^[A-Z_ ]+$").test(value.primaryskill)) {
         errors.primaryskill =
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
+      }
+
+      if (value.addprimarytech.includes("-") || !value.addprimarytech) {
+        errors.addprimarytech = "*Required.";
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.addprimarytech)) {
+        errors.addprimarytech =
+          'Character must be in uppercase. whitespace and "_" characters only allowed.';
+      }
+
+      if (value.addprimaryskill.includes("-") || !value.addprimaryskill) {
+        errors.addprimaryskill = "*Required.";
+      } else if (!new RegExp("^[A-Z_ ]+$").test(value.addprimaryskill)) {
+        errors.addprimaryskill =
           'Character must be in uppercase. whitespace and "_" characters only allowed.';
       }
 
@@ -366,6 +413,8 @@ const CreateDemand = (props) => {
                 ...value,
                 owners: [loggedUser.id],
                 assignees: selectedRecruiters,
+                addprimaryskill: addPrimarySkill,
+                secondaryskill: addSecondarySkill,
               },
               profile_info: {
                 profiles: [],
@@ -439,9 +488,10 @@ const CreateDemand = (props) => {
     let recruiters = [];
     pre_requisite.users.map((recruiter, idx) => {
       if (
-        ((recruiter.supervisor === String(loggedUser.id) ||
-        recruiter.manager === String(loggedUser.id)) ||recruiterIsChecked )&&
-        (recruiter.role.includes("RECRUITER"))
+        (recruiter.supervisor === String(loggedUser.id) ||
+          recruiter.manager === String(loggedUser.id) ||
+          recruiterIsChecked) &&
+        recruiter.role.includes("RECRUITER")
       ) {
         recruiters.push({
           key: recruiter.id,
@@ -454,17 +504,52 @@ const CreateDemand = (props) => {
     });
   }, [pre_requisite.users, recruiterIsChecked]);
 
-  const onSelectItem = (list, item) => {
+  const onSelectUsers = (list, item) => {
     let options = [...selectedRecruiters];
     options.push(item.key);
     setSelectedRecruiters(options);
+    formik.setFieldValue("assignees", options.join(" "));
+    formik.setFieldTouched("assignees", true);
   };
 
-  const onRemoveItem = (list, item) => {
+  const onRemoveUsers = (list, item) => {
     let options = selectedRecruiters;
     let index = selectedRecruiters.findIndex((id) => id === item.key);
     options.splice(index, 1);
     setSelectedRecruiters(options);
+    formik.setFieldValue("assignees", options.join(" "));
+  };
+
+  const onSelectAddPrimarySkill = (list, item) => {
+    let options = [...addPrimarySkill];
+    options.push(item.item);
+    setAddPrimarySkill(options);
+    formik.setFieldValue("addprimaryskill", options.join(" "));
+    formik.setFieldError("addprimaryskill", "");
+  };
+
+  const onRemoveAddPrimarySkill = (list, item) => {
+    let options = addPrimarySkill;
+    let index = addPrimarySkill.findIndex((id) => id === item.item);
+    options.splice(index, 1);
+    setAddPrimarySkill(options);
+    formik.setFieldValue("addprimaryskill", options.join(" "));
+  };
+
+  const onSelectAddSecondarySkill = (list, item) => {
+    let options = [...addSecondarySkill];
+    options.push(item.item);
+    setAddSecondarySkill(options);
+    formik.setFieldValue("secondaryskill", options.join(" "));
+    formik.setFieldError("addsecondaryskill", true);
+  };
+
+  const onRemoveAddSecondarySkill = (list, item) => {
+    let options = addSecondarySkill;
+    let index = addSecondarySkill.findIndex((id) => id === item.item);
+    options.splice(index, 1);
+    setAddSecondarySkill(options);
+    formik.setFieldValue("secondaryskill", options.join(" "));
   };
 
   return (
@@ -494,10 +579,10 @@ const CreateDemand = (props) => {
                       </Col>
                       <Col md="8">
                         <Multiselect
-                          ref={multiselectRef}
+                          ref={multiselectRecruiterRef}
                           displayValue="value"
-                          onRemove={onRemoveItem}
-                          onSelect={onSelectItem}
+                          onRemove={onRemoveUsers}
+                          onSelect={onSelectUsers}
                           options={users}
                           showCheckbox="false"
                           placeholder={
@@ -511,14 +596,33 @@ const CreateDemand = (props) => {
                   </FormGroup>
                 </Col>
                 <Col md={{ span: "8", offset: "4" }}>
-                  <FormCheck
-                    type="checkbox"
-                    label="Enable to view all Recruiters"
-                    checked={recruiterIsChecked}
-                    onChange={() => {}}
-                    onClick={() => setRecruiterIsChecked(!recruiterIsChecked)}
-                    className={sm ? "" : "ms-2  "}
-                  />
+                  <Row>
+                    <Col md="5">
+                      <FormCheck
+                        type="checkbox"
+                        label="View all Recruiters"
+                        checked={recruiterIsChecked}
+                        onChange={() => {}}
+                        onClick={() =>
+                          setRecruiterIsChecked(!recruiterIsChecked)
+                        }
+                        className={sm ? "" : "ms-2  "}
+                      />
+                    </Col>
+                    <Col md="7">
+                      <OverlayTrigger
+                        trigger="click"
+                        placement="right"
+                        overlay={popover}
+                      >
+                        <FaQuestionCircle
+                          size="20"
+                          variant="success"
+                          style={{ color: "#0d6efd" }}
+                        />
+                      </OverlayTrigger>
+                    </Col>
+                  </Row>
                 </Col>
 
                 <Col md="12">
@@ -740,7 +844,7 @@ const CreateDemand = (props) => {
                     <Col md="6">
                       <FormGroup className="my-2">
                         <FormLabel>
-                          <b>Location</b>
+                          <b>Demand Location</b>
                         </FormLabel>
                         <FormControl
                           type="text"
@@ -767,7 +871,7 @@ const CreateDemand = (props) => {
                     <Col md="6">
                       <FormGroup className="my-2">
                         <FormLabel>
-                          <b>Pan Location</b>
+                          <b>Demand Location (State)</b>
                         </FormLabel>
                         <FormControl
                           type="text"
@@ -829,7 +933,7 @@ const CreateDemand = (props) => {
                             <Dropdown.Item
                               className="text-center"
                               onClick={() =>
-                                formik.setFieldValue("type", "Full TIme")
+                                formik.setFieldValue("type", "Full Time")
                               }
                             >
                               Full Time
@@ -841,7 +945,7 @@ const CreateDemand = (props) => {
                                 formik.setFieldValue("type", "Part TIme")
                               }
                             >
-                              Part Time
+                              Contractor
                             </Dropdown.Item>
                           </Dropdown.Menu>
                         </Dropdown>
@@ -1133,6 +1237,191 @@ const CreateDemand = (props) => {
                     </Row>
                   </FormGroup>
                 </Col>
+                {/* Addtional Primary Skill */}
+                <Col md={{ span: 12 }}>
+                  <FormGroup className="my-2">
+                    <FormLabel>
+                      <b>Addtional Primary Skills</b>
+                    </FormLabel>
+                    <Row>
+                      <Col md="6" className="my-1">
+                        {aptIsChecked && (
+                          <FormGroup>
+                            <FormLabel>
+                              <b>Enter the technology</b>
+                            </FormLabel>
+                            <FormControl
+                              type="text"
+                              name="primarytech"
+                              value={formik.values.addprimarytech}
+                              isInvalid={
+                                formik.errors.addprimarytech &&
+                                formik.touched.addprimarytech &&
+                                formik.values.addprimarytech.includes("-")
+                              }
+                              isValid={
+                                !formik.errors.addprimarytech &&
+                                formik.touched.addprimarytech &&
+                                !formik.values.addprimarytech.includes("-")
+                              }
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                          </FormGroup>
+                        )}
+                        {!aptIsChecked && (
+                          <Dropdown className="dropbox">
+                            <Dropdown.Toggle
+                              name="addprimarytech"
+                              onBlur={formik.handleBlur}
+                              variant={`outline-${
+                                !formik.touched.addprimarytech
+                                  ? `primary`
+                                  : !formik.values.addprimarytech.includes(
+                                      "-"
+                                    ) && formik.touched.addprimarytech
+                                  ? `success`
+                                  : formik.values.addprimarytech.includes(
+                                      "-"
+                                    ) && formik.touched.addprimarytech
+                                  ? `danger`
+                                  : ``
+                              }`}
+                              id="dropdown-basic"
+                              className="w-100"
+                            >
+                              {formik.values.addprimarytech}
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu className="w-100">
+                              {Object.keys(pre_requisite.technologies).map(
+                                (tech, index) => {
+                                  return (
+                                    <Fragment key={index}>
+                                      <Dropdown.Item
+                                        className="text-center"
+                                        active={formik.values.addprimarytech.includes(
+                                          tech
+                                        )}
+                                        onClick={() =>
+                                          formik.setFieldValue(
+                                            "addprimarytech",
+                                            tech
+                                          )
+                                        }
+                                      >
+                                        {tech}
+                                      </Dropdown.Item>
+                                      {Object.keys(pre_requisite.technologies)
+                                        .length -
+                                        1 >
+                                        index && <Dropdown.Divider />}
+                                    </Fragment>
+                                  );
+                                }
+                              )}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        )}
+                        {formik.errors.addprimarytech &&
+                          formik.touched.addprimarytech && (
+                            <div className="text-danger">
+                              {formik.errors.addprimarytech}
+                            </div>
+                          )}
+                        {props.techFlag && (
+                          <FormCheck
+                            type="checkbox"
+                            label="Enter manually."
+                            checked={aptIsChecked}
+                            onChange={() => {}}
+                            onClick={() => {
+                              setAddPrimaryTechIsChecked(!aptIsChecked);
+                              setAddPrimarySkillIsChecked(!aptIsChecked);
+                              formik.setFieldValue(
+                                "addprimarytech",
+                                !aptIsChecked ? "" : "- Select the Technology -"
+                              );
+                            }}
+                          />
+                        )}
+                      </Col>
+                      <Col md="6" className="my-1">
+                        {(aptIsChecked || apsIsChecked) && (
+                          <FormGroup>
+                            {aptIsChecked && (
+                              <FormLabel>
+                                <b>Enter the Skill</b>
+                              </FormLabel>
+                            )}
+                            <FormControl
+                              type="text"
+                              name="addprimaryskill"
+                              value={formik.values.addprimaryskill}
+                              isInvalid={
+                                formik.errors.addprimaryskill &&
+                                formik.touched.addprimaryskill &&
+                                formik.values.addprimaryskill.includes("-")
+                              }
+                              isValid={
+                                !formik.errors.addprimaryskill &&
+                                formik.touched.addprimaryskill &&
+                                !formik.values.addprimaryskill.includes("-")
+                              }
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                          </FormGroup>
+                        )}
+                        {!aptIsChecked && !apsIsChecked && (
+                          <Multiselect
+                            ref={multiselectAddPrimarySkillRef}
+                            displayValue="item"
+                            onRemove={onRemoveAddPrimarySkill}
+                            onSelect={onSelectAddPrimarySkill}
+                            options={
+                              formik.values.addprimarytech.includes("-") ||
+                              aptIsChecked
+                                ? []
+                                : pre_requisite.technologies[
+                                    formik.values.addprimarytech
+                                  ].map((item) => {
+                                    return { item };
+                                  })
+                            }
+                            showCheckbox="false"
+                            placeholder={
+                              addPrimarySkill.length > 0
+                                ? ""
+                                : "Select Technologies"
+                            }
+                          />
+                        )}
+                        {formik.errors.addprimaryskill &&
+                          formik.touched.addprimaryskill && (
+                            <div className="text-danger">
+                              {formik.errors.addprimaryskill}
+                            </div>
+                          )}
+                        {!aptIsChecked && (
+                          <FormCheck
+                            type="checkbox"
+                            label="Enter manually."
+                            checked={apsIsChecked}
+                            onChange={() => {}}
+                            onClick={() => {
+                              setAddPrimarySkillIsChecked(!apsIsChecked);
+                              formik.setFieldValue(
+                                "addprimaryskill",
+                                !apsIsChecked ? "" : "- Select the Skill -"
+                              );
+                            }}
+                          />
+                        )}
+                      </Col>
+                    </Row>
+                  </FormGroup>
+                </Col>
                 <Col md={{ span: 12 }}>
                   <FormGroup className="my-2">
                     <FormLabel>
@@ -1243,111 +1532,29 @@ const CreateDemand = (props) => {
                           />
                         )}
                       </Col>
-                      <Col md="6" className="my-1">
-                        {(stIsChecked || ssIsChecked) && (
-                          <FormGroup>
-                            {stIsChecked && (
-                              <FormLabel>
-                                <b>Enter the Skill</b>
-                              </FormLabel>
-                            )}
-                            <FormControl
-                              type="text"
-                              name="secondaryskill"
-                              value={formik.values.secondaryskill}
-                              isInvalid={
-                                formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill &&
-                                formik.values.secondaryskill.includes("-")
-                              }
-                              isValid={
-                                !formik.errors.secondaryskill &&
-                                formik.touched.secondaryskill &&
-                                !formik.values.secondaryskill.includes("-")
-                              }
-                              onChange={formik.handleChange}
-                              onBlur={formik.handleBlur}
-                            />
-                          </FormGroup>
-                        )}
-                        {!stIsChecked && !ssIsChecked && (
-                          <Dropdown className="dropbox">
-                            <Dropdown.Toggle
-                              name="secondaryskill"
-                              onBlur={formik.handleBlur}
-                              variant={`outline-${
-                                !formik.touched.secondaryskill
-                                  ? `primary`
-                                  : !formik.values.secondaryskill.includes(
-                                      "-"
-                                    ) && formik.touched.secondaryskill
-                                  ? `success`
-                                  : formik.values.secondaryskill.includes(
-                                      "-"
-                                    ) && formik.touched.secondaryskill
-                                  ? `danger`
-                                  : ``
-                              }`}
-                              className="w-100"
-                            >
-                              {formik.values.secondaryskill}
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu className="w-100">
-                              {!formik.values.secondarytech.includes("-") &&
-                                (pre_requisite.technologies.length > 0 ||
-                                  Object.values(pre_requisite.technologies)) &&
-                                pre_requisite.technologies[
+                      <Col md="6">
+                        <Multiselect
+                          ref={multiselectAddSecondarySkillRef}
+                          displayValue="item"
+                          onRemove={onRemoveAddSecondarySkill}
+                          onSelect={onSelectAddSecondarySkill}
+                          options={
+                            formik.values.secondarytech.includes("-") ||
+                            stIsChecked
+                              ? []
+                              : pre_requisite.technologies[
                                   formik.values.secondarytech
-                                ].map((skill, index) => {
-                                  return (
-                                    <Fragment key={index}>
-                                      <Dropdown.Item
-                                        className="text-center"
-                                        active={formik.values.secondaryskill.includes(
-                                          skill
-                                        )}
-                                        onClick={() =>
-                                          formik.setFieldValue(
-                                            "secondaryskill",
-                                            skill
-                                          )
-                                        }
-                                      >
-                                        {skill}
-                                      </Dropdown.Item>
-                                      {pre_requisite.technologies[
-                                        formik.values.secondarytech
-                                      ].length -
-                                        1 >
-                                        index && <Dropdown.Divider />}
-                                    </Fragment>
-                                  );
-                                })}
-                            </Dropdown.Menu>
-                          </Dropdown>
-                        )}
-                        {formik.errors.secondaryskill &&
-                          formik.touched.secondaryskill && (
-                            <div className="text-danger">
-                              {formik.errors.secondaryskill}
-                            </div>
-                          )}
-                        {!stIsChecked && (
-                          <FormCheck
-                            type="checkbox"
-                            label="Enter manually."
-                            checked={ssIsChecked}
-                            onChange={() => {}}
-                            onClick={() => {
-                              setSecondarySkillIsChecked(!ssIsChecked);
-                              formik.setFieldValue(
-                                "secondaryskill",
-                                !ssIsChecked ? "" : "- Select the Skill -"
-                              );
-                            }}
-                          />
-                        )}
+                                ].map((item) => {
+                                  return { item };
+                                })
+                          }
+                          showCheckbox="false"
+                          placeholder={
+                            addSecondarySkill.length > 0
+                              ? ""
+                              : "Select Technologies"
+                          }
+                        />
                       </Col>
                     </Row>
                   </FormGroup>
