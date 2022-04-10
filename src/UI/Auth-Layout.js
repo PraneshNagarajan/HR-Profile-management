@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 const AuthLayout = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const md = useMediaQuery({ minWidth: 768, maxWidth: 992 });
-  const msgFlag = useSelector(state => state.auth.msg) 
+  const msgFlag = useSelector((state) => state.auth.msg);
   return (
     <div
       className="bg-hero"
@@ -49,7 +49,9 @@ const AuthLayout = (props) => {
             <Col>
               {!sm && (
                 <Fragment>
-                  <p className="display-3">HIRE<span className="fst-italic">PRO</span></p>
+                  <p className="display-3">
+                    HIRE<span className="fst-italic">PRO</span>
+                  </p>
                   <p className="display-5">slogan ! slogan ! slogan!</p>
                 </Fragment>
               )}
@@ -64,8 +66,13 @@ const AuthLayout = (props) => {
         style={{ backgroundColor: sm ? "#0d6efd" : "" }}
       >
         <Card
-          style={{ width: sm ? "90%" : md ? "40%" : "30%" }}
-          className="mt-5"
+          style={{
+            width: sm ? "90%" : md ? "40%" : "30%",
+            border: props.borderFlag
+              ? "1px solid rgba(0,0,0,.125)"
+              : "0px solid rgba(0,0,0,.125)",
+          }}
+          className="mt-5 "
         >
           {props.children}
         </Card>

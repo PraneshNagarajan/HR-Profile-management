@@ -57,7 +57,7 @@ const EmployeeTabContent = (props) => {
   const initialValues = {
     id: "",
     email: "",
-    role: "- Select Role -",
+    role: props.flag ? "SUPERADMIN" : "- Select Role -",
     admin_permission: "- Select Permission -",
     supervisor: "- Select Supervisor -",
   };
@@ -73,10 +73,10 @@ const EmployeeTabContent = (props) => {
     //if logged user is Superadmin add ADMIN Options.
     if (loggedUser.role === "SUPERADMIN") {
       let newRoles = roles;
-      if (newRoles.includes("ADMIN")) {
-        newRoles.push("ADMIN");
-        setRoles(newRoles);
-      }
+      //if (newRoles.includes("ADMIN")) {
+      newRoles.push("ADMIN");
+      setRoles(newRoles);
+      // }
     }
   }, []);
 
@@ -178,6 +178,10 @@ const EmployeeTabContent = (props) => {
             })
             .catch(() => {});
         } else {
+          let newSupervisorReportees = await [];
+          let supervisorManager = (await value.role.includes("ADMIN"))
+            ? supervisorOptions[0].id
+            : "";
           await firestore
             .collection("Employee-Info")
             .doc(email)
@@ -208,10 +212,14 @@ const EmployeeTabContent = (props) => {
                 address: infos.address,
                 employee: {
                   ...formik.values,
+                  supervisor:
+                    String(supervisorManager).length > 0
+                      ? supervisorManager
+                      : value.supervisor,
                   email,
-                  admin_permission: formik.values.admin_permission.includes(
-                    "&&"
-                  )
+                  admin_permission: props.flag
+                    ? true
+                    : formik.values.admin_permission.includes("&&")
                     ? true
                     : false,
                 },
@@ -223,18 +231,22 @@ const EmployeeTabContent = (props) => {
             })
             .then(async () => {
               //pass value for key+ from variable
-              let position = pre_requisite.users.findIndex(
-                (item) => item.id === value.supervisor
-              );
-              let newSupervisorReportees;
-              let supervisorManager =
-                value.role === "ADMIN"
-                  ? 123456
-                  : pre_requisite.users[position].supervisor;
-              newSupervisorReportees = pre_requisite.users[position].reportees
-                ? [...pre_requisite.users[position].reportees]
-                : [];
-              newSupervisorReportees.push(String(value.id));
+              if ((await !props.flag) && loggedUser.role != "SUPERADMIN") {
+                let position = pre_requisite.users.findIndex(
+                  (item) => item.id === value.supervisor
+                );
+                supervisorManager =
+                  value.role === "ADMIN"
+                    ? supervisorOptions[0].id
+                    : pre_requisite.users[position].supervisor;
+                newSupervisorReportees = pre_requisite.users[position].reportees
+                  ? [...pre_requisite.users[position].reportees]
+                  : [];
+                newSupervisorReportees.push(String(value.id));
+              }
+              let supervisor_id = props.flag
+                ? String(value.id)
+                : value.supervisor;
               await firestore
                 .collection("Employee-Info")
                 .doc("users")
@@ -244,10 +256,16 @@ const EmployeeTabContent = (props) => {
                     name: infos.personal.firstname,
                     role: formik.values.role,
                     id: String(formik.values.id),
-                    supervisor: formik.values.supervisor,
-                    manager: supervisorManager,
+                    supervisor:
+                      String(supervisorManager).length > 0
+                        ? supervisorManager
+                        : value.supervisor,
+                    manager:
+                      String(supervisorManager).length > 0
+                        ? supervisorManager
+                        : supervisorManager,
                   },
-                  [value.supervisor + ".reportees"]: newSupervisorReportees,
+                  [supervisor_id + ".reportees"]: newSupervisorReportees,
                 })
                 .catch((err) => console.log(String(err)));
 
@@ -266,6 +284,7 @@ const EmployeeTabContent = (props) => {
                     //error
                   }
                 });
+
               await fireAuth
                 .createUserWithEmailAndPassword(
                   formik.values.email,
@@ -287,7 +306,7 @@ const EmployeeTabContent = (props) => {
                         msg: "Welcome Mr/Mrs." + infos.personal.firstname,
                         status: "unread",
                         link: false,
-                        url:"",
+                        url: "",
                         date: new Date().toString(),
                       },
                     })
@@ -298,10 +317,11 @@ const EmployeeTabContent = (props) => {
                           flag: true,
                         })
                       );
+                      firestore.collection("Employee-Info").doc("new").delete();
                     })
                     .catch(async (err) => {
                       console.log(
-                        "Unable to create doc in notificaions collections."
+                        "Unable to create doc in notificaions in db collections."
                       );
                     });
                 })
@@ -334,9 +354,12 @@ const EmployeeTabContent = (props) => {
   });
 
   useEffect(() => {
-    let profile = Object.values(users).filter(
-      (user) => user.email === String(formik.values.email).toLowerCase()
-    );
+    let profile =
+      Object.values.length > 1
+        ? Object.values(users).filter(
+            (user) => user.email === String(formik.values.email).toLowerCase()
+          )
+        : {};
     if (!props.view) {
       const timeout = setTimeout(() => {
         if (profile.length > 0) {
@@ -367,8 +390,8 @@ const EmployeeTabContent = (props) => {
         } else if (selectedRole === "FOCAL") {
           onFilterSupervisor("ADMIN");
         } else {
-          formik.setFieldValue("supervisor", "MG-111111");
-          onFilterSupervisor([]);
+          // formik.setFieldValue("supervisor", "MG-111111");
+          onFilterSupervisor("SUPERADMIN");
         }
       }
     }
@@ -474,7 +497,7 @@ const EmployeeTabContent = (props) => {
                   <FormControl
                     type="text"
                     name="id"
-                    readOnly={true}
+                    readOnly={props.flag ? false : true}
                     value={formik.values.id}
                     onChange={formik.handleChange}
                   />
@@ -484,7 +507,7 @@ const EmployeeTabContent = (props) => {
                 <FormLabel>Roles</FormLabel>
                 <Dropdown>
                   <Dropdown.Toggle
-                    disabled={props.view.user}
+                    disabled={props.view.user || props.flag}
                     variant={`outline-${
                       !formik.touched.role
                         ? props.view.user
@@ -618,6 +641,7 @@ const EmployeeTabContent = (props) => {
                 </Col>
               )}
               {formik.values.role !== "ADMIN" &&
+                !props.flag &&
                 !formik.values.role.includes("-") && (
                   <Col md={{ span: "5" }}>
                     <FormLabel>Supervisor ID</FormLabel>
@@ -678,9 +702,11 @@ const EmployeeTabContent = (props) => {
                 <Button
                   className="w-100"
                   disabled={
-                    !(formik.dirty && formik.isValid) ||
-                    formik.values.role.includes("Role") ||
-                    formik.values.role.includes("ADMIN")
+                    props.flag
+                      ? false
+                      : !(formik.dirty && formik.isValid) ||
+                        formik.values.role.includes("Role") ||
+                        formik.values.role.includes("ADMIN")
                       ? formik.values.admin_permission.includes("-")
                       : false ||
                         !Object.keys(infos.personal).length > 0 ||
@@ -701,7 +727,7 @@ const EmployeeTabContent = (props) => {
                     aria-hidden="true"
                   />{" "}
                   Uploading...
-                  <span className="visually-hidden">Loading...</span>
+                  <span className="visually-hidden">Loading....</span>
                 </Button>
               )}
             </div>

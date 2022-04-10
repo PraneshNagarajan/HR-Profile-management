@@ -218,9 +218,15 @@ const LoginPage = () => {
                     name: fireAuth.currentUser.displayName,
                     photoUrl: "",
                     security: false,
-                    supervisor:  profile_info.employee.role !== "SUPERADMIN" ? profile_info.employee.supervisor : "",
-                    manager:  (profile_info.employee.role !== "SUPERADMIN") ? profile_info.employee.manager: "",
-                  })  
+                    supervisor:
+                      profile_info.employee.role !== "SUPERADMIN"
+                        ? profile_info.employee.supervisor
+                        : "",
+                    manager:
+                      profile_info.employee.role !== "SUPERADMIN"
+                        ? profile_info.employee.manager
+                        : "",
+                  })
                 );
                 // get img url from firebase-Storage
                 if (await profile_info.img_uploaded) {
@@ -256,7 +262,10 @@ const LoginPage = () => {
                       .catch((err) => {});
                     if (String(profile_info.employee.role) === "FOCAL") {
                       history.push("/focalHomePage");
-                    } else if (String(profile_info.employee.role) === "ADMIN" || String(profile_info.employee.role) === "SUPERADMIN") {
+                    } else if (
+                      String(profile_info.employee.role) === "ADMIN" ||
+                      String(profile_info.employee.role) === "SUPERADMIN"
+                    ) {
                       history.push("/adminHomePage");
                     } else {
                       history.push("/userHomePage");

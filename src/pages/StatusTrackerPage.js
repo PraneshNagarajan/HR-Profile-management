@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Col, FormControl, Card, Row, FormCheck, Badge, Button } from "react-bootstrap";
+import {
+  Col,
+  FormControl,
+  Card,
+  Row,
+  FormCheck,
+  Badge,
+  Button,
+} from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Fragment } from "react/cjs/react.production.min";
 import Spinners from "../components/Spinners";
@@ -12,7 +20,7 @@ import { useFormik } from "formik";
 import Multiselect from "multiselect-react-dropdown";
 import { FilterDemandActions } from "../Redux/FilterDemandSlice";
 import { Link } from "react-router-dom";
-import { FaSyncAlt,FaCertificate } from "react-icons/fa";
+import { FaSyncAlt, FaCertificate } from "react-icons/fa";
 
 let data = [];
 const StatusTrackerPage = () => {
@@ -21,10 +29,12 @@ const StatusTrackerPage = () => {
   const [supplyList, setSupplyList] = useState([]);
   const loggedUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const error = useSelector((state) => state.filterDemand.errors);
+  const filterError = useSelector((state) => state.filterDemand.errors);
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const [refresFlag, setRefershFlag] = useState(false);
+  const [refreshFlag, setRefershFlag] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const formik = useFormik({
     initialValues: {
@@ -60,15 +70,12 @@ const StatusTrackerPage = () => {
   useEffect(() => {
     if (
       (formik.values.id.length === 0 && selectedOptions.length === 0) ||
-      refresFlag
+      refreshFlag
     ) {
       data = [];
       firestore.collection("Demands").onSnapshot((querySnapshot) => {
+        setError(querySnapshot.size > 0 ? "" : "No Demands/Supplies found.");
         querySnapshot.docs.map((item, index) => {
-          console.log(
-            item.data().info.owners.includes(loggedUser.id) ||
-              [...item.data().info.assignees].includes(String(loggedUser.id))
-          );
           if (
             item.data().info.owners.includes(loggedUser.id) ||
             [...item.data().info.assignees].includes(String(loggedUser.id))
@@ -85,7 +92,7 @@ const StatusTrackerPage = () => {
     } else {
       onDispatchActions(selectedOptions);
     }
-  }, [formik.values.id, refresFlag]);
+  }, [formik.values.id, refreshFlag]);
 
   useEffect(() => {
     dispatch(
@@ -103,7 +110,9 @@ const StatusTrackerPage = () => {
 
   return (
     <Fragment>
-      {supplyList.length === 0 && error.length === 0 && <Spinners />}
+      {supplyList.length === 0 &&
+        filterError.length === 0 &&
+        error.length === 0 && <Spinners />}
       <Fragment>
         <Row className={`mt-3 ${sm ? `mx-2` : ``}`}>
           <Col md={{ span: "6", offset: "2" }} className="mb-1">
@@ -122,7 +131,7 @@ const StatusTrackerPage = () => {
             >
               <FaSyncAlt
                 role="button"
-                onClick={() => setRefershFlag(true)}
+                onClick={() => setRefershFlag(refreshFlag)}
                 style={{ color: "#0d6efd" }}
               />
             </span>
@@ -151,22 +160,34 @@ const StatusTrackerPage = () => {
           </Col>
         </Row>
         <div className="d-flex justify-content-around">
-        <span className="d-flex">
-        <FaCertificate size="15" style={{color: "#dc3545", marginTop: "5px"}}/>
-        <p className="ms-1"> - Unstarted</p>
-        </span>
-        <span className="d-flex">
-        <FaCertificate size="15" style={{color: "#ffc107", marginTop: "5px"}}/>
-        <p className="ms-1"> - Inprogress</p>
-        </span>
-        <span className="d-flex">
-        <FaCertificate size="15" style={{color: "#0d6efd", marginTop: "5px"}}/>
-        <p className="ms-1"> - Completed</p>
-        </span>
-        <span className="d-flex">
-        <FaCertificate size="15" style={{color: "#198754", marginTop: "5px"}}/>
-        <p className="ms-1"> - Submitted</p>
-        </span>
+          <span className="d-flex">
+            <FaCertificate
+              size="15"
+              style={{ color: "#dc3545", marginTop: "5px" }}
+            />
+            <p className="ms-1"> - Unstarted</p>
+          </span>
+          <span className="d-flex">
+            <FaCertificate
+              size="15"
+              style={{ color: "#ffc107", marginTop: "5px" }}
+            />
+            <p className="ms-1"> - Inprogress</p>
+          </span>
+          <span className="d-flex">
+            <FaCertificate
+              size="15"
+              style={{ color: "#0d6efd", marginTop: "5px" }}
+            />
+            <p className="ms-1"> - Completed</p>
+          </span>
+          <span className="d-flex">
+            <FaCertificate
+              size="15"
+              style={{ color: "#198754", marginTop: "5px" }}
+            />
+            <p className="ms-1"> - Submitted</p>
+          </span>
         </div>
         {error.length === 0 && supplyList.length > 0 && (
           <Fragment>
@@ -212,6 +233,9 @@ const StatusTrackerPage = () => {
               <PageSwitcher />
             </div>
           </Fragment>
+        )}
+        {filterError.length > 0 && (
+          <p className="fw-bold text-center text-danger mt-5">{filterError}</p>
         )}
         {error.length > 0 && (
           <p className="fw-bold text-center text-danger mt-5">{error}</p>

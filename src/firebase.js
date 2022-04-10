@@ -4,15 +4,27 @@ import 'firebase/firebase-auth'
 import 'firebase/firebase-storage'
     
 
+    // const firebaseConfig = {
+    //   apiKey: "AIzaSyC59TbqRygXA3YldZNKYQnwlg7WGhBzQFc",
+    //   authDomain: "hr-profile-management.firebaseapp.com",
+    //   projectId: "hr-profile-management",
+    //   storageBucket: "hr-profile-management.appspot.com",
+    //   messagingSenderId: "802962471714",
+    //   appId: "1:802962471714:web:e951c6651287785f97037b",
+    //   measurementId: "G-QE1GSFSEZV"
+    // }
+    
+    //---------------------------------------------------------------
+
     const firebaseConfig = {
-      apiKey: "AIzaSyC59TbqRygXA3YldZNKYQnwlg7WGhBzQFc",
-      authDomain: "hr-profile-management.firebaseapp.com",
-      projectId: "hr-profile-management",
-      storageBucket: "hr-profile-management.appspot.com",
-      messagingSenderId: "802962471714",
-      appId: "1:802962471714:web:e951c6651287785f97037b",
-      measurementId: "G-QE1GSFSEZV"
-    }
+      apiKey: "AIzaSyAwyN849ZwaT0MNOz3FTRTXgdvx03tYB-o",
+      authDomain: "hr-profile-mangement-dev.firebaseapp.com",
+      projectId: "hr-profile-mangement-dev",
+      storageBucket: "hr-profile-mangement-dev.appspot.com",
+      messagingSenderId: "504041984185",
+      appId: "1:504041984185:web:4567b08a2ff89a255a8b68",
+      measurementId: "G-DC1FCD8X7B"
+    };
     
 const app =  firebase.initializeApp(firebaseConfig)
 

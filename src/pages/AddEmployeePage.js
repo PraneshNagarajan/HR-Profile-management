@@ -9,7 +9,7 @@ import EmployeeTabContent from "../components/EmployeeTabContent";
 import PersonalTabContent from "../components/PersonalTabContent";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 
-const AddEmployeePage = () => {
+const AddEmployeePage = (props) => {
   const sm = useMediaQuery({ maxWidth: 768 });
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
@@ -97,7 +97,7 @@ const AddEmployeePage = () => {
             infos.activeTab.includes("employee") ? "d-block" : "d-none"
           }
         >
-          <EmployeeTabContent view={false} user={{ flag: false }} />
+          <EmployeeTabContent view={false} user={{ flag: false }} flag={props.flag} />
         </div>
       </Container>
     </Fragment>
