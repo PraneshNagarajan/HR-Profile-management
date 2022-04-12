@@ -135,6 +135,14 @@ const ManageSupply = () => {
     },
   });
 
+  const onAlert = (msg, flag) => {
+    dispatch(
+      AlertActions.handleShow({
+        msg,
+        flag,
+      })
+    );
+  };
   // filter profiles based on single or multi catagory
   const onSelectItem = (list, item) => {
     let options = [...selectedOptions];
@@ -166,13 +174,9 @@ const ManageSupply = () => {
 
   //trigger alert box to select the upcoming status of profile
   const onChangeStatus = (key, step) => {
+    setViewComment({});
     profileKey = key;
-    dispatch(
-      AlertActions.handleShow({
-        msg: "Please Select the options",
-        flag: true,
-      })
-    );
+    onAlert("Please Select the options", true);
     setStepOptions(step);
   };
 
@@ -188,21 +192,17 @@ const ManageSupply = () => {
           response.data().profile_info.profiles_status.data[pKey]["comments"];
         if (res_data) {
           setViewComment(res_data);
-          dispatch(AlertActions.handleShow({ msg: "", flag: true }));
+          onAlert("", true);
         } else {
           setViewComment({});
-          dispatch(
-            AlertActions.handleShow({ msg: "No comments found.", flag: false })
-          );
+          onAlert("No comments found.Manage_supply_line:204. ", false);
         }
         setIsSearching(false);
       })
       .catch((err) => {
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Unable to fetch comments.",
-            flag: false,
-          })
+        onAlert(
+          "Unable to fetch comments.Manage_supply_line:235. " + String(err),
+          false
         );
         setIsSearching(false);
       });
@@ -222,20 +222,13 @@ const ManageSupply = () => {
         },
       })
       .then(() => {
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Comments added successfully.",
-            flag: true,
-          })
-        );
+        onAlert("Comments added successfully.", true);
         setIsSearching(false);
       })
       .catch((err) => {
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Comments added failed.",
-            flag: false,
-          })
+        onAlert(
+          "Comments added failed.Manage_supply_line:235. " + String(err),
+          false
         );
         setIsSearching(false);
       });
@@ -262,7 +255,9 @@ const ManageSupply = () => {
             [dir + profileKey + ".current_status"]: step,
             [dir + profileKey + ".activeStep"]: activeStep,
           })
-          .catch((err) => console.log(String(err)));
+          .catch((err) =>
+            onAlert("Manage_supply_line:266. " + String(err), false)
+          );
       }
     });
   };
@@ -299,7 +294,7 @@ const ManageSupply = () => {
             pStatus.splice(k, 1);
           }
           if (
-            pStatus[k].state === "success" &&
+            pStatus[k].state != "danger" &&
             !pStatus[k].title.includes(alertData.data)
           ) {
             pStatus[k] = {
@@ -379,15 +374,13 @@ const ManageSupply = () => {
           ProfileActions.handleAddExistingData({ [profileID]: res.data().info })
         );
         setProfileView(true);
-        dispatch(AlertActions.handleShow({ msg: profileID, msgFlag: "" }));
+        onAlert(profileID, "");
       })
       .catch((err) => {
         setProfileView(false);
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Unable to fetch data.",
-            msgFlag: false,
-          })
+        onAlert(
+          "Unable to fetch data. Manage_supply_line:387. " + String(err),
+          false
         );
       });
   };
@@ -414,7 +407,9 @@ const ManageSupply = () => {
             })
           );
         })
-        .catch((err) => console.log(String(err)));
+        .catch((err) =>
+          onAlert("manage_supply_line:403. " + String(err), false)
+        );
       dispatch(FilterProfileActions.onSetInitial());
     } else {
       dispatch(

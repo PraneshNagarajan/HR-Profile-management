@@ -177,10 +177,14 @@ const CreateSupply = (props) => {
     } else if (size.length > 0) {
       combinedMsg = msg2;
     }
+    onAlert(combinedMsg, false);
+  };
+
+  const onAlert = (msg, flag) => {
     dispatch(
       AlertActions.handleShow({
-        msg: combinedMsg,
-        flag: false,
+        msg,
+        flag,
       })
     );
   };
@@ -207,26 +211,19 @@ const CreateSupply = (props) => {
               "info.status": "Inprogress",
             })
             .catch((err) => {
-              console.log(String(err));
-              dispatch(
-                AlertActions.handleShow({
-                  msg: "Failed. Unable to submit.",
-                  flag: true,
-                })
+              onAlert(
+                "Failed. Unable to submit. Create_supply_line:218. " +
+                  String(err),
+                false
               );
             });
         })
         .catch((err) => {
-          alert(String(err));
+          onAlert("Create_supply_line:223. " + String(err), false);
         });
       if (index === datas.length - 1) {
         dispatch(ProfileActions.handleClear());
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Profile has been added sucessfully",
-            flag: true,
-          })
-        );
+        onAlert("Profile has been added sucessfully", true);
       }
     });
     setIsSaving(false);
@@ -267,12 +264,7 @@ const CreateSupply = (props) => {
         await updateDemandInfo(profilesListDatas, new_data);
         await formik.setFieldValue("file_count", 0);
       } else {
-        await dispatch(
-          AlertActions.handleShow({
-            msg: "Profile submitted is Failed.",
-            flag: false,
-          })
-        );
+        await onAlert("Profile submitted is Failed.", false);
       }
     });
   };
@@ -295,15 +287,11 @@ const CreateSupply = (props) => {
         });
         await updateDemandInfo(new_data, new_data);
         await setSearchProfileDB([]);
-        await dispatch(
-          AlertActions.handleShow({
-            msg: (
-              <Fragment>
-                <p>Profile has been added sucessfully.</p>
-              </Fragment>
-            ),
-            flag: true,
-          })
+        await onAlert(
+          <Fragment>
+            <p>Profile has been added sucessfully.</p>
+          </Fragment>,
+          true
         );
       }
       await files.map(async (file, index) => {
@@ -340,11 +328,9 @@ const CreateSupply = (props) => {
         }
       });
     } else {
-      await dispatch(
-        AlertActions.handleShow({
-          msg: "Already you have selected this profile. Please check the selected profiles.",
-          flag: false,
-        })
+      await onAlert(
+        "Already you have selected this profile. Please check the selected profiles.",
+        false
       );
       await setIsSaving(false);
     }
@@ -361,22 +347,17 @@ const CreateSupply = (props) => {
       })
       .then(async () => {
         formik.setFieldValue("status", "Closure Request Submited");
-        await dispatch(
-          AlertActions.handleShow({
-            msg:
-              "Closer Request has been submitted to the demand owner (" +
-              formik.values.owners +
-              ") successfully.",
-            flag: true,
-          })
+        await onAlert(
+          "Closer Request has been submitted to the demand owner (" +
+            formik.values.owners +
+            ") successfully.",
+          true
         );
       })
       .catch((err) => {
-        dispatch(
-          AlertActions.handleShow({
-            msg: "Failed.Unable to submit.",
-            flag: false,
-          })
+        onAlert(
+          "Failed. Unable to submit. Create_supply_line:378. " + String(err),
+          false
         );
       });
     await setIsLoading(false);
@@ -394,11 +375,9 @@ const CreateSupply = (props) => {
       Object.values(e.target.files).map((file) => {
         filename = file.name;
         if (filenames.includes(filename)) {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Anyone of the files that you selected that was added already. Duplicate profile entry.",
-              flag: false,
-            })
+          onAlert(
+            "Anyone of the files that you selected that was added already. Duplicate profile entry.",
+            false
           );
           return true;
         } else {
@@ -444,7 +423,12 @@ const CreateSupply = (props) => {
           demand_id: "",
           status: "unmapped",
         })
-        .catch((err) => String(err));
+        .catch((err) =>
+          onAlert(
+            "Failed. Unable to submit. Create_supply_line:445. " + String(err),
+            false
+          )
+        );
       dispatch(
         ProfileActions.handleRemove({ index: addedProfiles[index], flag })
       );
@@ -459,21 +443,17 @@ const CreateSupply = (props) => {
           "profile_info.profiles_status": profile_status,
         })
         .then(() => {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Removed profile : " + name,
-              flag: true,
-            })
-          );
+          onAlert("Removed profile : " + name, true);
           setAddedProfiles(new_data);
           setTotalFileCount(totalFileCount - 1);
         })
         .catch((err) => {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Unable to remove profile : " + name,
-              flag: false,
-            })
+          onAlert(
+            "Unable to remove profile: " +
+              name +
+              " Create_supply_line:470. " +
+              String(err),
+            false
           );
         });
     } else {
@@ -529,20 +509,13 @@ const CreateSupply = (props) => {
               await setFiles([]);
               await setSearchProfileDB([]);
             } else {
-              dispatch(
-                AlertActions.handleShow({
-                  msg: "Already this demand has been submitted. If you need to view or modify, please go to 'manage supply' page.",
-                  flag: false,
-                })
+              onAlert(
+                "Already this demand has been submitted. If you need to view or modify, please go to 'manage supply' page.",
+                false
               );
             }
           } else {
-            dispatch(
-              AlertActions.handleShow({
-                msg: "Access Denied !. You are not part of this demand.",
-                flag: false,
-              })
-            );
+            onAlert("Access Denied !. You are not part of this demand.", false);
           }
         } else {
           formik.setErrors({ demand_id: "*Invalid Demand ID." });
@@ -565,27 +538,21 @@ const CreateSupply = (props) => {
             ? datas.history.filter((demand) => demand.id === profile_id)
             : [];
           if (datas.status === "mapped") {
-            dispatch(
-              AlertActions.handleShow({
-                msg:
-                  "This profile already mapped to demand id : " +
-                  datas.demand_id +
-                  ". So, you can't add it. Please add other profile.",
-                flag: false,
-              })
+            onAlert(
+              "This profile already mapped to demand id : " +
+                datas.demand_id +
+                ". So, you can't add it. Please add other profile.",
+              false
             );
           } else if (profileHistory.length > 0) {
             //here need to add functionality to check already profile mapped to this demand
-            dispatch(
-              AlertActions.handleShow({
-                msg:
-                  " Duplicate Entry. This profile had mapped to demand id : " +
-                  datas.demand_id +
-                  "and it is status " +
-                  profileHistory[0]["status"] +
-                  ". So, you can't add it. Please add other profile.",
-                flag: false,
-              })
+            onAlert(
+              " Duplicate Entry. This profile had mapped to demand id : " +
+                datas.demand_id +
+                "and it is status " +
+                profileHistory[0]["status"] +
+                ". So, you can't add it. Please add other profile.",
+              false
             );
           } else {
             dispatch(
@@ -606,18 +573,13 @@ const CreateSupply = (props) => {
           }
           setProfileView(true);
         } else {
-          dispatch(
-            AlertActions.handleShow({
-              msg: "Invalid Profile ID.",
-              flag: false,
-            })
-          );
+          onAlert("Invalid Profile ID.", false);
         }
       });
   };
 
   const onShowForm = (file) => {
-    dispatch(AlertActions.handleShow({ msg: file, msgFlag: "" }));
+    onAlert(file, "");
     setProfileFlag(true);
     res = files.filter((item) => item.name.includes(file));
     if (res.length > 0 && !Object.keys(profileInfo.data).includes(file)) {
@@ -1235,11 +1197,11 @@ const CreateSupply = (props) => {
                           </Tab>
                         </Tabs>
                         <div className="text-center">
-                          <div className="d-flex justify-content-between flex-wrap mt-3">
+                          <div className="d-flex justify-content-center flex-wrap mt-3">
                             <Fragment>
                               {!isSaving && (
                                 <Button
-                                  variant="secondary"
+                                  variant="primary"
                                   disabled={
                                     filenames.length > 0 || files.length > 0
                                       ? Object.keys(profileInfo.data).length !==
@@ -1306,19 +1268,6 @@ const CreateSupply = (props) => {
                                   </span>
                                 </Button>
                               )}
-                              {!isLoading && (
-                                <Button
-                                  variant="success"
-                                  style={{
-                                    width: sm ? "100%" : "45%",
-                                    marginTop: "20px",
-                                  }}
-                                  disabled={addedProfiles.length <= 0}
-                                  onClick={onSubmit}
-                                >
-                                  Mark as Completed
-                                </Button>
-                              )}
                             </Fragment>
                           </div>
                         </div>
@@ -1374,6 +1323,25 @@ const CreateSupply = (props) => {
                         to={"/manageSupply/" + params.demandId}
                       >
                         View Profiles
+                      </Button>
+                    </div>
+                  )}
+                  {loggedUser.role === "FOCAL" && addedProfiles.length > 0 && (
+                    <div
+                      className={
+                        sm ? "" : "d-flex justify-content-center flex-wrap mt-3"
+                      }
+                    >
+                      <Button
+                        variant="success"
+                        style={{
+                          width: sm ? "100%" : "45%",
+                          marginTop: "20px",
+                        }}
+                        disabled={addedProfiles.length <= 0}
+                        onClick={onSubmit}
+                      >
+                        Mark as Completed
                       </Button>
                     </div>
                   )}

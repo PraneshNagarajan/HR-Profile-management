@@ -89,14 +89,20 @@ const CreateDemand = (props) => {
     });
     setPrimaryTechIsChecked(false);
     setPrimarySkillIsChecked(false);
+    setAddPrimaryTechIsChecked(false);
+    setAddPrimarySkillIsChecked(false);
     setSecondaryTechIsChecked(false);
     setSecondarySkillIsChecked(false);
     setClientIsChecked(false);
     setEndClientIsChecked(false);
     setSelectedRecruiters([]);
     multiselectRecruiterRef.current.resetSelectedValues();
-    multiselectAddPrimarySkillRef.current.resetSelectedValues();
-    multiselectAddSecondarySkillRef.current.resetSelectedValues();
+    if (addPrimarySkill.length > 0) {
+      multiselectAddPrimarySkillRef.current.resetSelectedValues();
+    }
+    if (addSecondarySkill.length > 0) {
+      multiselectAddSecondarySkillRef.current.resetSelectedValues();
+    }
     setRecruiterIsChecked(false);
   };
 
@@ -112,6 +118,15 @@ const CreateDemand = (props) => {
     </Popover>
   );
 
+  const onAlert = (msg, flag) => {
+    dispatch(
+      AlertActions.handleShow({
+        msg,
+        flag,
+      })
+    );
+  };
+
   const checkIsSkillPresentHandler = (tech, skill) => {
     let data = [...pre_requisite.technologies[tech]];
     if (
@@ -124,16 +139,13 @@ const CreateDemand = (props) => {
       addSkills(tech, { sets: data }, !props.techFlag, false);
     } else {
       setIsLoading(false);
-      dispatch(
-        AlertActions.handleShow({
-          msg:
-            "Duplicate entry. " +
-            skill +
-            " is found already under " +
-            tech +
-            " .",
-          flag: false,
-        })
+      onAlert(
+        "Duplicate entry. " +
+          skill +
+          " is found already under " +
+          tech +
+          " . Data added failed. Create_demand_line:143. ",
+        false
       );
       uploadFlag = false;
     }
@@ -147,17 +159,23 @@ const CreateDemand = (props) => {
         .doc(doc)
         .set(data)
         .catch((err) => {
-          console.log(String(err));
+          onAlert("Create_demand_line:160. " + String(err));
         });
     } else {
       firestore
         .collection("Skills")
         .doc(doc)
         .update(data)
-        .catch((err) => {});
+        .catch((err) => {
+          onAlert("Create_demand_line:168. " + String(err));
+        });
     }
     if (flag) {
-      firestore.collection("Skills").doc("new").delete();
+      firestore
+        .collection("Skills")
+        .doc("new")
+        .delete()
+        .catch((err) => onAlert("Create_demand_line:173.", false));
     }
   };
 
@@ -178,7 +196,9 @@ const CreateDemand = (props) => {
         .update({
           [recruiter + ".demands"]: newDemandList,
         })
-        .catch((err) => String(err));
+        .catch((err) =>
+          onAlert("Create_demand_line:195. " + String(err), false)
+        );
     });
   };
 
@@ -348,9 +368,15 @@ const CreateDemand = (props) => {
             .doc(value.clientname)
             .set({ names: [value.endclientname] })
             .then(() => {
-              firestore.collection("Clients").doc("new").delete();
+              firestore
+                .collection("Clients")
+                .doc("new")
+                .delete()
+                .catch((err) => onAlert("Create_demand_line:366.", false));
             })
-            .catch((err) => {});
+            .catch((err) => {
+              onAlert("Create_demand_line:368. " + String(err), false);
+            });
         } else if (clientIsChecked || end_clientIsChecked) {
           if (!pre_requisite.clients[value.clientname]) {
             data = [value.endclientname];
@@ -362,7 +388,7 @@ const CreateDemand = (props) => {
                 uploadFlag = true;
               })
               .catch((err) => {
-                alert(String(err));
+                onAlert("Create_demand_line:383. " + String(err), false);
               });
           } else {
             if (
@@ -382,20 +408,17 @@ const CreateDemand = (props) => {
                   uploadFlag = true;
                 })
                 .catch((err) => {
-                  alert(String(err));
+                  onAlert("Create_demand_line:400. " + String(err), false);
                 });
             } else {
               setIsLoading(false);
-              dispatch(
-                AlertActions.handleShow({
-                  msg:
-                    "Duplicate entry. " +
-                    value.endclientname +
-                    " is found already under " +
-                    value.clientname +
-                    " .",
-                  flag: false,
-                })
+              onAlert(
+                "Duplicate entry. " +
+                  value.endclientname +
+                  " is found already under " +
+                  value.clientname +
+                  ".Create_demand_line:408. " ,
+                false
               );
             }
           }
@@ -425,12 +448,7 @@ const CreateDemand = (props) => {
           .then(async () => {
             await onMapDemandToRecruiters(demandID);
             await stateHandler();
-            await dispatch(
-              AlertActions.handleShow({
-                msg: "Demand created successfully.",
-                flag: true,
-              })
-            );
+            await onAlert("Demand created successfully.", true);
           })
           .catch(async (err) => {
             if (await String(err).includes("No document to update")) {
@@ -442,6 +460,8 @@ const CreateDemand = (props) => {
                     ...value,
                     owners: [loggedUser.id],
                     assignees: selectedRecruiters,
+                    addprimaryskill: addPrimarySkill,
+                    secondaryskill: addSecondarySkill,
                   },
                   profile_info: {
                     comments: "",
@@ -452,27 +472,51 @@ const CreateDemand = (props) => {
                 .then(async () => {
                   await onMapDemandToRecruiters(demandID);
                   await stateHandler();
-                  await dispatch(
-                    AlertActions.handleShow({
-                      msg: "data added sucessfully.",
-                      flag: true,
-                    })
-                  );
+                  await onAlert("Data added successfully.", true);
+                  selectedRecruiters.map((user, index) => {
+                    firestore
+                      .collection("Employee-Info")
+                      .doc("users")
+                      .get()
+                      .then((list) => {
+                        firestore
+                          .collection("Notifications")
+                          .doc(list.data()[user].email)
+                          .update({
+                            [new Date().getTime()]: {
+                              msg:
+                                "New Demand has been assigned for you.-Demand No : " +
+                                demandID,
+                              status: "unread",
+                              link: true,
+                              url: "/createSupply/" + demandID,
+                              date: new Date().toString(),
+                            },
+                          })
+                          .then(async () => {
+                            if (selectedRecruiters.length - 1 == index) {
+                              onAlert("Data added successfully.", true);
+                            }
+                          })
+                          .catch(async (err) => {
+                            onAlert(
+                              "Create_demand_line:509. " + String(err),
+                              false
+                            );
+                          });
+                      });
+                  });
                 })
                 .catch(async (err) => {
-                  await dispatch(
-                    AlertActions.handleShow({
-                      msg: String(err) + ". Data added failed.",
-                      flag: false,
-                    })
+                  await onAlert(
+                    "Data added failed. Create_demand_line:498. " + String(err),
+                    false
                   );
                 });
             } else {
-              await dispatch(
-                AlertActions.handleShow({
-                  msg: "Data added failed.",
-                  flag: false,
-                })
+              await onAlert(
+                "Data addedd failed. Create_demand_line:502. ",
+                false
               );
             }
             await setIsLoading(false);
@@ -942,7 +986,7 @@ const CreateDemand = (props) => {
                             <Dropdown.Item
                               className="text-center"
                               onClick={() =>
-                                formik.setFieldValue("type", "Part TIme")
+                                formik.setFieldValue("type", "Part Time")
                               }
                             >
                               Contractor
@@ -971,7 +1015,6 @@ const CreateDemand = (props) => {
                           name="demand"
                           value={formik.values.demand}
                           min="1"
-                          value={formik.values.demand}
                           isInvalid={
                             formik.errors.demand && formik.touched.demand
                           }
@@ -1018,7 +1061,7 @@ const CreateDemand = (props) => {
                     </Col>
                   </Row>
                 </Col>
-
+                {/* Primary Skills */}
                 <Col md={{ span: 12 }}>
                   <FormGroup className="my-2">
                     <FormLabel>
@@ -1252,7 +1295,7 @@ const CreateDemand = (props) => {
                             </FormLabel>
                             <FormControl
                               type="text"
-                              name="primarytech"
+                              name="addprimarytech"
                               value={formik.values.addprimarytech}
                               isInvalid={
                                 formik.errors.addprimarytech &&
@@ -1422,6 +1465,7 @@ const CreateDemand = (props) => {
                     </Row>
                   </FormGroup>
                 </Col>
+                {/* Secondary Skills */}
                 <Col md={{ span: 12 }}>
                   <FormGroup className="my-2">
                     <FormLabel>
@@ -1532,29 +1576,78 @@ const CreateDemand = (props) => {
                           />
                         )}
                       </Col>
-                      <Col md="6">
-                        <Multiselect
-                          ref={multiselectAddSecondarySkillRef}
-                          displayValue="item"
-                          onRemove={onRemoveAddSecondarySkill}
-                          onSelect={onSelectAddSecondarySkill}
-                          options={
-                            formik.values.secondarytech.includes("-") ||
-                            stIsChecked
-                              ? []
-                              : pre_requisite.technologies[
-                                  formik.values.secondarytech
-                                ].map((item) => {
-                                  return { item };
-                                })
-                          }
-                          showCheckbox="false"
-                          placeholder={
-                            addSecondarySkill.length > 0
-                              ? ""
-                              : "Select Technologies"
-                          }
-                        />
+                      <Col md="6" className="my-1">
+                        {(stIsChecked || ssIsChecked) && (
+                          <FormGroup>
+                            {stIsChecked && (
+                              <FormLabel>
+                                <b>Enter the Skill</b>
+                              </FormLabel>
+                            )}
+                            <FormControl
+                              type="text"
+                              name="secondaryskill"
+                              value={formik.values.secondaryskill}
+                              isInvalid={
+                                formik.errors.secondaryskill &&
+                                formik.touched.secondaryskill &&
+                                formik.values.secondaryskill.includes("-")
+                              }
+                              isValid={
+                                !formik.errors.secondaryskill &&
+                                formik.touched.secondaryskill &&
+                                !formik.values.secondaryskill.includes("-")
+                              }
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                          </FormGroup>
+                        )}
+                        {!stIsChecked && !ssIsChecked && (
+                          <Multiselect
+                            ref={multiselectAddSecondarySkillRef}
+                            displayValue="item"
+                            onRemove={onRemoveAddSecondarySkill}
+                            onSelect={onSelectAddSecondarySkill}
+                            options={
+                              formik.values.secondarytech.includes("-") ||
+                              stIsChecked
+                                ? []
+                                : pre_requisite.technologies[
+                                    formik.values.secondarytech
+                                  ].map((item) => {
+                                    return { item };
+                                  })
+                            }
+                            showCheckbox="false"
+                            placeholder={
+                              addSecondarySkill.length > 0
+                                ? ""
+                                : "Select Technologies"
+                            }
+                          />
+                        )}
+                        {formik.errors.secondaryskill &&
+                          formik.touched.secondaryskill && (
+                            <div className="text-danger">
+                              {formik.errors.secondaryskill}
+                            </div>
+                          )}
+                        {!stIsChecked && (
+                          <FormCheck
+                            type="checkbox"
+                            label="Enter manually."
+                            checked={ssIsChecked}
+                            onChange={() => {}}
+                            onClick={() => {
+                              setSecondarySkillIsChecked(!ssIsChecked);
+                              formik.setFieldValue(
+                                "secondaryskill",
+                                !ssIsChecked ? "" : "- Select the Skill -"
+                              );
+                            }}
+                          />
+                        )}
                       </Col>
                     </Row>
                   </FormGroup>

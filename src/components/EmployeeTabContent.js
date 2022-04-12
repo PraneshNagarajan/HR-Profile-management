@@ -28,7 +28,7 @@ const validate = (value) => {
     errors.email = "*Required.";
   } else if (
     !new RegExp(
-      "^[A-Za-z]{1}[A-Za-z0-9_.]+[@]{1}[A-Za-z]+[.]{1}[A-Za-z]{2,3}$"
+      "^[A-Za-z]{1}[A-Za-z0-9_.-]+[@]{1}[A-Za-z-]+[.]{1}[A-Za-z]{2,3}$"
     ).test(value.email)
   ) {
     errors.email = "*Invalid Format.";
@@ -48,11 +48,8 @@ const EmployeeTabContent = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const empnoRef = firestore.collection("Employee-No");
 
-  const [roles, setRoles] = useState([
-    "JUNIOR RECRUITER",
-    "SENIOR RECRUITER",
-    "FOCAL",
-  ]);
+  const role_list = ["JUNIOR RECRUITER", "SENIOR RECRUITER", "FOCAL"];
+  const [roles, setRoles] = useState(role_list);
 
   const initialValues = {
     id: "",
@@ -73,12 +70,21 @@ const EmployeeTabContent = (props) => {
     //if logged user is Superadmin add ADMIN Options.
     if (loggedUser.role === "SUPERADMIN") {
       let newRoles = roles;
-      //if (newRoles.includes("ADMIN")) {
-      newRoles.push("ADMIN");
-      setRoles(newRoles);
-      // }
+      if (!roles.includes("ADMIN")) {
+        newRoles.push("ADMIN");
+        setRoles(newRoles);
+      }
     }
   }, []);
+
+  const onAlert = (msg, flag) => {
+    dispatch(
+      AlertActions.handleShow({
+        msg,
+        flag,
+      })
+    );
+  };
 
   const formik = useFormik({
     initialValues: props.view
@@ -108,12 +114,7 @@ const EmployeeTabContent = (props) => {
                 })
                 .then(async () => {
                   if (await props.view.user) {
-                    await dispatch(
-                      AlertActions.handleShow({
-                        msg: "Image uploaded successfully.",
-                        flag: true,
-                      })
-                    );
+                    await onAlert("Image uploaded successfully.", true);
                   }
                 });
               await dispatch(InfoActions.getImageFlag(true));
@@ -135,7 +136,9 @@ const EmployeeTabContent = (props) => {
               }
             }
           })
-          .catch(() => {});
+          .catch((err) => {
+            onAlert("emptab_line:139" + String(err), false);
+          });
       }
       if (await props.view.user) {
         await firestore
@@ -146,14 +149,11 @@ const EmployeeTabContent = (props) => {
             "profile.address": infos.address,
           })
           .then(async () => {
-            await dispatch(
-              AlertActions.handleShow({
-                msg: "Data added successfully.",
-                flag: true,
-              })
-            );
+            await onAlert("Data added successfully.", true);
           })
-          .catch(() => {});
+          .catch((err) => {
+            onAlert("emptab_line:152. " + String(err), false);
+          });
       } else {
         if (await props.view.admin) {
           await firestore
@@ -169,107 +169,29 @@ const EmployeeTabContent = (props) => {
               },
             })
             .then(async () => {
-              await dispatch(
-                AlertActions.handleShow({
-                  msg: "Data added successfully.",
-                  flag: true,
-                })
-              );
+              await onAlert("Data added successfully.", true);
             })
-            .catch(() => {});
+            .catch((err) => {
+              onAlert("emptab_line:170. " + String(err), false);
+            });
         } else {
-          let newSupervisorReportees = await [];
-          let supervisorManager = (await value.role.includes("ADMIN"))
-            ? supervisorOptions[0].id
-            : "";
-          await firestore
-            .collection("Employee-Info")
-            .doc(email)
-            .set({
-              "auth-info": {
-                attempts: 0,
-                chances: 0,
-                account_status: "active",
-                newly_added: true,
-                invalid_attempt_timestamp: null,
-                locked: false,
-              },
-              "login-info": {
-                last_logout: null,
-                last_login: null,
-                state: "active",
-              },
-              "password-management": {
-                question2: null,
-                answer1: null,
-                answer2: null,
-                question1: null,
-                last_changed: null,
-              },
-              profile: {
-                img_uploaded: !!Img.name ? true : false,
-                personal: infos.personal,
-                address: infos.address,
-                employee: {
-                  ...formik.values,
-                  supervisor:
-                    String(supervisorManager).length > 0
-                      ? supervisorManager
-                      : value.supervisor,
-                  email,
-                  admin_permission: props.flag
-                    ? true
-                    : formik.values.admin_permission.includes("&&")
-                    ? true
-                    : false,
-                },
-              },
-              uploader_info: {
-                id: loggedUser.id,
-                date: new Date(),
-              },
-            })
-            .then(async () => {
-              //pass value for key+ from variable
-              if ((await !props.flag) && loggedUser.role != "SUPERADMIN") {
-                let position = pre_requisite.users.findIndex(
-                  (item) => item.id === value.supervisor
-                );
-                supervisorManager =
-                  value.role === "ADMIN"
-                    ? supervisorOptions[0].id
-                    : pre_requisite.users[position].supervisor;
-                newSupervisorReportees = pre_requisite.users[position].reportees
-                  ? [...pre_requisite.users[position].reportees]
-                  : [];
-                newSupervisorReportees.push(String(value.id));
-              }
-              let supervisor_id = props.flag
-                ? String(value.id)
-                : value.supervisor;
-              await firestore
-                .collection("Employee-Info")
-                .doc("users")
-                .update({
-                  [value.id]: {
-                    email,
-                    name: infos.personal.firstname,
-                    role: formik.values.role,
-                    id: String(formik.values.id),
-                    supervisor:
-                      String(supervisorManager).length > 0
-                        ? supervisorManager
-                        : value.supervisor,
-                    manager:
-                      String(supervisorManager).length > 0
-                        ? supervisorManager
-                        : supervisorManager,
-                  },
-                  [supervisor_id + ".reportees"]: newSupervisorReportees,
-                })
-                .catch((err) => console.log(String(err)));
-
-              await firestore
+          await fireAuth
+            .createUserWithEmailAndPassword(
+              formik.values.email,
+              String(formik.values.id)
+            )
+            .then(async (res) => {
+              res.user.updateProfile({
+                displayName: infos.personal.firstname,
+              });
+              let nxtID = formik.values.id + 1;
+              let newSupervisorReportees = await [];
+              let supervisorManager = (await value.role.includes("ADMIN"))
+                ? props.flag
+                  ? String(value.id)
+                  : supervisorOptions[0].id
+                : "";
+                await firestore
                 .collection("Employee-No")
                 .doc("info")
                 .update({ id: Number(value.id) })
@@ -281,70 +203,139 @@ const EmployeeTabContent = (props) => {
                       .doc("info")
                       .set({ id: Number(value.id) });
                   } else {
-                    //error
+                    onAlert("emptab_line:206.", false)
                   }
                 });
-
-              await fireAuth
-                .createUserWithEmailAndPassword(
-                  formik.values.email,
-                  String(formik.values.id)
-                )
-                .then(async (res) => {
-                  res.user.updateProfile({
-                    displayName: infos.personal.firstname,
-                  });
-                  let nxtID = formik.values.id + 1;
-                  await dispatch(InfoActions.resetForm());
-                  await formik.setFieldValue("id", nxtID);
-                  // add notification collection for new user(doc)
-                  await firestore
-                    .collection("Notifications")
-                    .doc(email)
-                    .set({
-                      [new Date().getTime()]: {
-                        msg: "Welcome Mr/Mrs." + infos.personal.firstname,
-                        status: "unread",
-                        link: false,
-                        url: "",
-                        date: new Date().toString(),
-                      },
-                    })
-                    .then(async () => {
-                      await dispatch(
-                        AlertActions.handleShow({
-                          msg: "Data added successfully.",
-                          flag: true,
-                        })
-                      );
-                      firestore.collection("Employee-Info").doc("new").delete();
-                    })
-                    .catch(async (err) => {
-                      console.log(
-                        "Unable to create doc in notificaions in db collections."
-                      );
-                    });
+              await firestore
+                .collection("Employee-Info")
+                .doc(email)
+                .set({
+                  "auth-info": {
+                    attempts: 0,
+                    chances: 0,
+                    account_status: "active",
+                    newly_added: true,
+                    invalid_attempt_timestamp: null,
+                    locked: false,
+                  },
+                  "login-info": {
+                    last_logout: null,
+                    last_login: null,
+                    state: "active",
+                  },
+                  "password-management": {
+                    question2: null,
+                    answer1: null,
+                    answer2: null,
+                    question1: null,
+                    last_changed: null,
+                  },
+                  profile: {
+                    img_uploaded: !!Img.name ? true : false,
+                    personal: infos.personal,
+                    address: infos.address,
+                    employee: {
+                      ...formik.values,
+                      supervisor:
+                        String(supervisorManager).length > 0
+                          ? supervisorManager
+                          : value.supervisor,
+                      email,
+                      admin_permission: props.flag
+                        ? true
+                        : formik.values.admin_permission.includes("&&")
+                        ? true
+                        : false,
+                    },
+                  },
+                  uploader_info: {
+                    id: loggedUser.id,
+                    date: new Date(),
+                  },
                 })
-                .catch(async (err) => {
-                  await dispatch(
-                    await AlertActions.handleShow({
-                      msg: String(err) + "Data added failed.",
-                      flag: false,
-                    })
-                  );
+                .then(async () => {
+                  //pass value for key+ from variable
+                  if ((await !props.flag) && loggedUser.role != "SUPERADMIN") {
+                    let position = pre_requisite.users.findIndex(
+                      (item) => item.id === value.supervisor
+                    );
+                    supervisorManager =
+                      value.role === "ADMIN"
+                        ? supervisorOptions[0].id
+                        : pre_requisite.users[position].supervisor;
+                    newSupervisorReportees = pre_requisite.users[position]
+                      .reportees
+                      ? [...pre_requisite.users[position].reportees]
+                      : [];
+                    newSupervisorReportees.push(String(value.id));
+                  }
+                  let supervisor_id = props.flag
+                    ? String(value.id)
+                    : value.role === "ADMIN"
+                    ? supervisorOptions[0].id
+                    : value.supervisor;
                   await firestore
                     .collection("Employee-Info")
-                    .doc(email)
-                    .delete();
+                    .doc("users")
+                    .update({
+                      [value.id]: {
+                        email,
+                        name: infos.personal.firstname,
+                        role: formik.values.role,
+                        id: String(formik.values.id),
+                        supervisor:
+                          String(supervisorManager).length > 0
+                            ? supervisorManager
+                            : value.supervisor,
+                        manager:
+                          String(supervisorManager).length > 0
+                            ? supervisorManager
+                            : supervisorManager,
+                      },
+                      [supervisor_id + ".reportees"]: newSupervisorReportees,
+                    })
+                    .catch((err) =>
+                      onAlert("emptab_line:283" + String(err), false)
+                    );
+                })
+                .catch(async (err) => {
+                  await setIsLoading(false);
+                  await onAlert(
+                    "emptab_line:336" + String(err) + " Data added failed.",
+                    false
+                  );
+                });
+              await dispatch(InfoActions.resetForm());
+              await formik.setFieldValue("id", nxtID);
+              // add notification collection for new user(doc)
+              await firestore
+                .collection("Notifications")
+                .doc(email)
+                .set({
+                  [new Date().getTime()]: {
+                    msg: "Welcome Mr/Mrs." + infos.personal.firstname,
+                    status: "unread",
+                    link: false,
+                    url: "",
+                    date: new Date().toString(),
+                  },
+                })
+                .then(async () => {
+                  await onAlert("Data added successfully.", true);
+                  firestore
+                    .collection("Employee-Info")
+                    .doc("new")
+                    .delete()
+                    .catch((err) => onAlert("emptab_line:322", false));
+                })
+                .catch(async (err) => {
+                  onAlert("emptab_line_325", false);
                 });
             })
             .catch(async (err) => {
-              await setIsLoading(false);
-              await dispatch(
-                AlertActions.handleShow({
-                  msg: String(err) + " Data added failed.",
-                  flag: false,
-                })
+              await onAlert(
+                "Emptab_line:317. " + String(err) + "Data added failed.",
+                false
               );
             });
         }
@@ -352,10 +343,9 @@ const EmployeeTabContent = (props) => {
       await setIsLoading(false);
     },
   });
-
   useEffect(() => {
     let profile =
-      Object.values.length > 1
+      Object.values(users).length > 1
         ? Object.values(users).filter(
             (user) => user.email === String(formik.values.email).toLowerCase()
           )
@@ -422,7 +412,7 @@ const EmployeeTabContent = (props) => {
                 }
               })
               .catch((err) => {
-                alert(String(err));
+                onAlert("emptab_line:402. " + String(err), false);
               });
           }
         });
@@ -439,12 +429,7 @@ const EmployeeTabContent = (props) => {
 
   const handleChange = (e) => {
     if (e.target.files[0].size / 1024 > 300) {
-      dispatch(
-        AlertActions.handleShow({
-          msg: "file size must be within 300kb",
-          flag: false,
-        })
-      );
+      onAlert("file size must be within 300kb.", false);
     } else if (e.target.files[0]) {
       setImg(e.target.files[0]);
     }
@@ -703,8 +688,12 @@ const EmployeeTabContent = (props) => {
                   className="w-100"
                   disabled={
                     props.flag
-                      ? false
+                      ? !(
+                          String(formik.values.id).length > 0 &&
+                          formik.values.email.length > 0
+                        )
                       : !(formik.dirty && formik.isValid) ||
+                        formik.values.supervisor.includes("-") ||
                         formik.values.role.includes("Role") ||
                         formik.values.role.includes("ADMIN")
                       ? formik.values.admin_permission.includes("-")

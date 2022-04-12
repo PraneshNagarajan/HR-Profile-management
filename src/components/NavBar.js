@@ -34,7 +34,7 @@ const NavBar = () => {
   const location = useLocation();
   const history = useHistory();
   const [isExpanded, setExpanded] = useState(false);
-  const notification = useSelector(state => state.notification)
+  const notification = useSelector((state) => state.notification);
 
   return (
     <Fragment>
@@ -58,7 +58,7 @@ const NavBar = () => {
             height="30"
             className={`d-inline-block align-top ${sm ? `ms-2` : `ms-3`}`}
           />{" "}
-          <b className="h4">EnterpriseName</b>
+          <b className="h4 fst-italic">eC-hiRe</b>
         </Navbar.Brand>
         <Navbar.Toggle
           aria-controls="responsive-navbar-nav"
@@ -134,51 +134,10 @@ const NavBar = () => {
               </Fragment>
             )}
 
-            {/* {(user.role.includes('RECRUITER') || user.role.includes('FOCAL'))  &&
-            <NavDropdown
-              disabled={!(user.photoUrl.length > 0 && user.security)}
-              // active={location.pathname.includes("Demand"  || 'Supplies') ? `active` : ``}
-              title={
-                <span>
-                  <FaRegListAlt className="mb-1" />{" "}
-                  {user.role === "FOCAL" ? "Demand" : "Supply"}
-                </span>
-              }
-              id="collasible-nav-dropdown"
-              className={`${
-                location.pathname.includes("Demand") ||
-                location.pathname.includes("Supply")
-                  ? "active"
-                  : ""
-              } ${sm ? "h6 mx-2 mt-1" : "h5 me-2"}`}
-            >
-              <NavDropdown.Item
-                className="text-primary fw-bold"
-                as={Link}
-                onClick={() => setExpanded(!isExpanded)}
-                to={user.role === "FOCAL" ? "/createDemand" : "/createSupply"}
-              >
-                {" "}
-                <FaPlusCircle style={{ width: "20px", height: "20px" }} />{" "}
-                {user.role === "FOCAL" ? "Create Demand" : "Create Supply"}
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item
-                className="text-warning fw-bold"
-                as={Link}
-                onClick={() => setExpanded(!isExpanded)}
-                to={user.role === "FOCAL" ? "/manageDemand" : "/manageSupplies"}
-              >
-                {" "}
-                <FaEdit style={{ width: "20px", height: "20px" }} />
-                {user.role === "FOCAL" ? "Manage Demands" : "Manage Supply"}
-              </NavDropdown.Item>
-            </NavDropdown>
-          } */}
-
             {(user.role === "FOCAL" || user.role === "ADMIN") && (
               <Nav.Link
                 className={sm ? "mt-1" : ""}
+                disabled={!(user.photoUrl.length > 0 && user.security)}
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
                 to={
@@ -198,13 +157,14 @@ const NavBar = () => {
             )}
             {(user.role === "FOCAL" || user.role.includes("RECRUITER")) && (
               <Nav.Link
+                disabled={!(user.photoUrl.length > 0 && user.security)}
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
                 to={
                   user.role === "FOCAL"
                     ? "/manageSupplies"
                     : user.role.includes("RECRUITER")
-                    ? "supplies"
+                    ? "/supplies"
                     : ""
                 }
                 active={location.pathname.includes("Suppl")}
@@ -247,14 +207,19 @@ const NavBar = () => {
           <Nav className={`me-2 ${sm ? `mt-1` : `mt-2`}`}>
             {sm && (
               <Nav.Link
-                disabled={!(user.photoUrl.length > 0 && user.security) || notification.data === undefined}
+                disabled={
+                  !(user.photoUrl.length > 0 && user.security) ||
+                  notification.data === undefined
+                }
                 as={Link}
                 onClick={() => setExpanded(!isExpanded)}
                 to="\notifications"
               >
                 <span
                   className={`d-flex  mx-2 fw-bold ${
-                    user.photoUrl.length > 0 && user.security && notification.data !== undefined
+                    user.photoUrl.length > 0 &&
+                    user.security &&
+                    notification.data !== undefined
                       ? `text-white`
                       : ``
                   }`}
@@ -262,17 +227,17 @@ const NavBar = () => {
                 >
                   <FaBell className="me-1 mt-1" />
                   Notifications
-                 {notification.count > 0 &&
-                  <span
-                  className={` ms-1 ${
-                    user.photoUrl.length > 0 && user.security
-                      ? "badge rounded-circle bg-warning mt-1"
-                      : ""
-                  }`}
-                >
-                  {notification.count}
-                </span>
-                 }
+                  {notification.count > 0 && (
+                    <span
+                      className={` ms-1 ${
+                        user.photoUrl.length > 0 && user.security
+                          ? "badge rounded-circle bg-warning mt-1"
+                          : ""
+                      }`}
+                    >
+                      {notification.count}
+                    </span>
+                  )}
                 </span>
                 <hr className="text-white line-break1" />
               </Nav.Link>
@@ -330,23 +295,26 @@ const NavBar = () => {
             {!sm && (
               <Nav.Item>
                 <Button
-                  disabled={!(user.photoUrl.length > 0 && user.security) || notification.data === undefined}
+                  disabled={
+                    !(user.photoUrl.length > 0 && user.security) ||
+                    notification.data === undefined
+                  }
                   variant="outline-light"
                   className={`position-relative me-4 ${
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`
                   }`}
-                  onClick={()=> history.push("/notifications")}
+                  onClick={() => history.push("/notifications")}
                 >
                   <b>
                     <FaBell className="me-1" />
                     Notifications
                   </b>
-                  {notification.count > 0 &&
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                  {notification.count}
-                  <span className="visually-hidden">unread messages</span>
-                </span>
-                  }
+                  {notification.count > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                      {notification.count}
+                      <span className="visually-hidden">unread messages</span>
+                    </span>
+                  )}
                 </Button>
               </Nav.Item>
             )}
@@ -359,7 +327,7 @@ const NavBar = () => {
                     user.photoUrl.length > 0 ? `mt-2` : `mb-2`
                   }`}
                   style={{ width: sm ? "97%" : "" }}
-                  onClick={()=> window.location.reload()}
+                  onClick={() => window.location.reload()}
                 >
                   {" "}
                   <b>Logout</b>

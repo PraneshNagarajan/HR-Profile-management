@@ -45,7 +45,7 @@ const Notifications = () => {
   useEffect(() => {
     let size = Object.values(notifications).filter(
       (item) => item.status === activeTab
-    ).length
+    ).length;
     dispatch(
       PaginationActions.initial({
         size: size > 0 ? size : 1,
@@ -120,15 +120,19 @@ const Notifications = () => {
                       className="mb-2 animated fadeOut infinite"
                     >
                       <Card.Body>
-                        <Card.Title
-                          style={{ cursor: "pointer" }}
-                          onClick={() => {
-                            history.push(notification[1].url);
-                          }}
-                        >
-                          {notification[1].title}
-                        </Card.Title>
-                        <Card.Subtitle>{notification[1].msg}</Card.Subtitle>
+                        <Card.Subtitle>
+                          {notification[1].msg.split("-")[0]}
+                          <span
+                            style={{ cursor: "pointer" }}
+                            className="text-primary"
+                            onClick={() => {
+                              onChangeStatus("read", notification[0]);
+                              history.push(notification[1].url);
+                            }}
+                          >
+                            {notification[1].msg.split("-")[1]}{" "}
+                          </span>
+                        </Card.Subtitle>
                         <Card.Text className="d-flex justify-content-between mt-3">
                           <div>
                             <FaRegTrashAlt
@@ -158,9 +162,11 @@ const Notifications = () => {
                                   activeTab === "unread" ? "Grey" : "Green",
                                 cursor: "pointer",
                               }}
-                              onClick={() =>
-                                onChangeStatus("read", notification[0])
-                              }
+                              onClick={() => {
+                                if (activeTab === "unread") {
+                                  onChangeStatus("read", notification[0]);
+                                }
+                              }}
                             />
                           </div>
                           <p className="text-muted">{notification[1].date}</p>

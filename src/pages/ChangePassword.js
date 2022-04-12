@@ -63,7 +63,7 @@ const ChangePasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisibleField1, setIsVisibleField1] = useState(false);
   const [isVisibleField2, setIsVisibleField2] = useState(false);
-  const [loadingLabel ,setLoadingLabel] = useState()
+  const [loadingLabel, setLoadingLabel] = useState();
 
   const onVisibleHandler = (field) => {
     if (field === "field1") {
@@ -85,9 +85,12 @@ const ChangePasswordPage = () => {
         .then(() => {
           setAuthStatus(true);
           setAuthMsg("Your password has been changed sucessfully.");
-          firestore.collection("Employee-Info").doc(fireAuth.currentUser.email).update({
-            "auth-info.newly_added": false,
-          });
+          firestore
+            .collection("Employee-Info")
+            .doc(fireAuth.currentUser.email)
+            .update({
+              "auth-info.newly_added": false,
+            });
           setTimeout(() => {
             const store = firestore
               .collection("Employee-Info")
@@ -113,12 +116,9 @@ const ChangePasswordPage = () => {
         });
     },
   });
-
-  const new_password_error =
-    formik.touched.confirm_password && formik.errors.confirm_password;
   useEffect(() => {
-    setLoadingLabel('Validating...')
-    if (formik.values.confirm_password.length > 1 ) {
+    setLoadingLabel("Validating...");
+    if (formik.values.confirm_password.length > 1) {
       setIsLoading(true);
       const timeout = setTimeout(() => {
         if (
@@ -131,7 +131,7 @@ const ChangePasswordPage = () => {
           setAuthMsg("Error: Password doesn't match.");
         }
         setIsLoading(false);
-        setLoadingLabel('Processing...')
+        setLoadingLabel("Processing...");
       }, 1000);
 
       return () => {
@@ -257,7 +257,7 @@ const ChangePasswordPage = () => {
                   role="status"
                   aria-hidden="true"
                 />
-                {" "+loadingLabel}
+                {" " + loadingLabel}
                 <span className="visually-hidden">Loading...</span>
               </Button>
             )}

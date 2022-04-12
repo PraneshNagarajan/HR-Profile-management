@@ -80,7 +80,7 @@ function App() {
 
   useEffect(() => {
     // Get real-time data
-    if (initApp != undefined && !initApp) {
+    if (typeof initApp != "string" && !initApp) {
       usersRef.onSnapshot((querySnapshot) => {
         dispatch(
           DemandPreRequisiteActions.getUsers(
@@ -120,11 +120,11 @@ function App() {
       }
     }
   }, [user, clientRef, techonologyRef, usersRef]);
-  console.log(initApp);
+console.log(initApp == false)
   return (
     <Switch>
       <Route path="/" exact>
-        {initApp && (
+        {typeof(initApp) === "string" && (
           <AuthLayout>
             <span className={sm ? "mt-5 bg-hero" : ""}>
               <Spinners color={sm ? false : true}>
@@ -140,7 +140,7 @@ function App() {
             </span>
           </AuthLayout>
         )}
-        {!initApp && <Redirect to="/loginPage"></Redirect>}
+        {typeof(initApp) != "string" && initApp == false && <Redirect to="/loginPage"></Redirect>}
       </Route>
       <Route path="/loginPage" exact>
         <AuthLayout>
@@ -153,6 +153,7 @@ function App() {
           <ResetPasswordPage />
         </AuthLayout>
       </Route>
+
       {initApp && (
         <Route path="/addEmployees">
           <MainLayout>
@@ -160,6 +161,7 @@ function App() {
           </MainLayout>
         </Route>
       )}
+
       {auth.flag && (
         <Fragment>
           <Route path="/changePassword">

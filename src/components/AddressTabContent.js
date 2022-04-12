@@ -59,7 +59,7 @@ const validate = (value) => {
 
   if (!value.state) {
     errors.state = "*Required.";
-  } else if (!new RegExp("^[A-Z]*$").test(value.state)) {
+  } else if (!new RegExp("^[A-Z ]*$").test(value.state)) {
     errors.state = "Alphabets only allowed and must be in uppercase.";
   }
 

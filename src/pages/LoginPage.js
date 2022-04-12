@@ -259,7 +259,12 @@ const LoginPage = () => {
                         "auth-info.locked": false,
                         "auth-info.invalid_attempt_timestamp": null,
                       })
-                      .catch((err) => {});
+                      .catch((err) => {
+                        setAuthStatus(false);
+                        setAuthMsg(
+                          "Unable to add auth-infos like chances, attempts, timestamp.."
+                        );
+                      });
                     if (String(profile_info.employee.role) === "FOCAL") {
                       history.push("/focalHomePage");
                     } else if (
@@ -275,6 +280,7 @@ const LoginPage = () => {
                   }
                 } else {
                   if (auth_info.newly_added || Math.round(dateDiff) >= 90) {
+                    alert("change");
                     history.push("/changePassword");
                   } else {
                     history.push({
@@ -379,7 +385,6 @@ const LoginPage = () => {
               )}
               {!isVisibleField && (
                 <FaRegEyeSlash
-                  style={{ width: "5rem", height: "5rem" }}
                   role="button"
                   onClick={onVisibleHandler}
                   style={{ color: "red" }}

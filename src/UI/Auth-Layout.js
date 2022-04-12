@@ -49,8 +49,7 @@ const AuthLayout = (props) => {
             <Col>
               {!sm && (
                 <Fragment>
-                  <p className="display-3">
-                    HIRE<span className="fst-italic">PRO</span>
+                  <p className="display-3 fst-italic">eC-hiRe
                   </p>
                   <p className="display-5">slogan ! slogan ! slogan!</p>
                 </Fragment>

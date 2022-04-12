@@ -20,23 +20,23 @@ const validate = (value) => {
   const errors = {};
   if (!value.firstname) {
     errors.firstname = "*Required.";
-  } else if (!new RegExp("^[A-Z]+$").test(value.firstname)) {
+  } else if (!new RegExp("^[A-Z ]+$").test(value.firstname)) {
     errors.firstname = "*Alphabets only allowed and must be in uppercase.";
   }
 
-  if (!new RegExp("^[A-Z]+$").test(value.lastname) && value.lastname) {
+  if (!new RegExp("^[A-Z ]+$").test(value.lastname) && value.lastname) {
     errors.lastname = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.fathername) {
     errors.fathername = "*Required.";
-  } else if (!new RegExp("^[A-Z]+$").test(value.fathername)) {
+  } else if (!new RegExp("^[A-Z ]+$").test(value.fathername)) {
     errors.fathername = "*Alphabets only allowed and must be in uppercase.";
   }
 
   if (!value.mothername) {
     errors.mothername = "*Required.";
-  } else if (!new RegExp("^[A-Z]+$").test(value.mothername)) {
+  } else if (!new RegExp("^[A-Z ]+$").test(value.mothername)) {
     errors.mothername = "*Alphabets only allowed and must be in uppercase.";
   }
 
@@ -78,7 +78,7 @@ const validate = (value) => {
     errors.email1 = "*Required.";
   } else if (
     !new RegExp(
-      "^[A-Za-z]{1}[A-Za-z0-9_.]+[@]{1}[A-Za-z]+[.]{1}[A-Za-z]{2,3}$"
+      "^[A-Za-z]{1}[A-Za-z0-9_.-]+[@]{1}[A-Za-z-]+[.]{1}[A-Za-z]{2,3}$"
     ).test(value.email1)
   ) {
     errors.email1 = "*Invalid Format.";
@@ -86,7 +86,7 @@ const validate = (value) => {
   if (value.email2) {
     if (
       !new RegExp(
-        "^[A-Za-z]{1}[A-Za-z0-9_.]+[@]{1}[A-Za-z]+[.]{1}[A-Za-z]{2,3}$"
+        "^[A-Za-z]{1}[A-Za-z0-9_.-]+[@]{1}[A-Za-z-]+[.]{1}[A-Za-z]{2,3}$"
       ).test(value.email2)
     ) {
       errors.email2 = "*Invalid Format.";

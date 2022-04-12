@@ -33,7 +33,6 @@ const StatusTrackerPage = () => {
   const currentPage = useSelector((state) => state.pagination.current);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [refreshFlag, setRefershFlag] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const formik = useFormik({
