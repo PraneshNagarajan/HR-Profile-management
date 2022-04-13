@@ -121,7 +121,7 @@ const NavBar = () => {
                     className="text-warning fw-bold"
                     as={Link}
                     onClick={() => setExpanded(!isExpanded)}
-                    to="/manageEmployeeProfile/111113?activeTab=personal-info"
+                    to="/manageEmployees"
                   >
                     {" "}
                     <FaUserEdit
@@ -278,11 +278,7 @@ const NavBar = () => {
                     className="text-warning fw-bold"
                     as={Link}
                     onClick={() => setExpanded(!isExpanded)}
-                    to={
-                      "/manageEmployeeProfile/" +
-                      user.id +
-                      "?activeTab=personal-info"
-                    }
+                    to="/manageEmployees"
                   >
                     {" "}
                     <FaEdit style={{ width: "20px", height: "20px" }} />

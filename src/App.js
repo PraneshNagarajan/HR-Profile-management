@@ -25,6 +25,7 @@ import Notifications from "./pages/Notifications";
 import { NotificationActions } from "./Redux/NotificationSlice";
 import Spinners from "./components/Spinners";
 import { useMediaQuery } from "react-responsive";
+import ManageEmployee from "./pages/ManageEmployee";
 
 function App() {
   const history = useHistory();
@@ -184,6 +185,9 @@ console.log(initApp == false)
               </Route>
               <Route path="/addEmployees">
                 <AddEmployeePage />
+              </Route>
+              <Route path="/manageEmployees">
+              <ManageEmployee/>
               </Route>
               <Route path="/manageEmployeeProfile/:id">
                 <ManageEmployeeProfilePage />
