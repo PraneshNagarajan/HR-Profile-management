@@ -266,7 +266,7 @@ const ManageSupply = () => {
   //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
   //and disable previous step status options.
   useEffect(() => {
-    if (alertData.accept) {
+    if (alertData.accept && typeof(alertData.data) == "string") {
       let tmp_data = supplyList;
       let index = -1;
       let pStatus = tmp_data[profileKey]["status"];

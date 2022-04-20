@@ -278,7 +278,7 @@ const NavBar = () => {
                     className="text-warning fw-bold"
                     as={Link}
                     onClick={() => setExpanded(!isExpanded)}
-                    to="/manageEmployees"
+                    to={"/manageEmployeeProfile/view/"+user.id+"?activeTab=personal-info"}
                   >
                     {" "}
                     <FaEdit style={{ width: "20px", height: "20px" }} />

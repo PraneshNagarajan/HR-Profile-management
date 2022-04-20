@@ -3,8 +3,8 @@ import  'firebase/firebase-firestore';
 import 'firebase/firebase-auth'
 import 'firebase/firebase-storage'
     
-    //------------------------- DEV -----------------------------------------
-    // const firebaseConfig = {
+    //------------------------- Primary -----------------------------------------
+    //const firebaseConfig = {
     //   apiKey: "AIzaSyC59TbqRygXA3YldZNKYQnwlg7WGhBzQFc",
     //   authDomain: "hr-profile-management.firebaseapp.com",
     //   projectId: "hr-profile-management",
@@ -14,30 +14,30 @@ import 'firebase/firebase-storage'
     //   measurementId: "G-QE1GSFSEZV"
     // }
     
-    //--------------------     TEST       -------------------------------------------
+    //--------------------     DEV    -------------------------------------------
 
-    // const firebaseConfig = {
-    //   apiKey: "AIzaSyAwyN849ZwaT0MNOz3FTRTXgdvx03tYB-o",
-    //   authDomain: "hr-profile-mangement-dev.firebaseapp.com",
-    //   projectId: "hr-profile-mangement-dev",
-    //   storageBucket: "hr-profile-mangement-dev.appspot.com",
-    //   messagingSenderId: "504041984185",
-    //   appId: "1:504041984185:web:4567b08a2ff89a255a8b68",
-    //   measurementId: "G-DC1FCD8X7B"
-    // };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwyN849ZwaT0MNOz3FTRTXgdvx03tYB-o",
+      authDomain: "hr-profile-mangement-dev.firebaseapp.com",
+      projectId: "hr-profile-mangement-dev",
+      storageBucket: "hr-profile-mangement-dev.appspot.com",
+      messagingSenderId: "504041984185",
+      appId: "1:504041984185:web:4567b08a2ff89a255a8b68",
+      measurementId: "G-DC1FCD8X7B"
+    };
 
 
 
     //------------------------------  NP -----------------------------------------
-    const firebaseConfig = {
-      apiKey: "AIzaSyCNgqI21HFXxFeHZl95KgcEhqdJd9472L4",
-      authDomain: "hr-profile-management-np.firebaseapp.com",
-      projectId: "hr-profile-management-np",
-      storageBucket: "hr-profile-management-np.appspot.com",
-      messagingSenderId: "739294019947",
-      appId: "1:739294019947:web:11a05abaea0879792acc2e",
-      measurementId: "G-V6JMKXCE19"
-    };
+    // const firebaseConfig = {
+    //   apiKey: "AIzaSyCNgqI21HFXxFeHZl95KgcEhqdJd9472L4",
+    //   authDomain: "hr-profile-management-np.firebaseapp.com",
+    //   projectId: "hr-profile-management-np",
+    //   storageBucket: "hr-profile-management-np.appspot.com",
+    //   messagingSenderId: "739294019947",
+    //   appId: "1:739294019947:web:11a05abaea0879792acc2e",
+    //   measurementId: "G-V6JMKXCE19"
+    // };
     
 const app =  firebase.initializeApp(firebaseConfig)
 

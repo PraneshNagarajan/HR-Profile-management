@@ -203,7 +203,9 @@ const LoginPage = () => {
                 );
                 const auth_info = documentSnapshot.get("auth-info");
                 const profile_info = documentSnapshot.get("profile");
-                const dateDiff =
+                const login_info = documentSnapshot.get("login-info")
+                if(login_info.state === "active") {
+                  const dateDiff =
                   (new Date().getTime() -
                     new Date(password_info.last_changed).getTime()) /
                   (1000 * 3600 * 24);
@@ -280,11 +282,10 @@ const LoginPage = () => {
                   }
                 } else {
                   if (auth_info.newly_added || Math.round(dateDiff) >= 90) {
-                    alert("change");
                     history.push("/changePassword");
                   } else {
                     history.push({
-                      pathname: `/manageEmployeeProfile/${profile_info.employee.id}`,
+                      pathname: `/manageEmployeeProfile/view/${profile_info.employee.id}`,
                       search: `?activeTab=${
                         !profile_info.img_uploaded
                           ? "employee-info"
@@ -292,6 +293,9 @@ const LoginPage = () => {
                       }`,
                     });
                   }
+                }
+                } else {
+                  setAuthMsg("You are not authorized person to login / Your account has been suspended or deleted.");
                 }
               });
           })

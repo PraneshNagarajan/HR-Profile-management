@@ -189,7 +189,7 @@ console.log(initApp == false)
               <Route path="/manageEmployees">
               <ManageEmployee/>
               </Route>
-              <Route path="/manageEmployeeProfile/:id">
+              <Route path="/manageEmployeeProfile/:mode/:id/">
                 <ManageEmployeeProfilePage />
               </Route>
             </MainLayout>

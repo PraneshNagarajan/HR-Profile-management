@@ -16,6 +16,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import { fireAuth, fireStorage, firestore } from "../firebase";
+import { useLocation } from "react-router-dom";
 import { AlertActions } from "../Redux/AlertSlice";
 import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { AuthActions } from "../Redux/AuthenticationSlice";
@@ -39,13 +40,16 @@ const EmployeeTabContent = (props) => {
   let noImgUrl =
     "https://firebasestorage.googleapis.com/v0/b/hr-profile-mangement-dev.appspot.com/o/employee-img%2FnoUserFound.jpg?alt=media&token=46e2c7ca-51df-43c8-adbd-202b74fe88ea";
   const dispatch = useDispatch();
+  const location = useLocation();
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
   const loggedUser = useSelector((state) => state.auth);
   const pre_requisite = useSelector((state) => state.demandPreRequisite);
   const [Img, setImg] = useState({});
   const [users, setUsers] = useState({});
-  const [supervisorOptions, setSupervisorOptions] = useState([]);
+  const [supervisorOptions, setSupervisorOptions] = useState(
+    props.view ? [infos.employee.role] : []
+  );
   const [errorsEmail, setErrorsEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const empnoRef = firestore.collection("Employee-No");
@@ -61,24 +65,6 @@ const EmployeeTabContent = (props) => {
     supervisor: "- Select Supervisor -",
   };
 
-  useEffect(() => {
-    firestore
-      .collection("Employee-Info")
-      .doc("users")
-      .get()
-      .then((res) => {
-        setUsers(res.data());
-      });
-    //if logged user is Superadmin add ADMIN Options.
-    if (loggedUser.role === "SUPERADMIN") {
-      let newRoles = roles;
-      if (!roles.includes("ADMIN")) {
-        newRoles.push("ADMIN");
-        setRoles(newRoles);
-      }
-    }
-  }, []);
-
   const onAlert = (msg, flag) => {
     dispatch(
       AlertActions.handleShow({
@@ -91,38 +77,42 @@ const EmployeeTabContent = (props) => {
   const onUpdateUserDoc = (value, supervisorID, img_url) => {
     let newSupervisorReportees = [];
     let managerID = value.id;
-    console.log(supervisorID);
     if (!props.flag) {
-      let position = pre_requisite.users.findIndex(
-        (item) => item.id === supervisorID
-      );
       managerID =
         value.role === "ADMIN"
           ? supervisorOptions[0]["id"]
-          : pre_requisite.users[position].supervisor;
-      newSupervisorReportees = pre_requisite.users[position].reportees
-        ? [...pre_requisite.users[position].reportees]
+          : users[supervisorID].supervisor;
+      newSupervisorReportees = users[supervisorID].reportees
+        ? [...users[supervisorID].reportees]
         : [];
       newSupervisorReportees.push(String(value.id));
     }
+    let upt_value = {
+      [value.id]: {
+        email: value.email,
+        name: infos.personal.firstname,
+        role: formik.values.role,
+        id: String(formik.values.id),
+        img_url: !!Img.name ? img_url : noImgUrl,
+        state: "active",
+        supervisor: supervisorID,
+        manager: managerID,
+      },
+      [supervisorID + ".reportees"]: newSupervisorReportees,
+    };
+    //
+    if (users[value.id].supervisor != value.supervisor) {
+      let rm_existing_list = users[users[value.id].supervisor].reportees.filter(
+        (emp) => emp != value.id
+      );
+      upt_value[infos.employee.supervisor + ".reportees"] = rm_existing_list;
+    }
+
     firestore
       .collection("Employee-Info")
       .doc("users")
-      .update({
-        [value.id]: {
-          email: value.email,
-          name: infos.personal.firstname,
-          role: formik.values.role,
-          id: String(formik.values.id),
-          img_url: !!Img.name ? img_url : noImgUrl,
-          supervisor: supervisorID,
-          manager: managerID,
-        },
-        [supervisorID + ".reportees"]: newSupervisorReportees,
-      })
-      .then(() => alert("user added"))
+      .update(upt_value)
       .catch((err) => {
-        console.log(String(err));
         onAlert("emptab_line:130" + String(err), false);
       });
   };
@@ -153,7 +143,6 @@ const EmployeeTabContent = (props) => {
               .getDownloadURL()
               .then((url) => {
                 img_url = url;
-                console.log(img_url);
               })
               .catch((err) => onAlert("line_number:115" + String(err), false));
             if (await (!loggedUser.admin || email === loggedUser.email)) {
@@ -228,6 +217,7 @@ const EmployeeTabContent = (props) => {
             })
             .then(async () => {
               await onUpdateUserDoc(value, supervisorID, img_url);
+              await onAlert("Data added successfully.", true);
             })
             .catch((err) => {
               onAlert("emptab_line:170. " + String(err), false);
@@ -351,6 +341,25 @@ const EmployeeTabContent = (props) => {
       await setIsLoading(false);
     },
   });
+
+  useEffect(() => {
+    firestore
+      .collection("Employee-Info")
+      .doc("users")
+      .get()
+      .then((res) => {
+        setUsers(res.data());
+      });
+    //if logged user is Superadmin add ADMIN Options.
+    if (loggedUser.role === "SUPERADMIN") {
+      let newRoles = roles;
+      if (!roles.includes("ADMIN")) {
+        newRoles.push("ADMIN");
+        setRoles(newRoles);
+      }
+    }
+  }, [formik.values.supervisor]);
+
   useEffect(() => {
     let profile =
       Object.values(users).length > 1
@@ -373,7 +382,9 @@ const EmployeeTabContent = (props) => {
   }, [formik.values.email]);
 
   const onFilterSupervisor = (filter) => {
-    let filterDatas = pre_requisite.users.filter((emp) => emp.role === filter);
+    let filterDatas = pre_requisite.users.filter(
+      (emp) => emp.role === filter && emp.id != formik.values.id
+    );
     setExpectRoleUsers(filter);
     if (filter === "SUPERADMIN") {
       formik.setFieldValue("supervisor", filterDatas[0]["id"]);
@@ -383,7 +394,7 @@ const EmployeeTabContent = (props) => {
 
   useEffect(() => {
     let selectedRole = formik.values.role;
-    if (infos.employee.role !== selectedRole && !props.view.user) {
+    if (!props.view.user) {
       if (!selectedRole.includes("-")) {
         if (selectedRole === "JUNIOR RECRUITER") {
           onFilterSupervisor("SENIOR RECRUITER");
@@ -395,6 +406,8 @@ const EmployeeTabContent = (props) => {
           onFilterSupervisor(props.flag ? "" : "SUPERADMIN");
         }
       }
+    } else {
+      selectedRole([]);
     }
     if (!props.view.user && infos.employee.role === formik.values.role) {
       formik.setValues({
@@ -476,7 +489,11 @@ const EmployeeTabContent = (props) => {
                   width={sm ? "100px" : "150px"}
                 />
               </div>
-              {(props.view.user || !props.view) && (
+              {((props.view.user &&
+                (location.pathname.includes("edit") ||
+                  (location.pathname.includes("view") &&
+                    location.pathname.includes(loggedUser.id)))) ||
+                !props.view) && (
                 <Col className="d-flex justify-content-center">
                   <FormControl
                     type="file"

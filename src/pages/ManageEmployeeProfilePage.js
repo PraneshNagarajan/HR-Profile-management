@@ -13,9 +13,11 @@ import { AlertActions } from "../Redux/AlertSlice";
 import { Link, useHistory, useLocation, useParams } from "react-router-dom";
 import { fireStorage, firestore } from "../firebase";
 import Spinners from "../components/Spinners";
+import { FaArrowCircleLeft } from "react-icons/fa";
 
 const ManageEmployeeProfilePage = () => {
   const sm = useMediaQuery({ maxWidth: 768 });
+  const history = useHistory()
   const dispatch = useDispatch();
   const infos = useSelector((state) => state.info);
   const loggedUser = useSelector((state) => state.auth);
@@ -106,8 +108,19 @@ const ManageEmployeeProfilePage = () => {
     <Fragment>
       <Alerts flag={true} />
       {isSpinner && <Spinners />}
+     
       {!isSpinner && (
-        <Container fluid className={sm ? "my-3" : "p-5"}>
+        <Container fluid className={sm ? "my-3" : "p-3"}>
+           <FaArrowCircleLeft className={`sm ? "" : "ms-5" text-primary mb-3`}
+                                      size="30px"
+                                      style={{
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() =>
+                                        history.push(
+                                          "/manageEmployees"
+                                        )
+                                      }/>
           <Nav variant="tabs" defaultActiveKey={infos.activeTab}>
             <Nav.Item>
               <Nav.Link
@@ -187,8 +200,8 @@ const ManageEmployeeProfilePage = () => {
           >
             <PersonalTabContent
               view={{
-                user: infos.employee.id === loggedUser.id,
-                admin: infos.employee.id !== loggedUser.id,
+                user: location.pathname.includes("view"),
+                admin: location.pathname.includes("edit"),
               }}
             />
           </div>
@@ -199,8 +212,8 @@ const ManageEmployeeProfilePage = () => {
           >
             <AddressTabContent
               view={{
-                user: infos.employee.id === loggedUser.id,
-                admin: infos.employee.id !== loggedUser.id,
+                user: location.pathname.includes("view"),
+                admin: location.pathname.includes("edit"),
               }}
             />
           </div>
@@ -211,8 +224,8 @@ const ManageEmployeeProfilePage = () => {
           >
             <EmployeeTabContent
               view={{
-                user: infos.employee.id === loggedUser.id,
-                admin: infos.employee.id !== loggedUser.id,
+                user: location.pathname.includes("view"),
+                admin: location.pathname.includes("edit"),
               }}
               user={{ img: userImg }}
             />
