@@ -36,6 +36,7 @@ const ManageEmployeeProfilePage = () => {
       .doc("users")
       .get()
       .then((documentSnapshot) => {
+        console.log(params.id)
         const doc = documentSnapshot.get(params.id).email;
         firestore
           .collection("Employee-Info")

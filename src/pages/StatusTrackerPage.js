@@ -106,7 +106,6 @@ const StatusTrackerPage = () => {
   useEffect(() => {
     setSupplyList(filter.result);
   }, [filter.result]);
-
   return (
     <Fragment>
       {supplyList.length === 0 &&
@@ -130,7 +129,7 @@ const StatusTrackerPage = () => {
             >
               <FaSyncAlt
                 role="button"
-                onClick={() => setRefershFlag(refreshFlag)}
+                onClick={() => setRefershFlag(true)}
                 style={{ color: "#0d6efd" }}
               />
             </span>

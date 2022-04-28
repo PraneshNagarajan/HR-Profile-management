@@ -311,20 +311,28 @@ const CreateDemand = (props) => {
       uploadFlag = true;
       let data = [];
       if (
-        value.primarytech === value.secondarytech &&
+        (value.primarytech === value.secondarytech) === value.addprimaryskill &&
         ptIsChecked &&
-        stIsChecked
+        stIsChecked &&
+        aptIsChecked
       ) {
         if (!props.techFlag) {
           addSkills(
             value.primarytech,
-            { sets: [value.primaryskill, value.secondaryskill] },
+            {
+              sets: [
+                value.primaryskill,
+                value.secondaryskill,
+                value.addprimaryskill,
+              ],
+            },
             !props.techFlag,
             true
           );
         } else {
           data.push(value.primaryskill);
           data.push(value.secondaryskill);
+          data.push(value.addprimaryskill);
           if (!pre_requisite.technologies[value.primarytech]) {
             addSkills(value.primarytech, { sets: data }, !props.techFlag, true);
           } else {
@@ -332,6 +340,10 @@ const CreateDemand = (props) => {
             checkIsSkillPresentHandler(
               value.secondarytech,
               value.secondaryskill
+            );
+            checkIsSkillPresentHandler(
+              value.addprimarytech,
+              value.addprimaryskill
             );
           }
         }
@@ -349,6 +361,24 @@ const CreateDemand = (props) => {
             checkIsSkillPresentHandler(
               value.secondarytech,
               value.secondaryskill
+            );
+          }
+        }
+        //apt added
+        data = [];
+        if (aptIsChecked || apsIsChecked) {
+          data.push(value.addprimaryskill);
+          if (!pre_requisite.technologies[value.addprimarytech]) {
+            addSkills(
+              value.addprimarytech,
+              { sets: data },
+              !props.techFlag,
+              true
+            );
+          } else {
+            checkIsSkillPresentHandler(
+              value.addprimarytech,
+              value.addprimaryskill
             );
           }
         }
@@ -417,7 +447,7 @@ const CreateDemand = (props) => {
                   value.endclientname +
                   " is found already under " +
                   value.clientname +
-                  ".Create_demand_line:408. " ,
+                  ".Create_demand_line:408. ",
                 false
               );
             }
@@ -426,7 +456,6 @@ const CreateDemand = (props) => {
       }
       if (uploadFlag) {
         const demandID = "D" + new Date().getTime();
-        // loggedUser.id + new Date().getTime() + value.assignee
         firestore
           .collection("Demands")
           .doc(demandID)
@@ -436,8 +465,6 @@ const CreateDemand = (props) => {
                 ...value,
                 owners: [loggedUser.id],
                 assignees: selectedRecruiters,
-                addprimaryskill: addPrimarySkill,
-                secondaryskill: addSecondarySkill,
               },
               profile_info: {
                 profiles: [],

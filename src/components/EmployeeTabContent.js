@@ -22,6 +22,7 @@ import { InfoActions } from "../Redux/EmployeeInfoSlice";
 import { AuthActions } from "../Redux/AuthenticationSlice";
 import noUserImg from "../images/noUserFound.jpg";
 import { Fragment } from "react";
+import { useHistory } from "react-router-dom";
 
 const validate = (value) => {
   const errors = {};
@@ -38,9 +39,10 @@ const validate = (value) => {
 };
 const EmployeeTabContent = (props) => {
   let noImgUrl =
-    "https://firebasestorage.googleapis.com/v0/b/hr-profile-mangement-dev.appspot.com/o/employee-img%2FnoUserFound.jpg?alt=media&token=46e2c7ca-51df-43c8-adbd-202b74fe88ea";
+    "https://firebasestorage.googleapis.com/v0/b/ec2-hire.appspot.com/o/employee-img%2FnoUserFound.jpg?alt=media&token=61b2f88e-dc8d-4369-a6a0-d9a21bb26270";
   const dispatch = useDispatch();
   const location = useLocation();
+  const history = useHistory();
   const sm = useMediaQuery({ maxWidth: 768 });
   const infos = useSelector((state) => state.info);
   const loggedUser = useSelector((state) => state.auth);
@@ -87,9 +89,10 @@ const EmployeeTabContent = (props) => {
         : [];
       newSupervisorReportees.push(String(value.id));
     }
+
     let upt_value = {
       [value.id]: {
-        email: value.email,
+        email: String(value.email).toLowerCase(),
         name: infos.personal.firstname,
         role: formik.values.role,
         id: String(formik.values.id),
@@ -100,8 +103,8 @@ const EmployeeTabContent = (props) => {
       },
       [supervisorID + ".reportees"]: newSupervisorReportees,
     };
-    //
-    if (users[value.id].supervisor != value.supervisor) {
+
+    if (props.view.admin && users[value.id].supervisor != value.supervisor) {
       let rm_existing_list = users[users[value.id].supervisor].reportees.filter(
         (emp) => emp != value.id
       );
@@ -298,6 +301,9 @@ const EmployeeTabContent = (props) => {
                 })
                 .catch(async (err) => {
                   await setIsLoading(false);
+                  await console.log(
+                    "emptab_line:336" + String(err) + " Data added failed."
+                  );
                   await onAlert(
                     "emptab_line:336" + String(err) + " Data added failed.",
                     false
@@ -320,11 +326,14 @@ const EmployeeTabContent = (props) => {
                 })
                 .then(async () => {
                   await onAlert("Data added successfully.", true);
-                  firestore
+                  await firestore
                     .collection("Employee-Info")
                     .doc("new")
                     .delete()
                     .catch((err) => onAlert("emptab_line:322", false));
+                  if (await props.flag) {
+                    history.push("/loginPage");
+                  }
                 })
                 .catch(async (err) => {
                   onAlert("emptab_line_325", false);
@@ -406,9 +415,10 @@ const EmployeeTabContent = (props) => {
           onFilterSupervisor(props.flag ? "" : "SUPERADMIN");
         }
       }
-    } else {
-      selectedRole([]);
     }
+    // else {
+    //   selectedRole;
+    // }
     if (!props.view.user && infos.employee.role === formik.values.role) {
       formik.setValues({
         ...infos.employee,

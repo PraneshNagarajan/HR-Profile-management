@@ -266,7 +266,7 @@ const ManageSupply = () => {
   //adding icon, title with date for each step and delete steps backward untill step icon is 'successIcon'
   //and disable previous step status options.
   useEffect(() => {
-    if (alertData.accept && typeof(alertData.data) == "string") {
+    if (alertData.accept && typeof alertData.data == "string") {
       let tmp_data = supplyList;
       let index = -1;
       let pStatus = tmp_data[profileKey]["status"];
@@ -401,7 +401,7 @@ const ManageSupply = () => {
           dataFlag = Object.keys(statusValues).length > 0 ? true : false;
           dispatch(
             PaginationActions.initial({
-              size: data.profiles.length,
+              size: Object.keys(statusValues).length,
               count: sm ? 5 : 10,
               current: 1,
             })
@@ -450,9 +450,9 @@ const ManageSupply = () => {
         </p>
       )}
       <Fragment>
-        <Alerts profile={{ flag: profileView, view: true }} />
+        {profileView && <Alerts profile={{ flag: profileView, view: true }} />}
 
-        {!profileView && <Alerts flag={true} />}
+        {stepOptions.length == 0 && !profileView && <Alerts flag={true} />}
         {stepOptions.length > 0 && <Alerts status={{ stepOptions }} />}
         {Object.values(viewComment).length > 0 && (
           <Alerts table={viewComment} />

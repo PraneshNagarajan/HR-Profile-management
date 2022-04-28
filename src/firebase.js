@@ -2,9 +2,22 @@ import firebase from 'firebase/app';
 import  'firebase/firebase-firestore';
 import 'firebase/firebase-auth'
 import 'firebase/firebase-storage'
+
+// ------------------------ ec2-hire -------------------------
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDIHeX6cqRDmbrx0-jAtX2bY6h8pvCZcq8",
+  authDomain: "ec2-hire.firebaseapp.com",
+  projectId: "ec2-hire",
+  storageBucket: "ec2-hire.appspot.com",
+  messagingSenderId: "1099507962286",
+  appId: "1:1099507962286:web:5fe2a742694b8f404db83f",
+  measurementId: "G-QVYNLPKWPG"
+};
+
     
     //------------------------- Primary -----------------------------------------
-    //const firebaseConfig = {
+    // const firebaseConfig = {
     //   apiKey: "AIzaSyC59TbqRygXA3YldZNKYQnwlg7WGhBzQFc",
     //   authDomain: "hr-profile-management.firebaseapp.com",
     //   projectId: "hr-profile-management",
@@ -16,15 +29,15 @@ import 'firebase/firebase-storage'
     
     //--------------------     DEV    -------------------------------------------
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAwyN849ZwaT0MNOz3FTRTXgdvx03tYB-o",
-      authDomain: "hr-profile-mangement-dev.firebaseapp.com",
-      projectId: "hr-profile-mangement-dev",
-      storageBucket: "hr-profile-mangement-dev.appspot.com",
-      messagingSenderId: "504041984185",
-      appId: "1:504041984185:web:4567b08a2ff89a255a8b68",
-      measurementId: "G-DC1FCD8X7B"
-    };
+    // const firebaseConfig = {
+    //   apiKey: "AIzaSyAwyN849ZwaT0MNOz3FTRTXgdvx03tYB-o",
+    //   authDomain: "hr-profile-mangement-dev.firebaseapp.com",
+    //   projectId: "hr-profile-mangement-dev",
+    //   storageBucket: "hr-profile-mangement-dev.appspot.com",
+    //   messagingSenderId: "504041984185",
+    //   appId: "1:504041984185:web:4567b08a2ff89a255a8b68",
+    //   measurementId: "G-DC1FCD8X7B"
+    // };
 
 
 

@@ -108,7 +108,7 @@ const CreateSupply = (props) => {
   const [profileView, setProfileView] = useState(false);
   const [profileDBDatas, setProfileDBDatas] = useState([]);
   const [isLoadingMsg, setIsLoadingMsg] = useState("");
-  const alertData = useSelector((state) => state.alert);
+  const backendApi = "https://us-central1-ec2-hire.cloudfunctions.net/app";
 
   let statusDatas = {
     current_status: "Profile Submitted",
@@ -580,6 +580,12 @@ const CreateSupply = (props) => {
 
   const onShowForm = (file) => {
     onAlert(file, "");
+    dispatch(
+      ProfileActions.handleSkills({
+        primarySkill: formik.values.primaryskill,
+        secondarySkill: formik.values.secondaryskill,
+      })
+    );
     setProfileFlag(true);
     res = files.filter((item) => item.name.includes(file));
     if (res.length > 0 && !Object.keys(profileInfo.data).includes(file)) {
@@ -676,22 +682,19 @@ const CreateSupply = (props) => {
           });
           if (addedProfiles.length - 1 === index) {
             axios
-              .post(
-                "https://us-central1-hr-profile-management.cloudfunctions.net/app/download",
-                {
-                  dirName: formik.values.demand_id,
-                  datas,
-                  metaData: new_data,
-                  headers,
-                  id: loggedUser.id,
-                }
-              )
+              .post(backendApi + "/download", {
+                dirName: formik.values.demand_id,
+                datas,
+                metaData: new_data,
+                headers,
+                id: loggedUser.id,
+              })
               .then((res) => {
                 setIsLoadingMsg("Downloading & Zipping the profiles....");
                 if (res.data.includes("ready")) {
                   setTimeout(() => {
                     axios({
-                      url: "https://us-central1-hr-profile-management.cloudfunctions.net/app/downloadZip",
+                      url: backendApi + "/downloadZip",
                       responseType: "blob",
                       method: "POST",
                       data: {
@@ -724,18 +727,16 @@ const CreateSupply = (props) => {
           <p className="text-danger">{isLoadingMsg}</p>
         </Spinners>
       )}
+      {profileFlag && (
+        <Alerts
+          profile={{
+            flag: profileFlag,
+            view: profileView,
+          }}
+        />
+      )}
       {isLoadingMsg.length === 0 && (
         <Fragment>
-          <Alerts
-            profile={{
-              flag: profileFlag,
-              view: profileView,
-              data: {
-                pSkill: formik.values.primaryskill,
-                sSkill: formik.values.secondaryskill,
-              },
-            }}
-          />
           <Container className="d-flex justify-content-center ">
             <Card className={`my-3 ${sm ? `w-100` : `w-75`}`}>
               <Card.Header className="bg-primary text-center text-white">

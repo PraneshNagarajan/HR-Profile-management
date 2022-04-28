@@ -121,7 +121,7 @@ function App() {
       }
     }
   }, [user, clientRef, techonologyRef, usersRef]);
-console.log(initApp == false)
+
   return (
     <Switch>
       <Route path="/" exact>
@@ -204,7 +204,7 @@ console.log(initApp == false)
               <Route path="/notifications">
                 <Notifications />
               </Route>
-              <Route path="/manageEmployeeProfile/:id">
+              <Route path="/manageEmployeeProfile/:mode/:id">
                 <ManageEmployeeProfilePage />
               </Route>
               <Route path="/focalHomePage">
@@ -240,7 +240,7 @@ console.log(initApp == false)
               <Route path="/notifications">
                 <Notifications />
               </Route>
-              <Route path="/manageEmployeeProfile/:id">
+              <Route path="/manageEmployeeProfile/:mode/:id">
                 <ManageEmployeeProfilePage />
               </Route>
               <Route path="/userHomePage">

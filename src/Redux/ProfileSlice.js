@@ -5,6 +5,7 @@ const ProfileSlice = createSlice({
   initialState: {
     added_data : {},
     data: {},
+    skills:{}
   },
   reducers: {
     handleAdd(state, action) {
@@ -25,6 +26,9 @@ const ProfileSlice = createSlice({
     handleClear(state) {
       state.data = {};
       state.added_data = {}
+    },
+    handleSkills(state,action) {
+     state.skills = action.payload
     },
     handleMove(state) {
       let tmpData = state.added_data;

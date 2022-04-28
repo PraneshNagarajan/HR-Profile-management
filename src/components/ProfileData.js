@@ -104,9 +104,9 @@ const ProfileData = (props) => {
     emailID: "",
     currentCTC: "",
     expectedCTC: "",
-    primarySkill: props.data.pSkill,
+    primarySkill: "",
     primaryExperience: "",
-    secondarySkill: props.data.sSkill,
+    secondarySkill: "",
     totalExperience: "",
     education: "",
     mark: "",
@@ -120,6 +120,7 @@ const ProfileData = (props) => {
   useEffect(() => {
     if (props.view) {
       let propsKeys = Object.keys(profileInfo.data);
+      //view profile from createSupplyPage
       if (propsKeys.includes(props.file)) {
         formik.setValues(profileInfo.data[props.file]);
         let InitialValuekeys = Object.keys(initialValues);
@@ -131,8 +132,13 @@ const ProfileData = (props) => {
         });
         onAddNewFields("", diffFields);
       } else {
+        //view profile from manageSupply Page
         formik.setValues(profileInfo.added_data[props.file]);
       }
+    } else {
+      // pass skills for enter info from createSupply 
+      formik.setFieldValue("primarySkill", profileInfo.skills.primarySkill);
+      formik.setFieldValue("secondarySkill", profileInfo.skills.secondarySkill);
     }
   }, [profileInfo]);
 
@@ -146,6 +152,7 @@ const ProfileData = (props) => {
     formik.resetForm();
     formik.setFieldValue("gender", "- Select Gender -");
   };
+
   const onAddNewFields = (fieldName, diffFields = []) => {
     let fieldList = newFields;
     if (!props.view) {
@@ -378,16 +385,16 @@ const ProfileData = (props) => {
               value={formik.values.primarySkill}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              isInvalid={
-                formik.errors.primarySkill &&
-                (formik.touched.primarySkill ||
-                  formik.values.primarySkill.length > 0)
-              }
-              isValid={
-                !formik.errors.primarySkill &&
-                (formik.touched.primarySkill ||
-                  formik.values.primarySkill.length > 0)
-              }
+              // isInvalid={
+              //   formik.errors.primarySkill &&
+              //   (formik.touched.primarySkill ||
+              //     formik.values.primarySkill.length > 0)
+              // }
+              // isValid={
+              //   !formik.errors.primarySkill &&
+              //   (formik.touched.primarySkill ||
+              //     formik.values.primarySkill.length > 0)
+              // }
             />
             <div className="invalid-feedback">{formik.errors.primarySkill}</div>
           </FormGroup>

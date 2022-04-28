@@ -17,6 +17,8 @@ const AddEmployeePage = (props) => {
   useEffect(() => {
     dispatch(InfoActions.resetForm());
   }, []);
+
+
   return (
     <Fragment>
       <Alerts flag={true}/>
