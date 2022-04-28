@@ -186,7 +186,7 @@ const Alerts = (props) => {
                   ? !newSupervisor.includes("-")
                     ? false
                     : true
-                  : false
+                  : radioValue.length === 0 ? true: false
               }
             >
               {props.flag ? "Confirm" : "Save"}

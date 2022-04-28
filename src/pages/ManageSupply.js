@@ -175,6 +175,7 @@ const ManageSupply = () => {
   //trigger alert box to select the upcoming status of profile
   const onChangeStatus = (key, step) => {
     setViewComment({});
+    setProfileView(false)
     profileKey = key;
     onAlert("Please Select the options", true);
     setStepOptions(step);
@@ -620,7 +621,7 @@ const ManageSupply = () => {
                                 </small>
                               </div>
                               <div>
-                                <small className>
+                                <small>
                                   <b>Current Status : </b>
                                   <span
                                     className={`fw-bold text-${
@@ -628,12 +629,12 @@ const ManageSupply = () => {
                                         profileName
                                       ].current_status.includes("Hold")
                                         ? `warning`
-                                        : supplyList[
+                                        : (supplyList[
                                             profileName
                                           ].current_status.slice(-2) === "ed" ||
                                           supplyList[
                                             profileName
-                                          ].current_status.slice(-4) === "lect"
+                                          ].current_status.slice(-4) === "lect")
                                         ? `primary`
                                         : `danger`
                                     }`}
